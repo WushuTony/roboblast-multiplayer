@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dd4v2mrsloa8d"
-path="res://.godot/imported/simple_bark_heightmap.png-1f36d0dda9c68fa2630e334bdd0211b3.ctex"
+path="res://.godot/imported/simple_bark_heightmap.png-1f7d54349eb57bef56f42639068e027a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://environment/trees/simple_bark/simple_bark_heightmap.png"
-dest_files=["res://.godot/imported/simple_bark_heightmap.png-1f36d0dda9c68fa2630e334bdd0211b3.ctex"]
+source_file="res://godot-4-3d-third-person-controller/environment/trees/simple_bark/simple_bark_heightmap.png"
+dest_files=["res://.godot/imported/simple_bark_heightmap.png-1f7d54349eb57bef56f42639068e027a.ctex"]
 
 [params]
 

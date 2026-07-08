@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://octunbukmgdx"
-path="res://.godot/imported/jumping_pad_model.glb-9914d3044fb0b39bc54fbbed7c03d151.scn"
+path="res://.godot/imported/jumping_pad_model.glb-4bb0696192b1b1adcc86cbd626f7e3f3.scn"
 
 [deps]
 
-source_file="res://jumping_pad/jumping_pad_visuals/jumping_pad_model.glb"
-dest_files=["res://.godot/imported/jumping_pad_model.glb-9914d3044fb0b39bc54fbbed7c03d151.scn"]
+source_file="res://godot-4-3d-third-person-controller/jumping_pad/jumping_pad_visuals/jumping_pad_model.glb"
+dest_files=["res://.godot/imported/jumping_pad_model.glb-4bb0696192b1b1adcc86cbd626f7e3f3.scn"]
 
 [params]
 

@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cwf2n313rmv35"
-path.s3tc="res://.godot/imported/trunk_top_normal.png-9c5a6a1a57b61e020ec662fea2384322.s3tc.ctex"
+path.s3tc="res://.godot/imported/trunk_top_normal.png-460b4eac0722fa205e7f7be06d7e546a.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://environment/large_tree_trunk/trunk_top/trunk_top_normal.png"
-dest_files=["res://.godot/imported/trunk_top_normal.png-9c5a6a1a57b61e020ec662fea2384322.s3tc.ctex"]
+source_file="res://godot-4-3d-third-person-controller/environment/large_tree_trunk/trunk_top/trunk_top_normal.png"
+dest_files=["res://.godot/imported/trunk_top_normal.png-460b4eac0722fa205e7f7be06d7e546a.s3tc.ctex"]
 
 [params]
 

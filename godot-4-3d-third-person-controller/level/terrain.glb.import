@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://b602ttibxesgm"
-path="res://.godot/imported/terrain.glb-f61dd9449b8484d861a587963e3ed34f.scn"
+path="res://.godot/imported/terrain.glb-9495f180b8686335fa7dae77cf055bd3.scn"
 
 [deps]
 
-source_file="res://level/terrain.glb"
-dest_files=["res://.godot/imported/terrain.glb-f61dd9449b8484d861a587963e3ed34f.scn"]
+source_file="res://godot-4-3d-third-person-controller/level/terrain.glb"
+dest_files=["res://.godot/imported/terrain.glb-9495f180b8686335fa7dae77cf055bd3.scn"]
 
 [params]
 
@@ -73,7 +73,7 @@ _subresources={
 },
 "Material.001": {
 "use_external/enabled": true,
-"use_external/fallback_path": "res://environment/terrain/terrain_mat.tres",
+"use_external/fallback_path": "res://godot-4-3d-third-person-controller/environment/terrain/terrain_mat.tres",
 "use_external/path": "uid://c5trc4hy86utg"
 }
 },

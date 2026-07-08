@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dnanigj1fkkop"
-path="res://.godot/imported/mouseLeft.png-79dce30cd4c1697a94b6718029399d29.ctex"
+path="res://.godot/imported/mouseLeft.png-0f10daf1116382024f455e4f4639a8da.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://demo_page/controller_icons/mouseLeft.png"
-dest_files=["res://.godot/imported/mouseLeft.png-79dce30cd4c1697a94b6718029399d29.ctex"]
+source_file="res://godot-4-3d-third-person-controller/demo_page/controller_icons/mouseLeft.png"
+dest_files=["res://.godot/imported/mouseLeft.png-0f10daf1116382024f455e4f4639a8da.ctex"]
 
 [params]
 

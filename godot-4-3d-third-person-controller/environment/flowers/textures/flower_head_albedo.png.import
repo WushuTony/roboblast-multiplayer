@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c8f84qeseq2rk"
-path.s3tc="res://.godot/imported/flower_head_albedo.png-0c6fddae7f798cb6cfdf5ad5ce638a64.s3tc.ctex"
+path.s3tc="res://.godot/imported/flower_head_albedo.png-282834ca0dc60c4e533b04dbdeaf5923.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://environment/flowers/textures/flower_head_albedo.png"
-dest_files=["res://.godot/imported/flower_head_albedo.png-0c6fddae7f798cb6cfdf5ad5ce638a64.s3tc.ctex"]
+source_file="res://godot-4-3d-third-person-controller/environment/flowers/textures/flower_head_albedo.png"
+dest_files=["res://.godot/imported/flower_head_albedo.png-282834ca0dc60c4e533b04dbdeaf5923.s3tc.ctex"]
 
 [params]
 

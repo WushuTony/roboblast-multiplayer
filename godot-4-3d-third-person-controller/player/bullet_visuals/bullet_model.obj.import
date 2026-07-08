@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://ch30025kg24b1"
-path="res://.godot/imported/bullet_model.obj-b4f38c087069ce42b226f0e3360e5499.mesh"
+path="res://.godot/imported/bullet_model.obj-984f6470de62c24e57d132b94a9db1a1.mesh"
 
 [deps]
 
-files=["res://.godot/imported/bullet_model.obj-b4f38c087069ce42b226f0e3360e5499.mesh"]
+files=["res://.godot/imported/bullet_model.obj-984f6470de62c24e57d132b94a9db1a1.mesh"]
 
-source_file="res://player/bullet_visuals/bullet_model.obj"
-dest_files=["res://.godot/imported/bullet_model.obj-b4f38c087069ce42b226f0e3360e5499.mesh", "res://.godot/imported/bullet_model.obj-b4f38c087069ce42b226f0e3360e5499.mesh"]
+source_file="res://godot-4-3d-third-person-controller/player/bullet_visuals/bullet_model.obj"
+dest_files=["res://.godot/imported/bullet_model.obj-984f6470de62c24e57d132b94a9db1a1.mesh", "res://.godot/imported/bullet_model.obj-984f6470de62c24e57d132b94a9db1a1.mesh"]
 
 [params]
 

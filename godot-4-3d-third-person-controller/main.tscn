@@ -1,33 +1,33 @@
 [gd_scene format=3 uid="uid://vmbppkwmx2xk"]
 
-[ext_resource type="PackedScene" uid="uid://mb58xbunfaep" path="res://icons/weapon_ui.tscn" id="1_3u7h6"]
-[ext_resource type="Sky" uid="uid://jonn5eom7asv" path="res://environment/sky/blue_sky.tres" id="2_4bjxn"]
-[ext_resource type="PackedScene" uid="uid://ciqrpd5675boy" path="res://player/player.tscn" id="2_q87gh"]
-[ext_resource type="PackedScene" uid="uid://7j15r0ej4fwx" path="res://jumping_pad/jumping_pad.tscn" id="3_w2mh2"]
-[ext_resource type="PackedScene" uid="uid://b602ttibxesgm" path="res://level/terrain.glb" id="4_vprlf"]
-[ext_resource type="NavigationMesh" uid="uid://d1ombvi6qufpk" path="res://level/main_navmesh.res" id="5_n4asa"]
-[ext_resource type="Material" uid="uid://con3572kpt8a3" path="res://environment/large_tree_trunk/large_tree_trunk_mat.tres" id="6_q3y6j"]
-[ext_resource type="PackedScene" uid="uid://dr8slkof1nc8r" path="res://environment/trees/tree.tscn" id="7_rvx5i"]
-[ext_resource type="Shader" uid="uid://do5ydgs2eaepo" path="res://environment/water/water_shader.gdshader" id="8_trepf"]
-[ext_resource type="Texture2D" uid="uid://ssrlnj65d4bs" path="res://environment/water/textures/caustic_texture.png" id="9_8eqnd"]
-[ext_resource type="Script" uid="uid://dpwkxx17o2c33" path="res://level/death_plane.gd" id="9_i1hvo"]
-[ext_resource type="PackedScene" uid="uid://dx8qkjcbt8emp" path="res://environment/grass/grass_chunk.tscn" id="10_8c06q"]
-[ext_resource type="PackedScene" uid="uid://cn8o7sv1osssk" path="res://environment/bushes/bush.tscn" id="11_f8df7"]
-[ext_resource type="PackedScene" uid="uid://cmwyiep10m4u4" path="res://box/box.tscn" id="12_xvr0j"]
-[ext_resource type="PackedScene" uid="uid://rn45gytkk6tv" path="res://enemies/bee_bot.tscn" id="13_012dc"]
-[ext_resource type="PackedScene" uid="uid://oxyn25v5khuk" path="res://enemies/beetle_bot.tscn" id="14_tmmem"]
-[ext_resource type="PackedScene" uid="uid://bi31qtqv1sf2s" path="res://environment/flowers/flower_patch.tscn" id="15_jqya0"]
-[ext_resource type="PackedScene" uid="uid://cnj0t3ad178q6" path="res://demo_page/demo_page.tscn" id="16_qr75n"]
-[ext_resource type="AudioStream" uid="uid://bveh08m6w5ryf" path="res://level/music/mountain.mp3" id="17_mil5a"]
-[ext_resource type="Script" uid="uid://c4njlfc5hy0ow" path="res://stutter_fixes.gd" id="20_xuqvo"]
-[ext_resource type="PackedScene" uid="uid://bq562nfq7puh" path="res://player/grenade.tscn" id="21_qsp4k"]
-[ext_resource type="PackedScene" uid="uid://e7p4xvo51lbl" path="res://player/explosion_visuals/explosion_scene.tscn" id="22_kq58d"]
-[ext_resource type="Shader" uid="uid://1mm42h234gn6" path="res://player/explosion_visuals/shaders/shell_shader.gdshader" id="23_seu75"]
-[ext_resource type="Shader" uid="uid://dor4ptlwpxrfv" path="res://player/explosion_visuals/shaders/blast_shader.gdshader" id="24_htxhm"]
-[ext_resource type="PackedScene" uid="uid://c54mpt43fs4wc" path="res://player/coin/coin.tscn" id="25_jq2sk"]
-[ext_resource type="PackedScene" uid="uid://okmv1cbta83x" path="res://enemies/smoke_puff/smoke_puff.tscn" id="26_4k2k6"]
-[ext_resource type="Shader" uid="uid://bp40q8ga3f2f7" path="res://enemies/smoke_puff/smoke_ball.gdshader" id="27_0rl1p"]
-[ext_resource type="Shader" uid="uid://c2ku3tyf6vhdc" path="res://enemies/smoke_puff/smoke_ball_middle.gdshader" id="28_ok6jj"]
+[ext_resource type="PackedScene" uid="uid://mb58xbunfaep" path="res://godot-4-3d-third-person-controller/icons/weapon_ui.tscn" id="1_3u7h6"]
+[ext_resource type="Sky" uid="uid://jonn5eom7asv" path="res://godot-4-3d-third-person-controller/environment/sky/blue_sky.tres" id="2_4bjxn"]
+[ext_resource type="PackedScene" uid="uid://ciqrpd5675boy" path="res://godot-4-3d-third-person-controller/player/player.tscn" id="2_q87gh"]
+[ext_resource type="PackedScene" uid="uid://7j15r0ej4fwx" path="res://godot-4-3d-third-person-controller/jumping_pad/jumping_pad.tscn" id="3_w2mh2"]
+[ext_resource type="PackedScene" uid="uid://b602ttibxesgm" path="res://godot-4-3d-third-person-controller/level/terrain.glb" id="4_vprlf"]
+[ext_resource type="NavigationMesh" uid="uid://d1ombvi6qufpk" path="res://godot-4-3d-third-person-controller/level/main_navmesh.res" id="5_n4asa"]
+[ext_resource type="Material" uid="uid://con3572kpt8a3" path="res://godot-4-3d-third-person-controller/environment/large_tree_trunk/large_tree_trunk_mat.tres" id="6_q3y6j"]
+[ext_resource type="PackedScene" uid="uid://dr8slkof1nc8r" path="res://godot-4-3d-third-person-controller/environment/trees/tree.tscn" id="7_rvx5i"]
+[ext_resource type="Shader" uid="uid://do5ydgs2eaepo" path="res://godot-4-3d-third-person-controller/environment/water/water_shader.gdshader" id="8_trepf"]
+[ext_resource type="Texture2D" uid="uid://ssrlnj65d4bs" path="res://godot-4-3d-third-person-controller/environment/water/textures/caustic_texture.png" id="9_8eqnd"]
+[ext_resource type="Script" uid="uid://dpwkxx17o2c33" path="res://godot-4-3d-third-person-controller/level/death_plane.gd" id="9_i1hvo"]
+[ext_resource type="PackedScene" uid="uid://dx8qkjcbt8emp" path="res://godot-4-3d-third-person-controller/environment/grass/grass_chunk.tscn" id="10_8c06q"]
+[ext_resource type="PackedScene" uid="uid://cn8o7sv1osssk" path="res://godot-4-3d-third-person-controller/environment/bushes/bush.tscn" id="11_f8df7"]
+[ext_resource type="PackedScene" uid="uid://cmwyiep10m4u4" path="res://godot-4-3d-third-person-controller/box/box.tscn" id="12_xvr0j"]
+[ext_resource type="PackedScene" uid="uid://rn45gytkk6tv" path="res://godot-4-3d-third-person-controller/enemies/bee_bot.tscn" id="13_012dc"]
+[ext_resource type="PackedScene" uid="uid://oxyn25v5khuk" path="res://godot-4-3d-third-person-controller/enemies/beetle_bot.tscn" id="14_tmmem"]
+[ext_resource type="PackedScene" uid="uid://bi31qtqv1sf2s" path="res://godot-4-3d-third-person-controller/environment/flowers/flower_patch.tscn" id="15_jqya0"]
+[ext_resource type="PackedScene" uid="uid://cnj0t3ad178q6" path="res://godot-4-3d-third-person-controller/demo_page/demo_page.tscn" id="16_qr75n"]
+[ext_resource type="AudioStream" uid="uid://bveh08m6w5ryf" path="res://godot-4-3d-third-person-controller/level/music/mountain.mp3" id="17_mil5a"]
+[ext_resource type="Script" uid="uid://c4njlfc5hy0ow" path="res://godot-4-3d-third-person-controller/stutter_fixes.gd" id="20_xuqvo"]
+[ext_resource type="PackedScene" uid="uid://bq562nfq7puh" path="res://godot-4-3d-third-person-controller/player/grenade.tscn" id="21_qsp4k"]
+[ext_resource type="PackedScene" uid="uid://e7p4xvo51lbl" path="res://godot-4-3d-third-person-controller/player/explosion_visuals/explosion_scene.tscn" id="22_kq58d"]
+[ext_resource type="Shader" uid="uid://1mm42h234gn6" path="res://godot-4-3d-third-person-controller/player/explosion_visuals/shaders/shell_shader.gdshader" id="23_seu75"]
+[ext_resource type="Shader" uid="uid://dor4ptlwpxrfv" path="res://godot-4-3d-third-person-controller/player/explosion_visuals/shaders/blast_shader.gdshader" id="24_htxhm"]
+[ext_resource type="PackedScene" uid="uid://c54mpt43fs4wc" path="res://godot-4-3d-third-person-controller/player/coin/coin.tscn" id="25_jq2sk"]
+[ext_resource type="PackedScene" uid="uid://okmv1cbta83x" path="res://godot-4-3d-third-person-controller/enemies/smoke_puff/smoke_puff.tscn" id="26_4k2k6"]
+[ext_resource type="Shader" uid="uid://bp40q8ga3f2f7" path="res://godot-4-3d-third-person-controller/enemies/smoke_puff/smoke_ball.gdshader" id="27_0rl1p"]
+[ext_resource type="Shader" uid="uid://c2ku3tyf6vhdc" path="res://godot-4-3d-third-person-controller/enemies/smoke_puff/smoke_ball_middle.gdshader" id="28_ok6jj"]
 
 [sub_resource type="Environment" id="Environment_allox"]
 background_mode = 2
@@ -83,7 +83,7 @@ fractal_octaves = 1
 noise = SubResource("FastNoiseLite_4kwk8")
 seamless = true
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_facbu"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_xswyf"]
 resource_local_to_scene = true
 render_priority = 0
 shader = ExtResource("23_seu75")
@@ -116,7 +116,7 @@ fractal_octaves = 2
 noise = SubResource("FastNoiseLite_wnnmc")
 seamless = true
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_b1qrp"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_e0bje"]
 resource_local_to_scene = true
 render_priority = 0
 shader = ExtResource("24_htxhm")
@@ -136,7 +136,7 @@ fractal_octaves = 1
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_a2w6x"]
 noise = SubResource("FastNoiseLite_sxisx")
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_come4"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_10hq7"]
 resource_local_to_scene = true
 render_priority = 10
 shader = ExtResource("27_0rl1p")
@@ -156,7 +156,7 @@ fractal_octaves = 1
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_s56rg"]
 noise = SubResource("FastNoiseLite_6jv1k")
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_h8e4i"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_7a44n"]
 resource_local_to_scene = true
 render_priority = 10
 shader = ExtResource("28_ok6jj")
@@ -212,28 +212,28 @@ metadata/_edit_lock_ = true
 
 [node name="terrain" parent="NavigationRegion3D" unique_id=1886230333 instance=ExtResource("4_vprlf")]
 
-[node name="large_trunk" parent="NavigationRegion3D/terrain" index="1" unique_id=848756262]
+[node name="large_trunk" parent="NavigationRegion3D/terrain" index="1" unique_id=1135229518]
 material_override = ExtResource("6_q3y6j")
 
-[node name="large_trunk_001" parent="NavigationRegion3D/terrain" index="2" unique_id=239911272]
+[node name="large_trunk_001" parent="NavigationRegion3D/terrain" index="2" unique_id=2108439743]
 material_override = ExtResource("6_q3y6j")
 
-[node name="large_trunk_002" parent="NavigationRegion3D/terrain" index="3" unique_id=1595219747]
+[node name="large_trunk_002" parent="NavigationRegion3D/terrain" index="3" unique_id=684973634]
 material_override = ExtResource("6_q3y6j")
 
-[node name="large_trunk_003" parent="NavigationRegion3D/terrain" index="4" unique_id=1791729613]
+[node name="large_trunk_003" parent="NavigationRegion3D/terrain" index="4" unique_id=1084252591]
 material_override = ExtResource("6_q3y6j")
 
-[node name="large_trunk_004" parent="NavigationRegion3D/terrain" index="6" unique_id=1121482106]
+[node name="large_trunk_004" parent="NavigationRegion3D/terrain" index="6" unique_id=935325880]
 material_override = ExtResource("6_q3y6j")
 
-[node name="large_trunk_005" parent="NavigationRegion3D/terrain" index="7" unique_id=409143005]
+[node name="large_trunk_005" parent="NavigationRegion3D/terrain" index="7" unique_id=1893359585]
 material_override = ExtResource("6_q3y6j")
 
-[node name="large_trunk_006" parent="NavigationRegion3D/terrain" index="8" unique_id=2123545042]
+[node name="large_trunk_006" parent="NavigationRegion3D/terrain" index="8" unique_id=651535562]
 material_override = ExtResource("6_q3y6j")
 
-[node name="large_trunk_007" parent="NavigationRegion3D/terrain" index="9" unique_id=704062205]
+[node name="large_trunk_007" parent="NavigationRegion3D/terrain" index="9" unique_id=642404948]
 material_override = ExtResource("6_q3y6j")
 
 [node name="Trees" type="Node3D" parent="NavigationRegion3D" unique_id=361007208]
@@ -1690,10 +1690,10 @@ script = null
 visible = false
 
 [node name="Shell" parent="StutterFixes/Explosion" index="0" unique_id=674671704]
-material_override = SubResource("ShaderMaterial_facbu")
+material_override = SubResource("ShaderMaterial_xswyf")
 
 [node name="Blast" parent="StutterFixes/Explosion" index="1" unique_id=601050963]
-material_override = SubResource("ShaderMaterial_b1qrp")
+material_override = SubResource("ShaderMaterial_e0bje")
 
 [node name="Coin" parent="StutterFixes" unique_id=1505589733 instance=ExtResource("25_jq2sk")]
 visible = false
@@ -1703,11 +1703,11 @@ script = null
 visible = false
 script = null
 
-[node name="Cube" parent="StutterFixes/smoke_puff/smoke_ball" parent_id_path=PackedInt32Array(1464888597, 1652704592) index="0"]
-material_override = SubResource("ShaderMaterial_come4")
+[node name="Cube" parent="StutterFixes/smoke_puff/smoke_ball" parent_id_path=PackedInt32Array(1464888597, 1652704592) index="0" unique_id=1623868212]
+material_override = SubResource("ShaderMaterial_10hq7")
 
-[node name="Cube" parent="StutterFixes/smoke_puff/smoke_ball2" parent_id_path=PackedInt32Array(1464888597, 1778003220) index="0"]
-material_override = SubResource("ShaderMaterial_h8e4i")
+[node name="Cube" parent="StutterFixes/smoke_puff/smoke_ball2" parent_id_path=PackedInt32Array(1464888597, 1778003220) index="0" unique_id=1623868212]
+material_override = SubResource("ShaderMaterial_7a44n")
 
 [connection signal="weapon_switched" from="Player" to="weapon_switch_ui" method="switch_to"]
 

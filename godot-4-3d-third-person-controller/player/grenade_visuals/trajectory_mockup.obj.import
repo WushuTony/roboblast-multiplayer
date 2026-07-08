@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://laarq7txjf7v"
-path="res://.godot/imported/trajectory_mockup.obj-a36c0047f3040c627af1d93c1dbdd8c8.mesh"
+path="res://.godot/imported/trajectory_mockup.obj-b6e2b5022b1c3899681da652ff00fb22.mesh"
 
 [deps]
 
-files=["res://.godot/imported/trajectory_mockup.obj-a36c0047f3040c627af1d93c1dbdd8c8.mesh"]
+files=["res://.godot/imported/trajectory_mockup.obj-b6e2b5022b1c3899681da652ff00fb22.mesh"]
 
-source_file="res://player/grenade_visuals/trajectory_mockup.obj"
-dest_files=["res://.godot/imported/trajectory_mockup.obj-a36c0047f3040c627af1d93c1dbdd8c8.mesh", "res://.godot/imported/trajectory_mockup.obj-a36c0047f3040c627af1d93c1dbdd8c8.mesh"]
+source_file="res://godot-4-3d-third-person-controller/player/grenade_visuals/trajectory_mockup.obj"
+dest_files=["res://.godot/imported/trajectory_mockup.obj-b6e2b5022b1c3899681da652ff00fb22.mesh", "res://.godot/imported/trajectory_mockup.obj-b6e2b5022b1c3899681da652ff00fb22.mesh"]
 
 [params]
 

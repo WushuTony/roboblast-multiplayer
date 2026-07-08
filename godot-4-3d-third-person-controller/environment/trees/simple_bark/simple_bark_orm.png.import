@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://4rh8np1t3ks5"
-path.s3tc="res://.godot/imported/simple_bark_orm.png-12e1d69e76683e112d281c61b4a0343c.s3tc.ctex"
+path.s3tc="res://.godot/imported/simple_bark_orm.png-bc4fa822832d1f2a0bf273cae6c18bd0.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://environment/trees/simple_bark/simple_bark_orm.png"
-dest_files=["res://.godot/imported/simple_bark_orm.png-12e1d69e76683e112d281c61b4a0343c.s3tc.ctex"]
+source_file="res://godot-4-3d-third-person-controller/environment/trees/simple_bark/simple_bark_orm.png"
+dest_files=["res://.godot/imported/simple_bark_orm.png-bc4fa822832d1f2a0bf273cae6c18bd0.s3tc.ctex"]
 
 [params]
 

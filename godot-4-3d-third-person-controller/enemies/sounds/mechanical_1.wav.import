@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://b6npjky1rks7r"
-path="res://.godot/imported/mechanical_1.wav-3bc0b6f6fc17891332eea5573445a32b.sample"
+path="res://.godot/imported/mechanical_1.wav-d1dea456a0f7c91140c8692369bc71e4.sample"
 
 [deps]
 
-source_file="res://enemies/sounds/mechanical_1.wav"
-dest_files=["res://.godot/imported/mechanical_1.wav-3bc0b6f6fc17891332eea5573445a32b.sample"]
+source_file="res://godot-4-3d-third-person-controller/enemies/sounds/mechanical_1.wav"
+dest_files=["res://.godot/imported/mechanical_1.wav-d1dea456a0f7c91140c8692369bc71e4.sample"]
 
 [params]
 

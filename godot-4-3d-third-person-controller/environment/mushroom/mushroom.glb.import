@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://d3jgve1g030hy"
-path="res://.godot/imported/mushroom.glb-e261d9c1a9b453ee18c1f0b6ead14f9f.scn"
+path="res://.godot/imported/mushroom.glb-aad6f58babb64954e1b15f20122b101d.scn"
 
 [deps]
 
-source_file="res://environment/mushroom/mushroom.glb"
-dest_files=["res://.godot/imported/mushroom.glb-e261d9c1a9b453ee18c1f0b6ead14f9f.scn"]
+source_file="res://godot-4-3d-third-person-controller/environment/mushroom/mushroom.glb"
+dest_files=["res://.godot/imported/mushroom.glb-aad6f58babb64954e1b15f20122b101d.scn"]
 
 [params]
 

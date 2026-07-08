@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cercyyjcwv0x8"
-path="res://.godot/imported/esc.png-1189723e4c5ad68ae19859b5c0d3d952.ctex"
+path="res://.godot/imported/esc.png-6e7c15590733b44dfc1fc8666f488d1d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://demo_page/controller_icons/esc.png"
-dest_files=["res://.godot/imported/esc.png-1189723e4c5ad68ae19859b5c0d3d952.ctex"]
+source_file="res://godot-4-3d-third-person-controller/demo_page/controller_icons/esc.png"
+dest_files=["res://.godot/imported/esc.png-6e7c15590733b44dfc1fc8666f488d1d.ctex"]
 
 [params]
 

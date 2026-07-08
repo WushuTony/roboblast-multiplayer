@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://10s03a0ng24t"
-path="res://.godot/imported/flash_icon.png-fed37284415cdafb516be7a0a7e63cd3.ctex"
+path="res://.godot/imported/flash_icon.png-2007ac6727c1d3c4a66f97cff355151a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://icons/flash_icon.png"
-dest_files=["res://.godot/imported/flash_icon.png-fed37284415cdafb516be7a0a7e63cd3.ctex"]
+source_file="res://godot-4-3d-third-person-controller/icons/flash_icon.png"
+dest_files=["res://.godot/imported/flash_icon.png-2007ac6727c1d3c4a66f97cff355151a.ctex"]
 
 [params]
 

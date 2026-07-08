@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b4nbhaovwgjrj"
-path.s3tc="res://.godot/imported/terrain_bridge_planks_albedo.png-63f3e93b065b767d52667e2adb44d2c1.s3tc.ctex"
+path.s3tc="res://.godot/imported/terrain_bridge_planks_albedo.png-f2f320efcebcc2df39e073fe8c3a5a51.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://environment/terrain_bridge_planks_albedo.png"
-dest_files=["res://.godot/imported/terrain_bridge_planks_albedo.png-63f3e93b065b767d52667e2adb44d2c1.s3tc.ctex"]
+source_file="res://godot-4-3d-third-person-controller/environment/terrain_bridge_planks_albedo.png"
+dest_files=["res://.godot/imported/terrain_bridge_planks_albedo.png-f2f320efcebcc2df39e073fe8c3a5a51.s3tc.ctex"]
 
 [params]
 

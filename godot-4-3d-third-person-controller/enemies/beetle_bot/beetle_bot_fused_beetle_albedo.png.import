@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cotxhuihgcxaa"
-path.s3tc="res://.godot/imported/beetle_bot_fused_beetle_albedo.png-c3fd7a8f91117e92e2681970ad8a90d4.s3tc.ctex"
+path.s3tc="res://.godot/imported/beetle_bot_fused_beetle_albedo.png-8aace8c2ab07814b45b990837ea0ea6f.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://enemies/beetle_bot/beetle_bot_fused_beetle_albedo.png"
-dest_files=["res://.godot/imported/beetle_bot_fused_beetle_albedo.png-c3fd7a8f91117e92e2681970ad8a90d4.s3tc.ctex"]
+source_file="res://godot-4-3d-third-person-controller/enemies/beetle_bot/beetle_bot_fused_beetle_albedo.png"
+dest_files=["res://.godot/imported/beetle_bot_fused_beetle_albedo.png-8aace8c2ab07814b45b990837ea0ea6f.s3tc.ctex"]
 
 [params]
 

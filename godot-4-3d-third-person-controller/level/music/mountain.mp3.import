@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://bveh08m6w5ryf"
-path="res://.godot/imported/mountain.mp3-d8b46a48da553ef6c3506cf0dd0acb91.mp3str"
+path="res://.godot/imported/mountain.mp3-c6caa762a0b344bbfb0d6f967af54201.mp3str"
 
 [deps]
 
-source_file="res://level/music/mountain.mp3"
-dest_files=["res://.godot/imported/mountain.mp3-d8b46a48da553ef6c3506cf0dd0acb91.mp3str"]
+source_file="res://godot-4-3d-third-person-controller/level/music/mountain.mp3"
+dest_files=["res://.godot/imported/mountain.mp3-c6caa762a0b344bbfb0d6f967af54201.mp3str"]
 
 [params]
 

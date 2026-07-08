@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://c28pgdu71100y"
-path="res://.godot/imported/tree_trunk_long.glb-51fcf43db39d36f77dc810ec1e3b72bb.scn"
+path="res://.godot/imported/tree_trunk_long.glb-6fb013bda5eb60874c59fbe47bd4ace4.scn"
 
 [deps]
 
-source_file="res://environment/tree_trunk/tree_trunk_long.glb"
-dest_files=["res://.godot/imported/tree_trunk_long.glb-51fcf43db39d36f77dc810ec1e3b72bb.scn"]
+source_file="res://godot-4-3d-third-person-controller/environment/tree_trunk/tree_trunk_long.glb"
+dest_files=["res://.godot/imported/tree_trunk_long.glb-6fb013bda5eb60874c59fbe47bd4ace4.scn"]
 
 [params]
 

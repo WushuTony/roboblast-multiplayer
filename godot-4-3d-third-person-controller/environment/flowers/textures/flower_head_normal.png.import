@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://rqrvv1eud2n1"
-path.s3tc="res://.godot/imported/flower_head_normal.png-dbf0c3f56d879c3a8b4474631d769997.s3tc.ctex"
+path.s3tc="res://.godot/imported/flower_head_normal.png-4c9953dae0c183c811c71255597f06d6.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://environment/flowers/textures/flower_head_normal.png"
-dest_files=["res://.godot/imported/flower_head_normal.png-dbf0c3f56d879c3a8b4474631d769997.s3tc.ctex"]
+source_file="res://godot-4-3d-third-person-controller/environment/flowers/textures/flower_head_normal.png"
+dest_files=["res://.godot/imported/flower_head_normal.png-4c9953dae0c183c811c71255597f06d6.s3tc.ctex"]
 
 [params]
 

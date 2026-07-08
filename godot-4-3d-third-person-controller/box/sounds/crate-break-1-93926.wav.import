@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://dd7nemvkapogt"
-path="res://.godot/imported/crate-break-1-93926.wav-c7b9488afde501033d9abcfb9828b7cb.sample"
+path="res://.godot/imported/crate-break-1-93926.wav-36999bf6f67146f79b0bb3b2a35a0944.sample"
 
 [deps]
 
-source_file="res://box/sounds/crate-break-1-93926.wav"
-dest_files=["res://.godot/imported/crate-break-1-93926.wav-c7b9488afde501033d9abcfb9828b7cb.sample"]
+source_file="res://godot-4-3d-third-person-controller/box/sounds/crate-break-1-93926.wav"
+dest_files=["res://.godot/imported/crate-break-1-93926.wav-36999bf6f67146f79b0bb3b2a35a0944.sample"]
 
 [params]
 

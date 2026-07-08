@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://3fxtm3u8im2"
-path="res://.godot/imported/gdquest_logo_white.svg-b2a07dffa4348348713faaf5dbe86e57.ctex"
+path="res://.godot/imported/gdquest_logo_white.svg-d7c56f836ca925c278284ea854d968e8.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://demo_page/assets/gdquest_logo_white.svg"
-dest_files=["res://.godot/imported/gdquest_logo_white.svg-b2a07dffa4348348713faaf5dbe86e57.ctex"]
+source_file="res://godot-4-3d-third-person-controller/demo_page/assets/gdquest_logo_white.svg"
+dest_files=["res://.godot/imported/gdquest_logo_white.svg-d7c56f836ca925c278284ea854d968e8.ctex"]
 
 [params]
 

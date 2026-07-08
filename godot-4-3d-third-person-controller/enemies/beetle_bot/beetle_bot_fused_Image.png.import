@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://budymvq3u3y6o"
-path="res://.godot/imported/beetle_bot_fused_Image.png-5616da1ea532b7ee289dc4788921cf16.ctex"
+path="res://.godot/imported/beetle_bot_fused_Image.png-d26eec5bdc2e212920605f95ab9cf8d4.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://enemies/beetle_bot/beetle_bot_fused_Image.png"
-dest_files=["res://.godot/imported/beetle_bot_fused_Image.png-5616da1ea532b7ee289dc4788921cf16.ctex"]
+source_file="res://godot-4-3d-third-person-controller/enemies/beetle_bot/beetle_bot_fused_Image.png"
+dest_files=["res://.godot/imported/beetle_bot_fused_Image.png-d26eec5bdc2e212920605f95ab9cf8d4.ctex"]
 
 [params]
 

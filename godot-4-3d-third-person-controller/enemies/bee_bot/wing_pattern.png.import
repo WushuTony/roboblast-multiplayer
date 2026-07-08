@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c4mdnjycm0yse"
-path.s3tc="res://.godot/imported/wing_pattern.png-d1e1e344870be3147d1a0ee23bc48685.s3tc.ctex"
+path.s3tc="res://.godot/imported/wing_pattern.png-3dda76736470ecfc6b6230cc69980432.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://enemies/bee_bot/wing_pattern.png"
-dest_files=["res://.godot/imported/wing_pattern.png-d1e1e344870be3147d1a0ee23bc48685.s3tc.ctex"]
+source_file="res://godot-4-3d-third-person-controller/enemies/bee_bot/wing_pattern.png"
+dest_files=["res://.godot/imported/wing_pattern.png-3dda76736470ecfc6b6230cc69980432.s3tc.ctex"]
 
 [params]
 

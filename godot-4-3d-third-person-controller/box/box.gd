@@ -1,7 +1,7 @@
 extends RigidBody3D
 
-const COIN_SCENE := preload("res://player/coin/coin.tscn")
-const DESTROYED_BOX_SCENE := preload("res://box/destroyed_box.tscn")
+const COIN_SCENE := preload("../player/coin/coin.tscn")
+const DESTROYED_BOX_SCENE := preload("destroyed_box.tscn")
 
 const COINS_COUNT := 5
 

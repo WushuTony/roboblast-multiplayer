@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://f0vfmhexafmx"
-path="res://.godot/imported/bee_bot.glb-505fe86f9a7002cc7504b07d2f7ef707.scn"
+path="res://.godot/imported/bee_bot.glb-0c00b866ecd26e944ca0c6021b19a012.scn"
 
 [deps]
 
-source_file="res://enemies/bee_bot/bee_bot.glb"
-dest_files=["res://.godot/imported/bee_bot.glb-505fe86f9a7002cc7504b07d2f7ef707.scn"]
+source_file="res://godot-4-3d-third-person-controller/enemies/bee_bot/bee_bot.glb"
+dest_files=["res://.godot/imported/bee_bot.glb-0c00b866ecd26e944ca0c6021b19a012.scn"]
 
 [params]
 

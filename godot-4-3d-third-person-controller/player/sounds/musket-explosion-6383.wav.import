@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://csou1m38pk3m4"
-path="res://.godot/imported/musket-explosion-6383.wav-cd24f389be9b45e80d8d60335bfb9889.sample"
+path="res://.godot/imported/musket-explosion-6383.wav-dac043ef3ad32fe460759764663e8dc5.sample"
 
 [deps]
 
-source_file="res://player/sounds/musket-explosion-6383.wav"
-dest_files=["res://.godot/imported/musket-explosion-6383.wav-cd24f389be9b45e80d8d60335bfb9889.sample"]
+source_file="res://godot-4-3d-third-person-controller/player/sounds/musket-explosion-6383.wav"
+dest_files=["res://.godot/imported/musket-explosion-6383.wav-dac043ef3ad32fe460759764663e8dc5.sample"]
 
 [params]
 

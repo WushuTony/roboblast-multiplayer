@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://dmeh0no3vldp6"
-path="res://.godot/imported/explosion_smoke.glb-149ea77a92872e00c5d4668f5508aa34.scn"
+path="res://.godot/imported/explosion_smoke.glb-00e2eb08e37a13b89b4f55d1cf93e140.scn"
 
 [deps]
 
-source_file="res://player/explosion_visuals/objects/explosion_smoke.glb"
-dest_files=["res://.godot/imported/explosion_smoke.glb-149ea77a92872e00c5d4668f5508aa34.scn"]
+source_file="res://godot-4-3d-third-person-controller/player/explosion_visuals/objects/explosion_smoke.glb"
+dest_files=["res://.godot/imported/explosion_smoke.glb-00e2eb08e37a13b89b4f55d1cf93e140.scn"]
 
 [params]
 

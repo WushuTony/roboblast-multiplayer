@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bybrr5xpohowo"
-path.s3tc="res://.godot/imported/orange_flower_flower_blade_normal.png-5dc064a13de7a93a7ac262c3da7533dc.s3tc.ctex"
+path.s3tc="res://.godot/imported/orange_flower_flower_blade_normal.png-3b824d2ce7fe3e9015eb3414b236d09a.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -12,8 +12,8 @@ generator_parameters={}
 
 [deps]
 
-source_file="res://environment/orange_flowers/orange_flower_flower_blade_normal.png"
-dest_files=["res://.godot/imported/orange_flower_flower_blade_normal.png-5dc064a13de7a93a7ac262c3da7533dc.s3tc.ctex"]
+source_file="res://godot-4-3d-third-person-controller/environment/orange_flowers/orange_flower_flower_blade_normal.png"
+dest_files=["res://.godot/imported/orange_flower_flower_blade_normal.png-3b824d2ce7fe3e9015eb3414b236d09a.s3tc.ctex"]
 
 [params]
 

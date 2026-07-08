@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://db7wkegkjmixy"
-path="res://.godot/imported/gdbot.glb-b2b35a66e5dbccde081b1475b5eaced5.scn"
+path="res://.godot/imported/gdbot.glb-f0604c7e7c463e59bf12454b474f09f1.scn"
 
 [deps]
 
-source_file="res://player/model/gdbot.glb"
-dest_files=["res://.godot/imported/gdbot.glb-b2b35a66e5dbccde081b1475b5eaced5.scn"]
+source_file="res://godot-4-3d-third-person-controller/player/model/gdbot.glb"
+dest_files=["res://.godot/imported/gdbot.glb-f0604c7e7c463e59bf12454b474f09f1.scn"]
 
 [params]
 

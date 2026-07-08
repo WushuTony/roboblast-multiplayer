@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://bmveegrtd4yaa"
-path="res://.godot/imported/grass_1_geo.obj-bf2b0b84fbb9e58d979c6239d7b4084f.mesh"
+path="res://.godot/imported/grass_1_geo.obj-f21d11361846249110028aaeea99517a.mesh"
 
 [deps]
 
-files=["res://.godot/imported/grass_1_geo.obj-bf2b0b84fbb9e58d979c6239d7b4084f.mesh"]
+files=["res://.godot/imported/grass_1_geo.obj-f21d11361846249110028aaeea99517a.mesh"]
 
-source_file="res://environment/grass/grass_1_geo.obj"
-dest_files=["res://.godot/imported/grass_1_geo.obj-bf2b0b84fbb9e58d979c6239d7b4084f.mesh", "res://.godot/imported/grass_1_geo.obj-bf2b0b84fbb9e58d979c6239d7b4084f.mesh"]
+source_file="res://godot-4-3d-third-person-controller/environment/grass/grass_1_geo.obj"
+dest_files=["res://.godot/imported/grass_1_geo.obj-f21d11361846249110028aaeea99517a.mesh", "res://.godot/imported/grass_1_geo.obj-f21d11361846249110028aaeea99517a.mesh"]
 
 [params]
 

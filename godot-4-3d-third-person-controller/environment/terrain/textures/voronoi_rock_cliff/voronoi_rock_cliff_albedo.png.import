@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ccle3gd0lgtig"
-path="res://.godot/imported/voronoi_rock_cliff_albedo.png-08f0fa945220e1e439f4a3b531de8e51.ctex"
+path="res://.godot/imported/voronoi_rock_cliff_albedo.png-fde8b8b2add7240684754ffd95e44f48.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://environment/terrain/textures/voronoi_rock_cliff/voronoi_rock_cliff_albedo.png"
-dest_files=["res://.godot/imported/voronoi_rock_cliff_albedo.png-08f0fa945220e1e439f4a3b531de8e51.ctex"]
+source_file="res://godot-4-3d-third-person-controller/environment/terrain/textures/voronoi_rock_cliff/voronoi_rock_cliff_albedo.png"
+dest_files=["res://.godot/imported/voronoi_rock_cliff_albedo.png-fde8b8b2add7240684754ffd95e44f48.ctex"]
 
 [params]
 

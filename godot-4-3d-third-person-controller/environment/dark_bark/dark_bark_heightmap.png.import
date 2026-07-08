@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://xxp11wuuoht"
-path.s3tc="res://.godot/imported/dark_bark_heightmap.png-ab8fb10863aa8fcaa610b48f731446dc.s3tc.ctex"
+path.s3tc="res://.godot/imported/dark_bark_heightmap.png-9e23444c1e70b80d2bc2d88ebbc07ff0.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://environment/dark_bark/dark_bark_heightmap.png"
-dest_files=["res://.godot/imported/dark_bark_heightmap.png-ab8fb10863aa8fcaa610b48f731446dc.s3tc.ctex"]
+source_file="res://godot-4-3d-third-person-controller/environment/dark_bark/dark_bark_heightmap.png"
+dest_files=["res://.godot/imported/dark_bark_heightmap.png-9e23444c1e70b80d2bc2d88ebbc07ff0.s3tc.ctex"]
 
 [params]
 

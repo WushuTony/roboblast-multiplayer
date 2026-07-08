@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://puxw8ak4sfc3"
-path.s3tc="res://.godot/imported/dark_bark_albedo.png-3137d1e39e8bce16439eae86843a0e88.s3tc.ctex"
+path.s3tc="res://.godot/imported/dark_bark_albedo.png-fa76428e3eb928164bb1d44025105255.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://environment/dark_bark/dark_bark_albedo.png"
-dest_files=["res://.godot/imported/dark_bark_albedo.png-3137d1e39e8bce16439eae86843a0e88.s3tc.ctex"]
+source_file="res://godot-4-3d-third-person-controller/environment/dark_bark/dark_bark_albedo.png"
+dest_files=["res://.godot/imported/dark_bark_albedo.png-fa76428e3eb928164bb1d44025105255.s3tc.ctex"]
 
 [params]
 

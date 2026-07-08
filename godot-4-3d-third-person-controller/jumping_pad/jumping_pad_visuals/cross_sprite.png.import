@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://byjn4swf18j3i"
-path.s3tc="res://.godot/imported/cross_sprite.png-24553d9bf79a6456386649d463f47649.s3tc.ctex"
+path.s3tc="res://.godot/imported/cross_sprite.png-794e95df367c35e866e36d165828443b.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://jumping_pad/jumping_pad_visuals/cross_sprite.png"
-dest_files=["res://.godot/imported/cross_sprite.png-24553d9bf79a6456386649d463f47649.s3tc.ctex"]
+source_file="res://godot-4-3d-third-person-controller/jumping_pad/jumping_pad_visuals/cross_sprite.png"
+dest_files=["res://.godot/imported/cross_sprite.png-794e95df367c35e866e36d165828443b.s3tc.ctex"]
 
 [params]
 

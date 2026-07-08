@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://cbcb2d63weegs"
-path="res://.godot/imported/45_landing_01.wav-94545fa6640a3c5fb5cbf2b0f1fc29e1.sample"
+path="res://.godot/imported/45_landing_01.wav-8f4421fa5be94981f8eae0e93e911ac3.sample"
 
 [deps]
 
-source_file="res://player/sounds/45_landing_01.wav"
-dest_files=["res://.godot/imported/45_landing_01.wav-94545fa6640a3c5fb5cbf2b0f1fc29e1.sample"]
+source_file="res://godot-4-3d-third-person-controller/player/sounds/45_landing_01.wav"
+dest_files=["res://.godot/imported/45_landing_01.wav-8f4421fa5be94981f8eae0e93e911ac3.sample"]
 
 [params]
 

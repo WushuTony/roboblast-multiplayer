@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cu1fm3jggdcgv"
-path.s3tc="res://.godot/imported/simple_leaves_normal.png-beb24b15887351e0f227f301d3dd80f7.s3tc.ctex"
+path.s3tc="res://.godot/imported/simple_leaves_normal.png-38b5b8905e7477a75ab5a131de16fe7c.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://environment/simple_leaves/simple_leaves_normal.png"
-dest_files=["res://.godot/imported/simple_leaves_normal.png-beb24b15887351e0f227f301d3dd80f7.s3tc.ctex"]
+source_file="res://godot-4-3d-third-person-controller/environment/simple_leaves/simple_leaves_normal.png"
+dest_files=["res://.godot/imported/simple_leaves_normal.png-38b5b8905e7477a75ab5a131de16fe7c.s3tc.ctex"]
 
 [params]
 

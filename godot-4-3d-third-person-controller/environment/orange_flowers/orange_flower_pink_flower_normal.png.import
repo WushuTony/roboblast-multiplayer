@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://caxnpjpvcx2va"
-path.s3tc="res://.godot/imported/orange_flower_pink_flower_normal.png-040135818cc2f3ca4b45e0b6555e3026.s3tc.ctex"
+path.s3tc="res://.godot/imported/orange_flower_pink_flower_normal.png-aae2148fa6d2d27d76f118e14b997d84.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -12,8 +12,8 @@ generator_parameters={}
 
 [deps]
 
-source_file="res://environment/orange_flowers/orange_flower_pink_flower_normal.png"
-dest_files=["res://.godot/imported/orange_flower_pink_flower_normal.png-040135818cc2f3ca4b45e0b6555e3026.s3tc.ctex"]
+source_file="res://godot-4-3d-third-person-controller/environment/orange_flowers/orange_flower_pink_flower_normal.png"
+dest_files=["res://.godot/imported/orange_flower_pink_flower_normal.png-aae2148fa6d2d27d76f118e14b997d84.s3tc.ctex"]
 
 [params]
 

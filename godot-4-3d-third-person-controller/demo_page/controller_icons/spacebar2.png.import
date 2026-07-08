@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://078sfj6nla2e"
-path="res://.godot/imported/spacebar2.png-4f47e5b0e8e105c935a18d2ed004eeaf.ctex"
+path="res://.godot/imported/spacebar2.png-55d67bcb00afa9cc9c6e1ff83c37ce00.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://demo_page/controller_icons/spacebar2.png"
-dest_files=["res://.godot/imported/spacebar2.png-4f47e5b0e8e105c935a18d2ed004eeaf.ctex"]
+source_file="res://godot-4-3d-third-person-controller/demo_page/controller_icons/spacebar2.png"
+dest_files=["res://.godot/imported/spacebar2.png-55d67bcb00afa9cc9c6e1ff83c37ce00.ctex"]
 
 [params]
 
