@@ -147,7 +147,6 @@ target_desired_distance = 0.2
 path_height_offset = 0.5
 path_max_distance = 1.51
 avoidance_enabled = true
-debug_enabled = true
 
 [node name="DefeatSound" type="AudioStreamPlayer3D" parent="." unique_id=1752519346]
 stream = ExtResource("3_w5eam")

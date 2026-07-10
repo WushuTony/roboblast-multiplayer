@@ -179,7 +179,7 @@ func _physics_process(delta: float) -> void:
 						_shoot_cooldown_tick = 0.0
 						shoot()
 				elif is_just_attacking:
-					attack()
+					attack.rpc()
 			WEAPON_TYPE.GRENADE:
 				if _grenade_cooldown_tick > grenade_cooldown:
 					_grenade_cooldown_tick = 0.0
@@ -220,6 +220,7 @@ func _physics_process(delta: float) -> void:
 		global_position += get_wall_normal() * 0.1
 
 
+@rpc("authority", "call_local", "reliable")
 func attack() -> void:
 	_attack_animation_player.play("Attack")
 	_character_skin.punch()
