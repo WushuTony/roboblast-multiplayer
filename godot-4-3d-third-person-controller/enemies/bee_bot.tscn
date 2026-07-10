@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://rn45gytkk6tv"]
 
-[ext_resource type="Script" uid="uid://cek4nujsmemif" path="res://enemies/bee_bot.gd" id="1_eehkx"]
-[ext_resource type="PackedScene" uid="uid://4nwp6xgihjc7" path="res://enemies/bee_bot/bee_root.tscn" id="2_btoc7"]
-[ext_resource type="AudioStream" uid="uid://c66nnoqtanfw2" path="res://enemies/sounds/robot_defeat.wav" id="3_1gs12"]
+[ext_resource type="Script" uid="uid://cek4nujsmemif" path="res://godot-4-3d-third-person-controller/enemies/bee_bot.gd" id="1_eehkx"]
+[ext_resource type="PackedScene" uid="uid://4nwp6xgihjc7" path="res://godot-4-3d-third-person-controller/enemies/bee_bot/bee_root.tscn" id="2_btoc7"]
+[ext_resource type="AudioStream" uid="uid://c66nnoqtanfw2" path="res://godot-4-3d-third-person-controller/enemies/sounds/robot_defeat.wav" id="3_1gs12"]
 
 [sub_resource type="Animation" id="Animation_3qg81"]
 length = 0.001
@@ -169,7 +169,7 @@ _data = {
 [sub_resource type="BoxShape3D" id="BoxShape3D_pl7mw"]
 size = Vector3(0.1, 0.5, 1)
 
-[node name="FlyingEnemy" type="RigidBody3D" unique_id=2019485036 groups=["damageables", "targeteables"]]
+[node name="FlyingEnemy" type="RigidBody3D" unique_id=2019485036 groups=["damageables", "enemies", "targeteables"]]
 gravity_scale = 0.0
 sleeping = true
 continuous_cd = true

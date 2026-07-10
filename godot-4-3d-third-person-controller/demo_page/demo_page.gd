@@ -15,7 +15,7 @@ enum INSTRUCTION_TYPES {KEYBOARD, JOYPAD}
 
 func _ready() -> void:
 	get_tree().paused = true
-	_demo_mouse_mode = Input.mouse_mode
+	_demo_mouse_mode = Input.MOUSE_MODE_CAPTURED
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	
 	resume_button.pressed.connect(resume_demo)

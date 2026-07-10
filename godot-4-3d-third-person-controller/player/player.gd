@@ -31,13 +31,17 @@ enum WEAPON_TYPE { DEFAULT, GRENADE }
 @export var shoot_cooldown := 0.5
 ## Grenade cooldown
 @export var grenade_cooldown := 0.5
+## If projectiles can damage other players
+@export var friendly_fire: bool = false
 
 @onready var _rotation_root: Node3D = $CharacterRotationRoot
 @onready var _camera_controller: CameraController = $CameraController
+@onready var _camera: Camera3D = $CameraController/PlayerCamera
 @onready var _attack_animation_player: AnimationPlayer = $CharacterRotationRoot/MeleeAnchor/AnimationPlayer
 @onready var _ground_shapecast: ShapeCast3D = $GroundShapeCast
 @onready var _grenade_aim_controller: GrenadeLauncher = $GrenadeLauncher
 @onready var _character_skin: CharacterSkin = $CharacterRotationRoot/CharacterSkin
+@onready var _username: Label3D = $Username
 @onready var _ui_aim_reticle: ColorRect = %AimReticle
 @onready var _ui_coins_container: HBoxContainer = %CoinsContainer
 @onready var _step_sound: AudioStreamPlayer3D = $StepSound
@@ -55,9 +59,18 @@ enum WEAPON_TYPE { DEFAULT, GRENADE }
 @onready var _shoot_cooldown_tick := shoot_cooldown
 @onready var _grenade_cooldown_tick := grenade_cooldown
 
+var peer_id: int = 1 # The peer that controls this player
+var local: bool = true # If this instance is controlled by the local peer
+
+func _enter_tree() -> void:
+	# Set node authority
+	peer_id = int(name)
+	$ClientSynchronizer.set_multiplayer_authority(peer_id)
+	local = (peer_id == multiplayer.get_unique_id())
 
 func _ready() -> void:
-	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	if local and !get_tree().paused:
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	_camera_controller.setup(self)
 	_grenade_aim_controller.visible = false
 	weapon_switched.emit(WEAPON_TYPE.keys()[0])
@@ -69,8 +82,35 @@ func _ready() -> void:
 
 	_character_skin.stepped.connect(play_foot_step_sound)
 
+	set_multiplayer_data.call_deferred()
+
+func generate_random_hsv_color(color_seed: int) -> Color:
+	var rng = RandomNumberGenerator.new()
+	rng.seed = color_seed
+	return Color.from_hsv(
+		rng.randf(), # HUE
+		rng.randf_range(0.2, 0.6), # SATURATION
+		rng.randf_range(0.9, 1.0), # BRIGHTNESS
+ 	)
+
+func set_multiplayer_data():
+#	Give the player model the color of this client
+	_character_skin.set_color(generate_random_hsv_color(peer_id))
+	
+#	Display the username of this client
+	_username.text = "Player " + name
+	
+#	Make sure to only display the username of OTHER players, not yourself
+	_username.visible = !local
+	
+	if (local):
+		# Activate the camera if local
+		_camera.make_current()
 
 func _physics_process(delta: float) -> void:
+	# Only process physics if local
+	if (!local): return
+	
 	# Calculate ground height for camera controller
 	if _ground_shapecast.get_collision_count() > 0:
 		for collision_result in _ground_shapecast.collision_result:
@@ -189,6 +229,7 @@ func attack() -> void:
 func shoot() -> void:
 	var bullet := BULLET_SCENE.instantiate()
 	bullet.shooter = self
+	bullet.friendly_fire = friendly_fire
 	var origin := global_position + Vector3.UP
 	var aim_target := _camera_controller.get_aim_target()
 	var aim_direction := (aim_target - origin).normalized()
@@ -196,6 +237,14 @@ func shoot() -> void:
 	bullet.distance_limit = 14.0
 	get_parent().add_child(bullet)
 	bullet.global_position = origin
+
+
+@rpc("authority", "call_local", "reliable")
+func teleport(new_pos: Vector3, new_rot: Vector3, reset_vel: bool = true) -> void:
+	if reset_vel:
+		velocity = Vector3.ZERO
+	global_position = new_pos
+	global_rotation = new_rot
 
 
 func reset_position() -> void:

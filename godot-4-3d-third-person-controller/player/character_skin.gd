@@ -22,6 +22,7 @@ var moving_blend_path := "parameters/StateMachine/move/blend_position"
 func _ready():
 	animation_tree.active = true
 	main_animation_player["playback_default_blend_time"] = 0.1
+	set_moving(false)
 
 
 func set_moving(value : bool):
@@ -51,3 +52,9 @@ func punch():
 
 func _step() -> void:
 	stepped.emit()
+
+
+func set_color(color : Color):
+	color.a = 0.01
+	$gdbot/Armature/Skeleton3D/gdbot_mesh.get_surface_override_material(1).set("shader_parameter/screen_color", color)
+	$gdbot/Armature/Skeleton3D/gdbot_mesh.get_surface_override_material(2).set("emission", color)

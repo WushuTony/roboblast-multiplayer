@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://vmbppkwmx2xk"]
 
 [ext_resource type="PackedScene" uid="uid://mb58xbunfaep" path="res://godot-4-3d-third-person-controller/icons/weapon_ui.tscn" id="1_3u7h6"]
+[ext_resource type="Script" uid="uid://ryebhisgiwvk" path="res://godot-4-3d-third-person-controller/level/level.gd" id="1_xswyf"]
 [ext_resource type="Sky" uid="uid://jonn5eom7asv" path="res://godot-4-3d-third-person-controller/environment/sky/blue_sky.tres" id="2_4bjxn"]
-[ext_resource type="PackedScene" uid="uid://ciqrpd5675boy" path="res://godot-4-3d-third-person-controller/player/player.tscn" id="2_q87gh"]
 [ext_resource type="PackedScene" uid="uid://7j15r0ej4fwx" path="res://godot-4-3d-third-person-controller/jumping_pad/jumping_pad.tscn" id="3_w2mh2"]
 [ext_resource type="PackedScene" uid="uid://b602ttibxesgm" path="res://godot-4-3d-third-person-controller/level/terrain.glb" id="4_vprlf"]
 [ext_resource type="NavigationMesh" uid="uid://d1ombvi6qufpk" path="res://godot-4-3d-third-person-controller/level/main_navmesh.res" id="5_n4asa"]
@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" uid="uid://dr8slkof1nc8r" path="res://godot-4-3d-third-person-controller/environment/trees/tree.tscn" id="7_rvx5i"]
 [ext_resource type="Shader" uid="uid://do5ydgs2eaepo" path="res://godot-4-3d-third-person-controller/environment/water/water_shader.gdshader" id="8_trepf"]
 [ext_resource type="Texture2D" uid="uid://ssrlnj65d4bs" path="res://godot-4-3d-third-person-controller/environment/water/textures/caustic_texture.png" id="9_8eqnd"]
+[ext_resource type="Script" uid="uid://6ebvqbxcwogc" path="res://godot-4-3d-third-person-controller/box/boxes_container.gd" id="9_e0bje"]
 [ext_resource type="Script" uid="uid://dpwkxx17o2c33" path="res://godot-4-3d-third-person-controller/level/death_plane.gd" id="9_i1hvo"]
 [ext_resource type="PackedScene" uid="uid://dx8qkjcbt8emp" path="res://godot-4-3d-third-person-controller/environment/grass/grass_chunk.tscn" id="10_8c06q"]
 [ext_resource type="PackedScene" uid="uid://cn8o7sv1osssk" path="res://godot-4-3d-third-person-controller/environment/bushes/bush.tscn" id="11_f8df7"]
@@ -83,7 +84,7 @@ fractal_octaves = 1
 noise = SubResource("FastNoiseLite_4kwk8")
 seamless = true
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_xswyf"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_e0bje"]
 resource_local_to_scene = true
 render_priority = 0
 shader = ExtResource("23_seu75")
@@ -116,7 +117,7 @@ fractal_octaves = 2
 noise = SubResource("FastNoiseLite_wnnmc")
 seamless = true
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_e0bje"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_10hq7"]
 resource_local_to_scene = true
 render_priority = 0
 shader = ExtResource("24_htxhm")
@@ -136,7 +137,7 @@ fractal_octaves = 1
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_a2w6x"]
 noise = SubResource("FastNoiseLite_sxisx")
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_10hq7"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_7a44n"]
 resource_local_to_scene = true
 render_priority = 10
 shader = ExtResource("27_0rl1p")
@@ -156,7 +157,7 @@ fractal_octaves = 1
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_s56rg"]
 noise = SubResource("FastNoiseLite_6jv1k")
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_7a44n"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_cxhwh"]
 resource_local_to_scene = true
 render_priority = 10
 shader = ExtResource("28_ok6jj")
@@ -170,7 +171,9 @@ shader_parameter/texture_offset = 0.0
 shader_parameter/fresnel_offset = 0.1
 shader_parameter/global_alpha = 1.0
 
-[node name="Playground" type="Node3D" unique_id=1741816064]
+[node name="Main" type="Node3D" unique_id=1741816064]
+script = ExtResource("1_xswyf")
+display_name = "Main"
 
 [node name="weapon_switch_ui" parent="." unique_id=733299686 instance=ExtResource("1_3u7h6")]
 anchors_preset = 2
@@ -194,9 +197,6 @@ light_color = Color(1, 0.952941, 0.929412, 1)
 light_energy = 1.5
 shadow_enabled = true
 
-[node name="Player" parent="." unique_id=126940387 instance=ExtResource("2_q87gh")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.298, 0.5, -13.017)
-
 [node name="JumpingPad" parent="." unique_id=241169871 instance=ExtResource("3_w2mh2")]
 transform = Transform3D(0.893364, 0, 0.449335, 0, 1, 0, -0.449335, 0, 0.893364, -35.1316, 6.60685, 19.929)
 
@@ -208,6 +208,7 @@ transform = Transform3D(0.823187, 0, -0.567772, 0, 1, 0, 0.567772, 0, 0.823187, 
 
 [node name="NavigationRegion3D" type="NavigationRegion3D" parent="." unique_id=1467016651]
 navigation_mesh = ExtResource("5_n4asa")
+use_edge_connections = false
 metadata/_edit_lock_ = true
 
 [node name="terrain" parent="NavigationRegion3D" unique_id=1886230333 instance=ExtResource("4_vprlf")]
@@ -437,6 +438,81 @@ skeleton = NodePath("../../..")
 [node name="Tree1Geo4" parent="NavigationRegion3D/Trees" unique_id=1190835924 instance=ExtResource("7_rvx5i")]
 transform = Transform3D(1.40533, -0.0623495, 0.86904, -0.0185807, 1.6057, 0.151182, -0.871191, -0.134823, 1.39863, -9.40334, 0.5, -13.2136)
 skeleton = NodePath("../../..")
+
+[node name="Boxes" type="Node3D" parent="NavigationRegion3D" unique_id=1439308871]
+script = ExtResource("9_e0bje")
+
+[node name="Box2" parent="NavigationRegion3D/Boxes" unique_id=1483145335 instance=ExtResource("12_xvr0j")]
+transform = Transform3D(0.91126, 0, 0.411832, 0, 1, 0, -0.411832, 0, 0.91126, -6.60338, 1.01478, 7.9387)
+
+[node name="Box3" parent="NavigationRegion3D/Boxes" unique_id=1623851581 instance=ExtResource("12_xvr0j")]
+transform = Transform3D(0.91126, 0, 0.411832, 0, 1, 0, -0.411832, 0, 0.91126, -7.65465, 1.01478, 8.41896)
+
+[node name="Box4" parent="NavigationRegion3D/Boxes" unique_id=2057730853 instance=ExtResource("12_xvr0j")]
+transform = Transform3D(-0.382119, 0, 0.924113, 0, 1, 0, -0.924113, 0, -0.382119, -10.8217, 7.21886, 8.73528)
+
+[node name="Box5" parent="NavigationRegion3D/Boxes" unique_id=1609922980 instance=ExtResource("12_xvr0j")]
+transform = Transform3D(-0.382119, 0, 0.924113, 0, 1, 0, -0.924113, 0, -0.382119, -10.3063, 7.22633, 9.80155)
+
+[node name="Box6" parent="NavigationRegion3D/Boxes" unique_id=258581348 instance=ExtResource("12_xvr0j")]
+transform = Transform3D(0.713189, 0, 0.700972, 0, 1, 0, -0.700972, 0, 0.713189, 5.44704, 5.23165, 1.83539)
+
+[node name="Box15" parent="NavigationRegion3D/Boxes" unique_id=805598476 instance=ExtResource("12_xvr0j")]
+transform = Transform3D(0.713189, 0, 0.700972, 0, 1, 0, -0.700972, 0, 0.713189, 5.45221, 6.23165, 1.85654)
+
+[node name="Box21" parent="NavigationRegion3D/Boxes" unique_id=300622693 instance=ExtResource("12_xvr0j")]
+transform = Transform3D(0.713189, 0, 0.700972, 0, 1, 0, -0.700972, 0, 0.713189, 5.45221, 7.23165, 1.85654)
+
+[node name="Box22" parent="NavigationRegion3D/Boxes" unique_id=859701604 instance=ExtResource("12_xvr0j")]
+transform = Transform3D(0.713189, 0, 0.700972, 0, 1, 0, -0.700972, 0, 0.713189, 5.45221, 8.23165, 1.85654)
+
+[node name="Box16" parent="NavigationRegion3D/Boxes" unique_id=1633517494 instance=ExtResource("12_xvr0j")]
+transform = Transform3D(0.899191, 0, 0.437555, 0, 1, 0, -0.437555, 0, 0.899191, -38.7791, 14.6498, 23.5164)
+
+[node name="Box17" parent="NavigationRegion3D/Boxes" unique_id=1864367274 instance=ExtResource("12_xvr0j")]
+transform = Transform3D(0.899191, 0, 0.437555, 0, 1, 0, -0.437555, 0, 0.899191, -39.8163, 14.6498, 24.0263)
+
+[node name="Box18" parent="NavigationRegion3D/Boxes" unique_id=1566470316 instance=ExtResource("12_xvr0j")]
+transform = Transform3D(0.943228, 0, 0.332145, 0, 1, 0, -0.332145, 0, 0.943228, -43.6698, 19.577, 6.62192)
+
+[node name="Box20" parent="NavigationRegion3D/Boxes" unique_id=1607086691 instance=ExtResource("12_xvr0j")]
+transform = Transform3D(0.943228, 0, 0.332145, 0, 1, 0, -0.332145, 0, 0.943228, -44.2522, 20.628, 6.85372)
+
+[node name="Box19" parent="NavigationRegion3D/Boxes" unique_id=2048398183 instance=ExtResource("12_xvr0j")]
+transform = Transform3D(0.943228, 0, 0.332145, 0, 1, 0, -0.332145, 0, 0.943228, -44.7584, 19.577, 7.01022)
+
+[node name="Box9" parent="NavigationRegion3D/Boxes" unique_id=1505547100 instance=ExtResource("12_xvr0j")]
+transform = Transform3D(0.890165, 0, -0.455638, 0, 1, 0, 0.455638, 0, 0.890165, -33.9122, 21.9604, -11.0165)
+
+[node name="Box10" parent="NavigationRegion3D/Boxes" unique_id=735215070 instance=ExtResource("12_xvr0j")]
+transform = Transform3D(0.890165, 0, -0.455638, 0, 1, 0, 0.455638, 0, 0.890165, -34.9105, 21.9604, -11.5402)
+
+[node name="Box11" parent="NavigationRegion3D/Boxes" unique_id=2139962809 instance=ExtResource("12_xvr0j")]
+transform = Transform3D(0.890165, 0, -0.455638, 0, 1, 0, 0.455638, 0, 0.890165, -35.9415, 21.9604, -12.0626)
+
+[node name="Box12" parent="NavigationRegion3D/Boxes" unique_id=541361244 instance=ExtResource("12_xvr0j")]
+transform = Transform3D(0.890165, 0, -0.455638, 0, 1, 0, 0.455638, 0, 0.890165, -35.3877, 23.1909, -11.8562)
+
+[node name="Box13" parent="NavigationRegion3D/Boxes" unique_id=986145155 instance=ExtResource("12_xvr0j")]
+transform = Transform3D(0.890165, 0, -0.455638, 0, 1, 0, 0.455638, 0, 0.890165, -34.4122, 23.1909, -11.4012)
+
+[node name="Box14" parent="NavigationRegion3D/Boxes" unique_id=313105908 instance=ExtResource("12_xvr0j")]
+transform = Transform3D(0.890165, 0, -0.455638, 0, 1, 0, 0.455638, 0, 0.890165, -34.8602, 24.3039, -11.624)
+
+[node name="Box7" parent="NavigationRegion3D/Boxes" unique_id=789712915 instance=ExtResource("12_xvr0j")]
+transform = Transform3D(-0.885783, 0, -0.4641, 0, 1, 0, 0.4641, 0, -0.885783, -3.1858506, 0.98181784, -7.2575884)
+
+[node name="Box8" parent="NavigationRegion3D/Boxes" unique_id=1884681699 instance=ExtResource("12_xvr0j")]
+transform = Transform3D(-0.848705, 0, -0.528868, 0, 1, 0, 0.528868, 0, -0.848705, -2.7519107, 0.98181784, -6.2505884)
+
+[node name="Box24" parent="NavigationRegion3D/Boxes" unique_id=1036286151 instance=ExtResource("12_xvr0j")]
+transform = Transform3D(-0.440111, 0, 0.897944, 0, 1, 0, -0.897944, 0, -0.440111, -1.6969604, 0.98181784, -6.701688)
+
+[node name="Box25" parent="NavigationRegion3D/Boxes" unique_id=766431486 instance=ExtResource("12_xvr0j")]
+transform = Transform3D(0.879059, 0, 0.476714, 0, 1, 0, -0.476714, 0, 0.879059, -2.2039406, 0.98181784, -7.847788)
+
+[node name="Box23" parent="NavigationRegion3D/Boxes" unique_id=1249986621 instance=ExtResource("12_xvr0j")]
+transform = Transform3D(0.83295, 0, -0.553349, 0, 1, 0, 0.553349, 0, 0.83295, -2.4928906, 2.0473979, -7.0216885)
 
 [node name="Water" type="MeshInstance3D" parent="." unique_id=1937264903]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.12, -2, 7.71762)
@@ -1342,80 +1418,6 @@ skeleton = NodePath("../..")
 transform = Transform3D(0.235531, 0, -0.95862, 0, 0.987131, 0, 0.95862, 0, 0.235531, -9.73978, 0.5, -3.62916)
 skeleton = NodePath("../..")
 
-[node name="Boxes" type="Node3D" parent="." unique_id=1439308871]
-
-[node name="Box2" parent="Boxes" unique_id=1483145335 instance=ExtResource("12_xvr0j")]
-transform = Transform3D(0.91126, 0, 0.411832, 0, 1, 0, -0.411832, 0, 0.91126, -6.60338, 1.01478, 7.9387)
-
-[node name="Box3" parent="Boxes" unique_id=1623851581 instance=ExtResource("12_xvr0j")]
-transform = Transform3D(0.91126, 0, 0.411832, 0, 1, 0, -0.411832, 0, 0.91126, -7.65465, 1.01478, 8.41896)
-
-[node name="Box4" parent="Boxes" unique_id=2057730853 instance=ExtResource("12_xvr0j")]
-transform = Transform3D(-0.382119, 0, 0.924113, 0, 1, 0, -0.924113, 0, -0.382119, -10.8217, 7.21886, 8.73528)
-
-[node name="Box5" parent="Boxes" unique_id=1609922980 instance=ExtResource("12_xvr0j")]
-transform = Transform3D(-0.382119, 0, 0.924113, 0, 1, 0, -0.924113, 0, -0.382119, -10.3063, 7.22633, 9.80155)
-
-[node name="Box6" parent="Boxes" unique_id=258581348 instance=ExtResource("12_xvr0j")]
-transform = Transform3D(0.713189, 0, 0.700972, 0, 1, 0, -0.700972, 0, 0.713189, 5.44704, 5.23165, 1.83539)
-
-[node name="Box15" parent="Boxes" unique_id=805598476 instance=ExtResource("12_xvr0j")]
-transform = Transform3D(0.713189, 0, 0.700972, 0, 1, 0, -0.700972, 0, 0.713189, 5.45221, 6.23165, 1.85654)
-
-[node name="Box21" parent="Boxes" unique_id=300622693 instance=ExtResource("12_xvr0j")]
-transform = Transform3D(0.713189, 0, 0.700972, 0, 1, 0, -0.700972, 0, 0.713189, 5.45221, 7.23165, 1.85654)
-
-[node name="Box22" parent="Boxes" unique_id=859701604 instance=ExtResource("12_xvr0j")]
-transform = Transform3D(0.713189, 0, 0.700972, 0, 1, 0, -0.700972, 0, 0.713189, 5.45221, 8.23165, 1.85654)
-
-[node name="Box16" parent="Boxes" unique_id=1633517494 instance=ExtResource("12_xvr0j")]
-transform = Transform3D(0.899191, 0, 0.437555, 0, 1, 0, -0.437555, 0, 0.899191, -38.7791, 14.6498, 23.5164)
-
-[node name="Box17" parent="Boxes" unique_id=1864367274 instance=ExtResource("12_xvr0j")]
-transform = Transform3D(0.899191, 0, 0.437555, 0, 1, 0, -0.437555, 0, 0.899191, -39.8163, 14.6498, 24.0263)
-
-[node name="Box18" parent="Boxes" unique_id=1566470316 instance=ExtResource("12_xvr0j")]
-transform = Transform3D(0.943228, 0, 0.332145, 0, 1, 0, -0.332145, 0, 0.943228, -43.6698, 19.577, 6.62192)
-
-[node name="Box20" parent="Boxes" unique_id=1607086691 instance=ExtResource("12_xvr0j")]
-transform = Transform3D(0.943228, 0, 0.332145, 0, 1, 0, -0.332145, 0, 0.943228, -44.2522, 20.628, 6.85372)
-
-[node name="Box19" parent="Boxes" unique_id=2048398183 instance=ExtResource("12_xvr0j")]
-transform = Transform3D(0.943228, 0, 0.332145, 0, 1, 0, -0.332145, 0, 0.943228, -44.7584, 19.577, 7.01022)
-
-[node name="Box9" parent="Boxes" unique_id=1505547100 instance=ExtResource("12_xvr0j")]
-transform = Transform3D(0.890165, 0, -0.455638, 0, 1, 0, 0.455638, 0, 0.890165, -33.9122, 21.9604, -11.0165)
-
-[node name="Box10" parent="Boxes" unique_id=735215070 instance=ExtResource("12_xvr0j")]
-transform = Transform3D(0.890165, 0, -0.455638, 0, 1, 0, 0.455638, 0, 0.890165, -34.9105, 21.9604, -11.5402)
-
-[node name="Box11" parent="Boxes" unique_id=2139962809 instance=ExtResource("12_xvr0j")]
-transform = Transform3D(0.890165, 0, -0.455638, 0, 1, 0, 0.455638, 0, 0.890165, -35.9415, 21.9604, -12.0626)
-
-[node name="Box12" parent="Boxes" unique_id=541361244 instance=ExtResource("12_xvr0j")]
-transform = Transform3D(0.890165, 0, -0.455638, 0, 1, 0, 0.455638, 0, 0.890165, -35.3877, 23.1909, -11.8562)
-
-[node name="Box13" parent="Boxes" unique_id=986145155 instance=ExtResource("12_xvr0j")]
-transform = Transform3D(0.890165, 0, -0.455638, 0, 1, 0, 0.455638, 0, 0.890165, -34.4122, 23.1909, -11.4012)
-
-[node name="Box14" parent="Boxes" unique_id=313105908 instance=ExtResource("12_xvr0j")]
-transform = Transform3D(0.890165, 0, -0.455638, 0, 1, 0, 0.455638, 0, 0.890165, -34.8602, 24.3039, -11.624)
-
-[node name="Box7" parent="Boxes" unique_id=789712915 instance=ExtResource("12_xvr0j")]
-transform = Transform3D(-0.885783, 0, -0.4641, 0, 1, 0, 0.4641, 0, -0.885783, 2.68326, 1.05483, -14.6913)
-
-[node name="Box8" parent="Boxes" unique_id=1884681699 instance=ExtResource("12_xvr0j")]
-transform = Transform3D(-0.848705, 0, -0.528868, 0, 1, 0, 0.528868, 0, -0.848705, 3.1172, 1.05483, -13.6843)
-
-[node name="Box24" parent="Boxes" unique_id=1036286151 instance=ExtResource("12_xvr0j")]
-transform = Transform3D(-0.440111, 0, 0.897944, 0, 1, 0, -0.897944, 0, -0.440111, 4.17215, 1.05483, -14.1354)
-
-[node name="Box25" parent="Boxes" unique_id=766431486 instance=ExtResource("12_xvr0j")]
-transform = Transform3D(0.879059, 0, 0.476714, 0, 1, 0, -0.476714, 0, 0.879059, 3.66517, 1.05483, -15.2815)
-
-[node name="Box23" parent="Boxes" unique_id=1249986621 instance=ExtResource("12_xvr0j")]
-transform = Transform3D(0.83295, 0, -0.553349, 0, 1, 0, 0.553349, 0, 0.83295, 3.37622, 2.12041, -14.4554)
-
 [node name="Foes" type="Node3D" parent="." unique_id=741262813]
 
 [node name="FlyingEnemy" parent="Foes" unique_id=2019485036 instance=ExtResource("13_012dc")]
@@ -1428,7 +1430,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.01846, 4.04934, -1.01587)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35.821, 23.8633, -9.42108)
 
 [node name="GroundEnemy" parent="Foes" unique_id=975349901 instance=ExtResource("14_tmmem")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.425, 0.565421, -2.73277)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.425, 0.565, 0)
 
 [node name="GroundEnemy2" parent="Foes" unique_id=240470746 instance=ExtResource("14_tmmem")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.0059, 6.72432, -4.01509)
@@ -1690,10 +1692,10 @@ script = null
 visible = false
 
 [node name="Shell" parent="StutterFixes/Explosion" index="0" unique_id=674671704]
-material_override = SubResource("ShaderMaterial_xswyf")
+material_override = SubResource("ShaderMaterial_e0bje")
 
 [node name="Blast" parent="StutterFixes/Explosion" index="1" unique_id=601050963]
-material_override = SubResource("ShaderMaterial_e0bje")
+material_override = SubResource("ShaderMaterial_10hq7")
 
 [node name="Coin" parent="StutterFixes" unique_id=1505589733 instance=ExtResource("25_jq2sk")]
 visible = false
@@ -1704,12 +1706,18 @@ visible = false
 script = null
 
 [node name="Cube" parent="StutterFixes/smoke_puff/smoke_ball" parent_id_path=PackedInt32Array(1464888597, 1652704592) index="0" unique_id=1623868212]
-material_override = SubResource("ShaderMaterial_10hq7")
-
-[node name="Cube" parent="StutterFixes/smoke_puff/smoke_ball2" parent_id_path=PackedInt32Array(1464888597, 1778003220) index="0" unique_id=1623868212]
 material_override = SubResource("ShaderMaterial_7a44n")
 
-[connection signal="weapon_switched" from="Player" to="weapon_switch_ui" method="switch_to"]
+[node name="Cube" parent="StutterFixes/smoke_puff/smoke_ball2" parent_id_path=PackedInt32Array(1464888597, 1778003220) index="0" unique_id=1623868212]
+material_override = SubResource("ShaderMaterial_cxhwh")
+
+[node name="SpawnPoints" type="Node" parent="." unique_id=233337308]
+
+[node name="SpawnPoint" type="Node3D" parent="SpawnPoints" unique_id=689024123]
+transform = Transform3D(0.9659258, 0, -0.25881904, 0, 1, 0, 0.25881904, 0, 0.9659258, 0, 0.5, -15.022)
+
+[node name="SpawnPoint2" type="Node3D" parent="SpawnPoints" unique_id=446784594]
+transform = Transform3D(0.9659258, 0, -0.25881904, 0, 1, 0, 0.25881904, 0, 0.9659258, 3.5, 0.5, -14.052)
 
 [editable path="NavigationRegion3D/terrain"]
 [editable path="StutterFixes/Grenade"]

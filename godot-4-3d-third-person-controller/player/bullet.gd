@@ -5,6 +5,7 @@ extends Node3D
 
 var velocity: Vector3 = Vector3.ZERO
 var shooter: Node = null
+var friendly_fire: bool = false
 
 @onready var _area: Area3D = $Area3d
 @onready var _bullet_visuals: Node3D = $Bullet
@@ -35,7 +36,15 @@ func _process(delta: float) -> void:
 func _on_body_entered(body: Node3D) -> void:
 	if body == shooter:
 		return
+	# TODO: Check that the shooter is still alive
 	if body.is_in_group("damageables"):
-		var impact_point := global_position - body.global_position
-		body.damage(impact_point, velocity)
+		var can_damage: bool = true
+		if not friendly_fire and shooter != null:
+			if body.is_in_group("players"):
+				can_damage = !shooter.is_in_group("players")
+			elif body.is_in_group("enemies"):
+				can_damage = !shooter.is_in_group("enemies")
+		if can_damage:
+			var impact_point := global_position - body.global_position
+			body.damage(impact_point, velocity)
 	queue_free()

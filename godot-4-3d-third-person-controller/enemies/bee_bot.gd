@@ -7,6 +7,7 @@ const PUFF_SCENE := preload("smoke_puff/smoke_puff.tscn")
 @export var shoot_timer := 1.5
 @export var bullet_speed := 6.0
 @export var coins_count := 5
+@export var friendly_fire: bool = false
 
 @onready var _reaction_animation_player: AnimationPlayer = $ReactionLabel/AnimationPlayer
 @onready var _flying_animation_player: AnimationPlayer = $MeshRoot/AnimationPlayer
@@ -38,6 +39,7 @@ func _physics_process(delta: float) -> void:
 
 			var bullet := BULLET_SCENE.instantiate()
 			bullet.shooter = self
+			bullet.friendly_fire = friendly_fire
 			var origin := global_position
 			var target := _target.global_position + Vector3.UP
 			var aim_direction := (target - global_position).normalized()

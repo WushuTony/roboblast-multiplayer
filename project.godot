@@ -11,9 +11,9 @@ config_version=5
 [application]
 
 config/name="Roboblast Multiplayer"
-run/main_scene="uid://vmbppkwmx2xk"
+run/main_scene="uid://dpauvndyn1v0f"
 config/features=PackedStringArray("4.6", "Forward Plus")
-config/icon="uid://bhisslvb8otag"
+config/icon="uid://dj3eye6tsr06p"
 
 [autoload]
 
