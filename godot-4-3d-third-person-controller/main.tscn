@@ -1712,6 +1712,7 @@ material_override = SubResource("ShaderMaterial_7a44n")
 material_override = SubResource("ShaderMaterial_cxhwh")
 
 [node name="SpawnPoints" type="Node" parent="." unique_id=233337308]
+unique_name_in_owner = true
 
 [node name="SpawnPoint" type="Node3D" parent="SpawnPoints" unique_id=689024123]
 transform = Transform3D(0.9659258, 0, -0.25881904, 0, 1, 0, 0.25881904, 0, 0.9659258, 0, 0.5, -15.022)

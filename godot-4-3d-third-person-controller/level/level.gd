@@ -5,7 +5,7 @@ class_name Level
 @export var world_number: int = 0
 @export var level_number: int = 0
 
-@onready var _spawn_points: Node = $SpawnPoints
+@onready var _spawn_points: Node = %SpawnPoints
 
 var spawn_points: Array[Node3D]
 
