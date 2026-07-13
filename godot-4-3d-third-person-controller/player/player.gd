@@ -19,7 +19,7 @@ enum WEAPON_TYPE { DEFAULT, GRENADE }
 ## Jump impulse
 @export var jump_initial_impulse := 12.0
 ## Jump impulse when player keeps pressing jump
-@export var jump_additional_force := 4.5
+@export var jump_additional_force := 5.0
 ## Player model rotation speed
 @export var rotation_speed := 12.0
 ## Minimum horizontal speed on the ground. This controls when the character's animation tree changes
@@ -31,7 +31,7 @@ enum WEAPON_TYPE { DEFAULT, GRENADE }
 @export var shoot_cooldown := 0.5
 ## Grenade cooldown
 @export var grenade_cooldown := 0.5
-## If projectiles can damage other players
+## If projectiles or melee attacks can damage other players
 @export var friendly_fire: bool = false
 
 @onready var _rotation_root: Node3D = $CharacterRotationRoot
@@ -40,6 +40,7 @@ enum WEAPON_TYPE { DEFAULT, GRENADE }
 @onready var _attack_animation_player: AnimationPlayer = $CharacterRotationRoot/MeleeAnchor/AnimationPlayer
 @onready var _ground_shapecast: ShapeCast3D = $GroundShapeCast
 @onready var _grenade_aim_controller: GrenadeLauncher = $GrenadeLauncher
+@onready var _melee_attack_area: MeleeAttackArea = $CharacterRotationRoot/MeleeAttackArea
 @onready var _character_skin: CharacterSkin = $CharacterRotationRoot/CharacterSkin
 @onready var _username: Label3D = $Username
 @onready var _ui_aim_reticle: ColorRect = %AimReticle
@@ -62,11 +63,22 @@ enum WEAPON_TYPE { DEFAULT, GRENADE }
 var peer_id: int = 1 # The peer that controls this player
 var local: bool = true # If this instance is controlled by the local peer
 
+# Cache inputs and movement state
+var raw_move_input: Vector2 = Vector2.ZERO
+var is_attack_held: bool = false
+var is_just_attacking: bool = false
+var is_jump_held: bool = false
+var is_just_jumping: bool = false
+var is_aim_held: bool = false
+var is_swapping_weapons: bool = false
+
+var is_using_jumping_pad: bool = false
+
 func _enter_tree() -> void:
 	# Set node authority
 	peer_id = int(name)
-	$ClientSynchronizer.set_multiplayer_authority(peer_id)
 	local = (peer_id == multiplayer.get_unique_id())
+	set_physics_process(local)
 
 func _ready() -> void:
 	if local and !get_tree().paused:
@@ -74,6 +86,9 @@ func _ready() -> void:
 	_camera_controller.setup(self)
 	_grenade_aim_controller.visible = false
 	weapon_switched.emit(WEAPON_TYPE.keys()[0])
+
+	_melee_attack_area.attacker = self
+	_melee_attack_area.friendly_fire = friendly_fire
 
 	# When copying this character to a new project, the project may lack required input actions.
 	# In that case, we register input actions for the user at runtime.
@@ -103,9 +118,32 @@ func set_multiplayer_data():
 #	Make sure to only display the username of OTHER players, not yourself
 	_username.visible = !local
 	
+	# Give authority to this client
+	const recursive: bool = false
+	set_multiplayer_authority(peer_id, recursive)
+	if !recursive:
+		$ClientSynchronizer.set_multiplayer_authority(peer_id, false)
+	
 	if (local):
 		# Activate the camera if local
 		_camera.make_current()
+
+func _unhandled_input(event: InputEvent) -> void:
+	if (event.is_action("move_left")
+		or event.is_action("move_right")
+		or event.is_action("move_up")
+		or event.is_action("move_down")):
+			raw_move_input = Input.get_vector("move_left", "move_right", "move_up", "move_down")
+	elif event.is_action("jump"):
+		is_just_jumping = event.is_action_pressed("jump")
+		is_jump_held = event.is_action_pressed("jump", true)
+	elif event.is_action("attack"):
+		is_attack_held = event.is_action_pressed("attack", true)
+		is_just_attacking = event.is_action_pressed("attack")
+	elif event.is_action("aim"):
+		is_aim_held = event.is_action_pressed("aim", true)
+	elif event.is_action("swap_weapons"):
+		is_swapping_weapons = event.is_action_pressed("swap_weapons")
 
 func _physics_process(delta: float) -> void:
 	# Only process physics if local
@@ -121,18 +159,18 @@ func _physics_process(delta: float) -> void:
 		_ground_height = global_position.y
 
 	# Swap weapons
-	if Input.is_action_just_pressed("swap_weapons"):
+	if is_swapping_weapons:
 		_equipped_weapon = WEAPON_TYPE.DEFAULT if _equipped_weapon == WEAPON_TYPE.GRENADE else WEAPON_TYPE.GRENADE
 		_grenade_aim_controller.visible = _equipped_weapon == WEAPON_TYPE.GRENADE
 		weapon_switched.emit(WEAPON_TYPE.keys()[_equipped_weapon])
 
-	# Get input and movement state
-	var is_attacking := Input.is_action_pressed("attack") and not _attack_animation_player.is_playing()
-	var is_just_attacking := Input.is_action_just_pressed("attack")
-	var is_just_jumping := Input.is_action_just_pressed("jump") and is_on_floor()
-	var is_aiming := Input.is_action_pressed("aim") and is_on_floor()
-	var is_air_boosting := Input.is_action_pressed("jump") and not is_on_floor() and velocity.y > 0.0
-	var is_just_on_floor := is_on_floor() and not _is_on_floor_buffer
+	# Get movement state from input
+	var is_attacking: bool = is_attack_held and not _attack_animation_player.is_playing()
+	is_just_jumping = is_just_jumping and is_on_floor()
+	var is_aiming = is_aim_held and is_on_floor()
+	var is_air_boosting = is_jump_held and not is_on_floor() and velocity.y > 0.0
+	var is_just_on_floor: bool = is_on_floor() and not _is_on_floor_buffer
+	is_using_jumping_pad = is_using_jumping_pad and velocity.y > 0.0
 
 	_is_on_floor_buffer = is_on_floor()
 	_move_direction = _get_camera_oriented_input()
@@ -187,10 +225,11 @@ func _physics_process(delta: float) -> void:
 
 	velocity.y += _gravity * delta
 
-	if is_just_jumping:
-		velocity.y += jump_initial_impulse
-	elif is_air_boosting:
-		velocity.y += jump_additional_force * delta
+	if not is_using_jumping_pad:
+		if is_just_jumping:
+			velocity.y += jump_initial_impulse
+		elif is_air_boosting:
+			velocity.y += jump_additional_force * delta
 
 	# Set character animation
 	if is_just_jumping:
@@ -218,6 +257,11 @@ func _physics_process(delta: float) -> void:
 	var epsilon := 0.001
 	if delta_position.length() < epsilon and velocity.length() > epsilon:
 		global_position += get_wall_normal() * 0.1
+
+	# Reset inputs that shouldn't be processed multiple times
+	is_just_attacking = false
+	is_just_jumping = false
+	is_swapping_weapons = false
 
 
 @rpc("authority", "call_local", "reliable")
@@ -272,12 +316,10 @@ func _get_camera_oriented_input() -> Vector3:
 	if _attack_animation_player.is_playing():
 		return Vector3.ZERO
 
-	var raw_input := Input.get_vector("move_left", "move_right", "move_up", "move_down")
-
 	var input := Vector3.ZERO
 	# This is to ensure that diagonal input isn't stronger than axis aligned input
-	input.x = -raw_input.x * sqrt(1.0 - raw_input.y * raw_input.y / 2.0)
-	input.z = -raw_input.y * sqrt(1.0 - raw_input.x * raw_input.x / 2.0)
+	input.x = -raw_move_input.x * sqrt(1.0 - raw_move_input.y * raw_move_input.y / 2.0)
+	input.z = -raw_move_input.y * sqrt(1.0 - raw_move_input.x * raw_move_input.x / 2.0)
 
 	input = _camera_controller.global_transform.basis * input
 	input.y = 0.0

@@ -1,7 +1,10 @@
 extends Area3D
+class_name MeleeAttackArea
 
 @onready var collision_shape: CollisionShape3D = $CollisionShape3d
 
+var attacker: Node = null
+var friendly_fire: bool = false
 
 
 # Called when the node enters the scene tree for the first time.
@@ -18,7 +21,16 @@ func deactivate():
 
 
 func _on_body_entered(body: Node3D) -> void:
+	if body == attacker:
+		return
 	if body.is_in_group("damageables"):
-		var impact_point := global_position - body.global_position
-		var force := -impact_point
-		body.damage(impact_point, force)
+		var can_damage: bool = true
+		if not friendly_fire and attacker != null:
+			if body.is_in_group("players"):
+				can_damage = !attacker.is_in_group("players")
+			elif body.is_in_group("enemies"):
+				can_damage = !attacker.is_in_group("enemies")
+		if can_damage:
+			var impact_point := global_position - body.global_position
+			var force := -impact_point
+			body.damage(impact_point, force)
