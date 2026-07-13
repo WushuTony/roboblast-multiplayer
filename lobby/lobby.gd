@@ -11,7 +11,14 @@ var headless_mode: bool = (DisplayServer.get_name() == "headless")
 var level: Level = null
 var level_idx: int = -1
 
+var default_content_scale_mode: Window.ContentScaleMode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
+
 # Lifecycle
+
+func _enter_tree() -> void:
+	if (!headless_mode):
+		default_content_scale_mode = get_tree().root.content_scale_mode
+		get_tree().root.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
 
 func _ready() -> void:
 	# Listen to multiplayer signals
@@ -33,8 +40,12 @@ func _start_server_common() -> void:
 	# Only spawn a player for the host if not in headless mode
 	# Wait for someone to join otherwise before starting the game
 	if (!headless_mode):
+		get_tree().root.content_scale_mode = default_content_scale_mode
 		load_level(0) # start the first level
 		spawn_player(1) # server always has ID 1
+
+func _start_client_common() -> void:
+	get_tree().root.content_scale_mode = default_content_scale_mode
 
 func start_enet_server(port: int = DEFAULT_PORT) -> void:
 	var peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
@@ -48,6 +59,7 @@ func start_enet_client(address: String, port: int = DEFAULT_PORT) -> void:
 	peer.create_client(address, port)
 	peer.get_host().compress(ENetConnection.COMPRESS_RANGE_CODER)
 	multiplayer.multiplayer_peer = peer
+	_start_client_common()
 
 func start_websocket_server(port: int = DEFAULT_PORT) -> void:
 	var peer: WebSocketMultiplayerPeer = WebSocketMultiplayerPeer.new()
@@ -59,6 +71,7 @@ func start_websocket_client(url: String) -> void:
 	var peer: WebSocketMultiplayerPeer = WebSocketMultiplayerPeer.new()
 	peer.create_client(url)
 	multiplayer.multiplayer_peer = peer
+	_start_client_common()
 
 # Network Events
 
