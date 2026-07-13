@@ -296,9 +296,9 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = "Host"
 
-[node name="Level" type="Node" parent="." unique_id=470910834]
-
 [node name="Players" type="Node" parent="." unique_id=1556107010]
+
+[node name="Level" type="Node" parent="." unique_id=470910834]
 
 [connection signal="pressed" from="UI/Start/ENet/Join/VBox/Start" to="UI" method="_on_enet_join_pressed"]
 [connection signal="pressed" from="UI/Start/ENet/Host/VBox/Start" to="UI" method="_on_enet_host_pressed"]
