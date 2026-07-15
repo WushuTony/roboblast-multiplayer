@@ -3,7 +3,13 @@ extends RigidBody3D
 const COIN_SCENE := preload("../player/coin/coin.tscn")
 const PUFF_SCENE := preload("smoke_puff/smoke_puff.tscn")
 
+## Movement speed when chasing a player
 @export var move_speed: float = 3.0
+## Delay after losing a player before targeting another one
+@export var switch_delay: float = 1.0
+## Cooldown between target switch if multiple players are in range but the target becomes unreachable
+@export var navigation_switch_cooldown: float = 1.0
+## Coins spawned when killed
 @export var coins_count: int = 5
 
 @onready var _reaction_animation_player: AnimationPlayer = $ReactionLabel/AnimationPlayer
@@ -13,15 +19,21 @@ const PUFF_SCENE := preload("smoke_puff/smoke_puff.tscn")
 @onready var _death_collision_shape: CollisionShape3D = $DeathCollisionShape
 @onready var _defeat_sound: AudioStreamPlayer3D = $DefeatSound
 
-@onready var _target: Node3D = null
-@onready var _alive: bool = true
+var _switch_timer: float = 0.0
+var _navigation_switch_timer: float = 0.0
+var _target_index: int = -1
+var _targets: Array[Node3D] = []
+var _alive: bool = true
 
 
 func _ready() -> void:
-	_navigation_agent.max_speed = move_speed
-	set_avoidance_enabled(_navigation_agent.avoidance_enabled)
-	_detection_area.body_entered.connect(_on_body_entered)
-	_detection_area.body_exited.connect(_on_body_exited)
+	if is_multiplayer_authority():
+		_navigation_agent.max_speed = move_speed
+		set_avoidance_enabled(_navigation_agent.avoidance_enabled)
+		_detection_area.body_entered.connect(_on_body_entered)
+		_detection_area.body_exited.connect(_on_body_exited)
+	else:
+		set_physics_process(false)
 	_beetle_skin.idle()
 
 
@@ -35,12 +47,36 @@ func set_avoidance_enabled(enabled: bool) -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if not _alive:
+	if not _alive or not is_multiplayer_authority():
 		return
 
-	if _target != null:
-		_navigation_agent.target_position = _target.global_position
-		var target_look_position: Vector3 = _target.global_position
+	if _target_index < 0:
+		_switch_timer = max(_switch_timer - delta, 0.0)
+		if _switch_timer <= 0.0 and not _targets.is_empty():
+			# We could have a better heuristic (e.g. target the closest player or
+			# a player in line of sight), but for now the 1st player detected will do
+			_target_index = 0
+			_navigation_agent.target_position = _targets[_target_index].global_position
+			_found_target.rpc()
+
+	# If we're looking at a player that is out of reach,
+	# check if any other player is on the same navmesh
+	if _target_index >= 0 and _targets.size() > 1 and not _navigation_agent.is_target_reachable():
+		_navigation_switch_timer += delta
+		if _navigation_switch_timer >= navigation_switch_cooldown:
+			for index in _targets.size():
+				if index == _target_index:
+					continue
+				_navigation_agent.target_position = _targets[index].global_position
+				if _navigation_agent.is_target_reachable():
+					_target_index = index
+					break
+			_navigation_switch_timer = 0.0
+
+	var target: Node3D = _targets[_target_index] if (_target_index >= 0 and _target_index < _targets.size()) else null
+	if target != null:
+		_navigation_agent.target_position = target.global_position
+		var target_look_position: Vector3 = target.global_position
 		target_look_position.y = global_position.y
 		if target_look_position != Vector3.ZERO:
 			look_at(target_look_position)
@@ -86,7 +122,22 @@ func move(motion: Vector3) -> void:
 			force.y = 0.5
 			force *= 10.0
 			collider.damage(impact_point, force)
-			_beetle_skin.attack()
+			_play_attack.rpc()
+
+
+@rpc("authority", "call_local", "reliable")
+func _found_target():
+	_reaction_animation_player.play("found_player")
+
+
+@rpc("authority", "call_local", "reliable")
+func _lost_target():
+	_reaction_animation_player.play("lost_player")
+
+
+@rpc("authority", "call_local", "reliable")
+func _play_attack():
+	_beetle_skin.attack()
 
 
 func damage(impact_point: Vector3, force: Vector3) -> void:
@@ -109,7 +160,8 @@ func _receive_damage(impact_point: Vector3, force: Vector3):
 
 	_detection_area.body_entered.disconnect(_on_body_entered)
 	_detection_area.body_exited.disconnect(_on_body_exited)
-	_target = null
+	_target_index = -1
+	_targets.clear()
 	_navigation_agent.target_position = global_position
 	set_avoidance_enabled(false)
 	_death_collision_shape.set_deferred("disabled", false)
@@ -138,13 +190,18 @@ func _receive_damage(impact_point: Vector3, force: Vector3):
 
 func _on_body_entered(body: Node3D) -> void:
 	if body is Player:
-		_target = body
-		_reaction_animation_player.play("found_player")
+		_targets.append(body)
 
 
 func _on_body_exited(body: Node3D) -> void:
 	if body is Player:
-		_target = null
-		_navigation_agent.target_position = global_position
-		_reaction_animation_player.play("lost_player")
-		_beetle_skin.idle()
+		var body_index: int = _targets.find(body)
+		if _target_index == body_index:
+			_target_index = -1
+			_switch_timer = switch_delay
+			_navigation_agent.target_position = global_position
+			_lost_target.rpc()
+			_beetle_skin.idle()
+		elif _target_index > body_index:
+			_target_index = _target_index - 1
+		_targets.remove_at(body_index)

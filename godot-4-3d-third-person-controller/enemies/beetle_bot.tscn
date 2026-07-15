@@ -4,6 +4,17 @@
 [ext_resource type="PackedScene" uid="uid://cxt8d0d4ift6" path="res://godot-4-3d-third-person-controller/enemies/beetle_bot/beetlebot_skin.tscn" id="2_1wpkj"]
 [ext_resource type="AudioStream" uid="uid://c66nnoqtanfw2" path="res://godot-4-3d-third-person-controller/enemies/sounds/robot_defeat.wav" id="3_w5eam"]
 
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_2ywuq"]
+properties/0/path = NodePath(".:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:rotation")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+properties/2/path = NodePath("BeetlebotSkin:state")
+properties/2/spawn = true
+properties/2/replication_mode = 2
+
 [sub_resource type="Animation" id="Animation_aq46q"]
 length = 0.001
 tracks/0/type = "value"
@@ -109,6 +120,9 @@ axis_lock_angular_z = true
 lock_rotation = true
 continuous_cd = true
 script = ExtResource("1_mefon")
+
+[node name="ClientSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1732642700]
+replication_config = SubResource("SceneReplicationConfig_2ywuq")
 
 [node name="ReactionLabel" type="Label3D" parent="." unique_id=209592691]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8034, 0)
