@@ -185,10 +185,9 @@ func spawn_player(peer_id: int) -> void:
 	
 	# Add player to level and teleport to spawn position
 	var player_index: int = $Players.get_child_count()
-	$Players.add_child(player)
 	var spawn_location: Vector3 = level.get_spawn_location(player_index)
-	player.teleport.rpc(spawn_location, level.get_spawn_rotation(player_index))
-	player._start_position = spawn_location
+	player.transform.origin = spawn_location
+	$Players.add_child(player)
 
 func remove_player(peer_id: int) -> void:
 	# Find player node
