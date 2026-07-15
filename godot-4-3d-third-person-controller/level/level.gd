@@ -24,3 +24,26 @@ func get_spawn_location(index: int) -> Vector3:
 
 func get_spawn_rotation(index: int) -> Vector3:
 	return spawn_points[index].rotation
+
+# This node is meant to attach objects that shouldn't move with their spawner
+# (e.g. bullets) or be included in the navmesh rebuild (e.g. broken boxes)
+static func get_dynamic_objects_node(caller: Node) -> Node:
+	if caller == null:
+		push_error("get_dynamic_objects_node called but the caller node is null")
+		return null
+	var dynamic_objects: Node = caller.get_node_or_null("/root/DynamicObjects")
+	if dynamic_objects == null:
+		dynamic_objects = Node.new()
+		dynamic_objects.set_name("DynamicObjects")
+		caller.get_tree().get_root().add_child(dynamic_objects)
+	return dynamic_objects
+
+# This function is meant to reparent objects that shouldn't move with their spawner
+# (e.g. bullets) or be included in the navmesh rebuild (e.g. broken boxes)
+static func reparent_target_to_dynamic_objects(caller: Node, target: Node) -> void:
+	var dynamic_objects: Node = get_dynamic_objects_node(caller)
+	if dynamic_objects != null:
+		if target.get_parent() != null:
+			target.reparent(dynamic_objects)
+		else:
+			dynamic_objects.add_child(target)

@@ -3,15 +3,12 @@ extends CharacterBody3D
 
 signal weapon_switched(weapon_name: String)
 
-const BULLET_SCENE := preload("bullet.tscn")
 const COIN_SCENE := preload("coin/coin.tscn")
 
 enum WEAPON_TYPE { DEFAULT, GRENADE }
 
 ## Character maximum run speed on the ground.
 @export var move_speed := 8.0
-## Speed of shot bullets.
-@export var bullet_speed := 10.0
 ## Forward impulse after a melee attack.
 @export var attack_impulse := 10.0
 ## Movement acceleration (how fast character achieve maximum speed)
@@ -31,9 +28,10 @@ enum WEAPON_TYPE { DEFAULT, GRENADE }
 @export var shoot_cooldown := 0.5
 ## Grenade cooldown
 @export var grenade_cooldown := 0.5
-## If projectiles or melee attacks can damage other players
+## If melee attacks can damage other players
 @export var friendly_fire: bool = false
 
+@onready var _bullet_spawner: BulletSpawner = $BulletSpawner
 @onready var _rotation_root: Node3D = $CharacterRotationRoot
 @onready var _camera_controller: CameraController = $CameraController
 @onready var _camera: Camera3D = $CameraController/PlayerCamera
@@ -123,6 +121,7 @@ func set_multiplayer_data():
 	set_multiplayer_authority(peer_id, recursive)
 	if !recursive:
 		$ClientSynchronizer.set_multiplayer_authority(peer_id, false)
+		_bullet_spawner.set_multiplayer_authority(peer_id, false)
 	
 	if (local):
 		# Activate the camera if local
@@ -272,16 +271,11 @@ func attack() -> void:
 
 
 func shoot() -> void:
-	var bullet := BULLET_SCENE.instantiate()
-	bullet.shooter = self
-	bullet.friendly_fire = friendly_fire
+	if not local:
+		return
 	var origin := global_position + Vector3.UP
 	var aim_target := _camera_controller.get_aim_target()
-	var aim_direction := (aim_target - origin).normalized()
-	bullet.velocity = aim_direction * bullet_speed
-	bullet.distance_limit = 14.0
-	get_parent().add_child(bullet)
-	bullet.global_position = origin
+	var _bullet: Bullet = _bullet_spawner.shoot(origin, aim_target)
 
 
 @rpc("authority", "call_local", "reliable")
@@ -332,6 +326,8 @@ func play_foot_step_sound() -> void:
 
 
 func damage(_impact_point: Vector3, force: Vector3) -> void:
+	if not is_multiplayer_authority():
+		return
 	# Always throws character up
 	force.y = abs(force.y)
 	velocity = force.limit_length(max_throwback_force)

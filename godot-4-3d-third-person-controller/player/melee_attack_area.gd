@@ -23,7 +23,7 @@ func deactivate():
 func _on_body_entered(body: Node3D) -> void:
 	if body == attacker:
 		return
-	if body.is_in_group("damageables"):
+	if body.is_multiplayer_authority() and body.is_in_group("damageables"):
 		var can_damage: bool = true
 		if not friendly_fire and attacker != null:
 			if body.is_in_group("players"):

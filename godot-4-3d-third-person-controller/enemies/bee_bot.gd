@@ -1,14 +1,12 @@
 extends RigidBody3D
 
 const COIN_SCENE := preload("../player/coin/coin.tscn")
-const BULLET_SCENE := preload("../player/bullet.tscn")
 const PUFF_SCENE := preload("smoke_puff/smoke_puff.tscn")
 
 @export var shoot_timer := 1.5
-@export var bullet_speed := 6.0
 @export var coins_count := 5
-@export var friendly_fire: bool = false
 
+@onready var _bullet_spawner: BulletSpawner = $BulletSpawner
 @onready var _reaction_animation_player: AnimationPlayer = $ReactionLabel/AnimationPlayer
 @onready var _flying_animation_player: AnimationPlayer = $MeshRoot/AnimationPlayer
 @onready var _detection_area: Area3D = $PlayerDetectionArea
@@ -28,6 +26,8 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if not is_multiplayer_authority():
+		return
 	if _target != null and _alive:
 		var target_transform := transform.looking_at(_target.global_position)
 		transform = transform.interpolate_with(target_transform, 0.1)
@@ -37,19 +37,17 @@ func _physics_process(delta: float) -> void:
 			_bee_root.play_spit_attack()
 			_shoot_count -= shoot_timer
 
-			var bullet := BULLET_SCENE.instantiate()
-			bullet.shooter = self
-			bullet.friendly_fire = friendly_fire
 			var origin := global_position
 			var target := _target.global_position + Vector3.UP
-			var aim_direction := (target - global_position).normalized()
-			bullet.velocity = aim_direction * bullet_speed
-			bullet.distance_limit = 14.0
-			get_parent().add_child(bullet)
-			bullet.global_position = origin
+			var _bullet: Bullet = _bullet_spawner.shoot(origin, target)
 
 
 func damage(impact_point: Vector3, force: Vector3) -> void:
+	_receive_damage.rpc(impact_point, force)
+
+
+@rpc("authority", "call_local", "reliable")
+func _receive_damage(impact_point: Vector3, force: Vector3):
 	force = force.limit_length(3.0)
 	apply_impulse(force, impact_point)
 
@@ -66,6 +64,7 @@ func damage(impact_point: Vector3, force: Vector3) -> void:
 	_target = null
 	_death_mesh_collider.set_deferred("disabled", false)
 
+	freeze = false
 	gravity_scale = 1.0
 	_bee_root.play_poweroff()
 
@@ -80,6 +79,9 @@ func damage(impact_point: Vector3, force: Vector3) -> void:
 		get_parent().add_child(coin)
 		coin.global_position = global_position
 		coin.spawn()
+
+	await get_tree().create_timer(0.5).timeout
+
 	queue_free()
 
 

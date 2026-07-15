@@ -3,7 +3,10 @@ extends Node3D
 # Delay the navmesh bake in case multiple boxes gets destroyed in quick succession
 const NAVMESH_BAKE_DELAY: float = 0.25
 
+@onready var _client_synchronizer: MultiplayerSynchronizer = $ClientSynchronizer
+
 var _boxes: Array[Box] = []
+var _destroyed_boxes: Array[StringName] = []
 var _navigation_region: NavigationRegion3D = null
 
 var is_pending_navmesh_bake: bool = false
@@ -21,8 +24,20 @@ func _ready():
 
 	for child in get_children():
 		if child is Box:
-			child.is_destroyed.connect(on_box_destroyed)
+			child.on_destroyed.connect(on_box_destroyed)
 			_boxes.append(child)
+
+	# This callback makes sure any late joiner doesn't see boxes that are already destroyed
+	_client_synchronizer.delta_synchronized.connect(_on_delta_synchronized)
+
+
+func _on_delta_synchronized():
+	for box in _boxes:
+		if _destroyed_boxes.has(box.name):
+			print_verbose(box.name, " was destroyed, removing it from the scene")
+			box.prepare_destroy()
+	
+	_client_synchronizer.delta_synchronized.disconnect(_on_delta_synchronized)
 
 
 func _process(delta: float):
@@ -36,7 +51,11 @@ func _process(delta: float):
 			set_process(false)
 
 
-func on_box_destroyed(_box: Box):
+func on_box_destroyed(box: Box):
+	_boxes.erase(box)
+	if is_multiplayer_authority():
+		_destroyed_boxes.append(box.name)
+	
 	if _navigation_region == null or not _navigation_region.enabled:
 		return
 

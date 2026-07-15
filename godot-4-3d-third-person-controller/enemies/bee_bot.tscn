@@ -2,7 +2,16 @@
 
 [ext_resource type="Script" uid="uid://cek4nujsmemif" path="res://godot-4-3d-third-person-controller/enemies/bee_bot.gd" id="1_eehkx"]
 [ext_resource type="PackedScene" uid="uid://4nwp6xgihjc7" path="res://godot-4-3d-third-person-controller/enemies/bee_bot/bee_root.tscn" id="2_btoc7"]
+[ext_resource type="Script" uid="uid://k16jhrw5hsil" path="res://godot-4-3d-third-person-controller/player/bullet_spawner.gd" id="2_t27cg"]
 [ext_resource type="AudioStream" uid="uid://c66nnoqtanfw2" path="res://godot-4-3d-third-person-controller/enemies/sounds/robot_defeat.wav" id="3_1gs12"]
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_t27cg"]
+properties/0/path = NodePath(".:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:rotation")
+properties/1/spawn = true
+properties/1/replication_mode = 1
 
 [sub_resource type="Animation" id="Animation_3qg81"]
 length = 0.001
@@ -172,8 +181,19 @@ size = Vector3(0.1, 0.5, 1)
 [node name="FlyingEnemy" type="RigidBody3D" unique_id=2019485036 groups=["damageables", "enemies", "targeteables"]]
 gravity_scale = 0.0
 sleeping = true
+freeze = true
 continuous_cd = true
 script = ExtResource("1_eehkx")
+
+[node name="ClientSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1345791973]
+replication_config = SubResource("SceneReplicationConfig_t27cg")
+
+[node name="BulletSpawner" type="MultiplayerSpawner" parent="." unique_id=952112473]
+_spawnable_scenes = PackedStringArray("uid://bguebyvtegnv8")
+spawn_path = NodePath(".")
+script = ExtResource("2_t27cg")
+bullet_speed = 6.0
+metadata/_custom_type_script = "uid://k16jhrw5hsil"
 
 [node name="ReactionLabel" type="Label3D" parent="." unique_id=992890129]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.23854, 0)

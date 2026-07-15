@@ -90,6 +90,11 @@ func move(motion: Vector3) -> void:
 
 
 func damage(impact_point: Vector3, force: Vector3) -> void:
+	_receive_damage.rpc(impact_point, force)
+
+
+@rpc("authority", "call_local", "reliable")
+func _receive_damage(impact_point: Vector3, force: Vector3):
 	lock_rotation = false
 	force = force.limit_length(3.0)
 	apply_impulse(force, impact_point)
@@ -125,6 +130,9 @@ func damage(impact_point: Vector3, force: Vector3) -> void:
 		get_parent().add_child(coin)
 		coin.global_position = global_position
 		coin.spawn()
+
+	await get_tree().create_timer(0.5).timeout
+
 	queue_free()
 
 

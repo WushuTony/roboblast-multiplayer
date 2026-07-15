@@ -38,7 +38,7 @@ func _ready() -> void:
 		change_instruction(INSTRUCTION_TYPES.KEYBOARD)
 
 
-func _demo_page_root_gui_input(event: InputEvent) -> void:
+func _demo_page_root_gui_input(_event: InputEvent) -> void:
 	if demo_page_root.is_visible():
 		demo_page_root.accept_event()
 

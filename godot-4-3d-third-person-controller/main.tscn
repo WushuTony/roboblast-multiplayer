@@ -48,6 +48,11 @@ fog_light_energy = 2.99
 volumetric_fog_density = 0.001
 volumetric_fog_emission = Color(1, 1, 1, 1)
 
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_e0bje"]
+properties/0/path = NodePath(".:_destroyed_boxes")
+properties/0/spawn = true
+properties/0/replication_mode = 2
+
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_le7wx"]
 fractal_type = 0
 
@@ -441,6 +446,9 @@ skeleton = NodePath("../../..")
 
 [node name="Boxes" type="Node3D" parent="NavigationRegion3D" unique_id=1439308871]
 script = ExtResource("9_e0bje")
+
+[node name="ClientSynchronizer" type="MultiplayerSynchronizer" parent="NavigationRegion3D/Boxes" unique_id=1942565842]
+replication_config = SubResource("SceneReplicationConfig_e0bje")
 
 [node name="Box2" parent="NavigationRegion3D/Boxes" unique_id=1483145335 instance=ExtResource("12_xvr0j")]
 transform = Transform3D(0.91126, 0, 0.411832, 0, 1, 0, -0.411832, 0, 0.91126, -6.60338, 1.01478, 7.9387)
