@@ -78,6 +78,10 @@ func _enter_tree() -> void:
 	local = (peer_id == multiplayer.get_unique_id())
 	set_physics_process(local)
 
+func _exit_tree() -> void:
+	if local:
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+
 func _ready() -> void:
 	if local and !get_tree().paused:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED

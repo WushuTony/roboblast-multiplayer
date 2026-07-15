@@ -2,6 +2,12 @@ extends CanvasLayer
 
 @onready var lobby: Lobby = get_parent()
 
+func _ready():
+	multiplayer.server_disconnected.connect(_on_server_disconnected)
+
+func _on_server_disconnected():
+	show()
+
 # ENet
 
 func _on_enet_join_pressed():

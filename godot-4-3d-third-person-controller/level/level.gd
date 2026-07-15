@@ -19,6 +19,11 @@ func _ready() -> void:
 		var missing_spawn_count: int = Lobby.MAX_PLAYERS - spawn_points.size()
 		push_error(_spawn_points.name + " is missing " + str(missing_spawn_count) + " child" + ("ren" if (missing_spawn_count > 1) else "") + " Node3D")
 
+func _exit_tree() -> void:
+	var dynamic_objects: Node = get_node_or_null("/root/DynamicObjects")
+	if dynamic_objects != null:
+		dynamic_objects.queue_free()
+
 func get_spawn_location(index: int) -> Vector3:
 	return spawn_points[index].position
 

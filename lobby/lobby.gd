@@ -102,7 +102,11 @@ func _on_connection_failed() -> void:
 	pass
 
 func _on_server_disconnected() -> void:
-	pass
+	multiplayer.multiplayer_peer.close()
+	multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
+	
+	default_content_scale_mode = get_tree().root.content_scale_mode
+	get_tree().root.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
 
 # Level Management
 
