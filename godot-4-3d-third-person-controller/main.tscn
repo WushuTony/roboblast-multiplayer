@@ -20,6 +20,7 @@
 [ext_resource type="PackedScene" uid="uid://oxyn25v5khuk" path="res://godot-4-3d-third-person-controller/enemies/beetle_bot.tscn" id="14_tmmem"]
 [ext_resource type="PackedScene" uid="uid://bi31qtqv1sf2s" path="res://godot-4-3d-third-person-controller/environment/flowers/flower_patch.tscn" id="15_jqya0"]
 [ext_resource type="PackedScene" uid="uid://cnj0t3ad178q6" path="res://godot-4-3d-third-person-controller/demo_page/demo_page.tscn" id="16_qr75n"]
+[ext_resource type="Script" uid="uid://qegpi3hjfxcl" path="res://godot-4-3d-third-person-controller/enemies/bots_container.gd" id="17_7a44n"]
 [ext_resource type="AudioStream" uid="uid://bveh08m6w5ryf" path="res://godot-4-3d-third-person-controller/level/music/mountain.mp3" id="17_mil5a"]
 [ext_resource type="Script" uid="uid://c4njlfc5hy0ow" path="res://godot-4-3d-third-person-controller/stutter_fixes.gd" id="20_xuqvo"]
 [ext_resource type="PackedScene" uid="uid://bq562nfq7puh" path="res://godot-4-3d-third-person-controller/player/grenade.tscn" id="21_qsp4k"]
@@ -80,6 +81,11 @@ subdivide_depth = 30
 [sub_resource type="BoxShape3D" id="BoxShape3D_gym67"]
 size = Vector3(130, 6, 130)
 
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_cxhwh"]
+properties/0/path = NodePath(".:_killed_bots")
+properties/0/spawn = true
+properties/0/replication_mode = 2
+
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_4kwk8"]
 noise_type = 2
 seed = 2
@@ -90,7 +96,7 @@ fractal_octaves = 1
 noise = SubResource("FastNoiseLite_4kwk8")
 seamless = true
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_10hq7"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_7a44n"]
 resource_local_to_scene = true
 render_priority = 0
 shader = ExtResource("23_seu75")
@@ -123,7 +129,7 @@ fractal_octaves = 2
 noise = SubResource("FastNoiseLite_wnnmc")
 seamless = true
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_7a44n"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_cxhwh"]
 resource_local_to_scene = true
 render_priority = 0
 shader = ExtResource("24_htxhm")
@@ -143,7 +149,7 @@ fractal_octaves = 1
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_a2w6x"]
 noise = SubResource("FastNoiseLite_sxisx")
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_cxhwh"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_p0afh"]
 resource_local_to_scene = true
 render_priority = 10
 shader = ExtResource("27_0rl1p")
@@ -163,7 +169,7 @@ fractal_octaves = 1
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_s56rg"]
 noise = SubResource("FastNoiseLite_6jv1k")
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_p0afh"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ypgwf"]
 resource_local_to_scene = true
 render_priority = 10
 shader = ExtResource("28_ok6jj")
@@ -1443,6 +1449,10 @@ transform = Transform3D(0.235531, 0, -0.95862, 0, 0.987131, 0, 0.95862, 0, 0.235
 skeleton = NodePath("../..")
 
 [node name="Foes" type="Node3D" parent="." unique_id=741262813]
+script = ExtResource("17_7a44n")
+
+[node name="ClientSynchronizer" type="MultiplayerSynchronizer" parent="Foes" unique_id=557477738]
+replication_config = SubResource("SceneReplicationConfig_cxhwh")
 
 [node name="FlyingEnemy" parent="Foes" unique_id=2019485036 instance=ExtResource("13_012dc")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.0521, 9.25905, 13.7191)
@@ -1716,10 +1726,10 @@ script = null
 visible = false
 
 [node name="Shell" parent="StutterFixes/Explosion" index="0" unique_id=674671704]
-material_override = SubResource("ShaderMaterial_10hq7")
+material_override = SubResource("ShaderMaterial_7a44n")
 
 [node name="Blast" parent="StutterFixes/Explosion" index="1" unique_id=601050963]
-material_override = SubResource("ShaderMaterial_7a44n")
+material_override = SubResource("ShaderMaterial_cxhwh")
 
 [node name="Coin" parent="StutterFixes" unique_id=1505589733 instance=ExtResource("25_jq2sk")]
 visible = false
@@ -1730,10 +1740,10 @@ visible = false
 script = null
 
 [node name="Cube" parent="StutterFixes/smoke_puff/smoke_ball" parent_id_path=PackedInt32Array(1464888597, 1652704592) index="0" unique_id=1623868212]
-material_override = SubResource("ShaderMaterial_cxhwh")
+material_override = SubResource("ShaderMaterial_p0afh")
 
 [node name="Cube" parent="StutterFixes/smoke_puff/smoke_ball2" parent_id_path=PackedInt32Array(1464888597, 1778003220) index="0" unique_id=1623868212]
-material_override = SubResource("ShaderMaterial_p0afh")
+material_override = SubResource("ShaderMaterial_ypgwf")
 
 [node name="SpawnPoints" type="Node" parent="." unique_id=233337308]
 unique_name_in_owner = true

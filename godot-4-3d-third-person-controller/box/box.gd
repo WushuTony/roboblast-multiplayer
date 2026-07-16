@@ -11,11 +11,12 @@ class_name Box
 signal on_destroyed(box: Box)
 
 
-func prepare_destroy():
+func prepare_destroy(delay: float = 0.5):
 	_crate_visual.hide()
 	_collision_shape.set_deferred("disabled", true)
 
-	await get_tree().create_timer(0.5).timeout
+	if delay > 0.0:
+		await get_tree().create_timer(delay).timeout
 
 	queue_free()
 

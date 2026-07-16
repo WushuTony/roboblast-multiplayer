@@ -37,8 +37,8 @@ func _on_delta_synchronized():
 	for box in _boxes:
 		if _destroyed_boxes.has(box.name):
 			print_verbose(box.name, " was destroyed, removing it from the scene")
-			box.prepare_destroy()
-	
+			box.prepare_destroy(0.0)
+
 	_client_synchronizer.delta_synchronized.disconnect(_on_delta_synchronized)
 
 

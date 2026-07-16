@@ -232,7 +232,7 @@ autoplay = &"default"
 [node name="bee_root" parent="MeshRoot" unique_id=551027300 instance=ExtResource("2_btoc7")]
 transform = Transform3D(0.999781, 0.0209424, 0, -0.0164124, 0.783522, 0.621148, 0.0130083, -0.621012, 0.783694, -0.0294347, -0.348716, 0.106444)
 
-[node name="DeathMeshCollider" type="CollisionShape3D" parent="." unique_id=2107340870]
+[node name="DeathCollisionShape" type="CollisionShape3D" parent="." unique_id=2107340870]
 transform = Transform3D(-1, -5.37025e-08, -6.89839e-08, 0, 0.789084, -0.614285, 8.74228e-08, -0.614285, -0.789084, 0, 0.244858, 0.372593)
 shape = SubResource("BoxShape3D_pl7mw")
 disabled = true

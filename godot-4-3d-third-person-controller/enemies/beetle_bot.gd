@@ -1,38 +1,26 @@
-extends RigidBody3D
-
-const PUFF_SCENE := preload("smoke_puff/smoke_puff.tscn")
+extends Bot
+class_name BeetleBot
 
 ## Movement speed when chasing a player
 @export var move_speed: float = 3.0
-## Delay after losing a player before targeting another one
-@export var switch_delay: float = 1.0
 ## Cooldown between target switch if multiple players are in range but the target becomes unreachable
 @export var navigation_switch_cooldown: float = 1.0
-## Coins spawned when killed
-@export var coins_count: int = 5
 
-@onready var _reaction_animation_player: AnimationPlayer = $ReactionLabel/AnimationPlayer
-@onready var _detection_area: Area3D = $PlayerDetectionArea
 @onready var _beetle_skin: Node3D = $BeetlebotSkin
 @onready var _navigation_agent: NavigationAgent3D = $NavigationAgent3D
-@onready var _death_collision_shape: CollisionShape3D = $DeathCollisionShape
-@onready var _defeat_sound: AudioStreamPlayer3D = $DefeatSound
 
-var _switch_timer: float = 0.0
 var _navigation_switch_timer: float = 0.0
-var _target_index: int = -1
-var _targets: Array[Node3D] = []
-var _alive: bool = true
 
 
 func _ready() -> void:
+	super._ready()
+
 	if is_multiplayer_authority():
 		_navigation_agent.max_speed = move_speed
 		set_avoidance_enabled(_navigation_agent.avoidance_enabled)
-		_detection_area.body_entered.connect(_on_body_entered)
-		_detection_area.body_exited.connect(_on_body_exited)
 	else:
 		set_physics_process(false)
+
 	_beetle_skin.idle()
 
 
@@ -124,16 +112,6 @@ func move(motion: Vector3) -> void:
 
 
 @rpc("authority", "call_local", "reliable")
-func _found_target():
-	_reaction_animation_player.play("found_player")
-
-
-@rpc("authority", "call_local", "reliable")
-func _lost_target():
-	_reaction_animation_player.play("lost_player")
-
-
-@rpc("authority", "call_local", "reliable")
 func _attack_player(path: String, _impact_point: Vector3, force: Vector3):
 	var target: Player = get_node_or_null(path)
 	if target != null and target.is_multiplayer_authority():
@@ -142,69 +120,26 @@ func _attack_player(path: String, _impact_point: Vector3, force: Vector3):
 	_beetle_skin.attack()
 
 
-func damage(impact_point: Vector3, force: Vector3) -> void:
-	if not is_multiplayer_authority():
-		return
-	_receive_damage.rpc(impact_point, force)
-
-
-@rpc("authority", "call_local", "reliable")
-func _receive_damage(impact_point: Vector3, force: Vector3):
-	lock_rotation = false
-	force = force.limit_length(3.0)
-	apply_impulse(force, impact_point)
-
+func _cleanup_dead_bot() -> void:
 	if not _alive:
 		return
 
-	_defeat_sound.play()
-	_alive = false
-	_beetle_skin.power_off()
-	set_physics_process(false)
+	super._cleanup_dead_bot()
 
-	if is_multiplayer_authority():
-		_detection_area.body_entered.disconnect(_on_body_entered)
-		_detection_area.body_exited.disconnect(_on_body_exited)
-	_target_index = -1
-	_targets.clear()
-	_navigation_agent.target_position = global_position
-	set_avoidance_enabled(false)
-	_death_collision_shape.set_deferred("disabled", false)
+	set_physics_process(false)
 
 	axis_lock_angular_x = false
 	axis_lock_angular_y = false
 	axis_lock_angular_z = false
-	gravity_scale = 1.0
 
-	await get_tree().create_timer(2).timeout
+	_navigation_agent.target_position = global_position
+	set_avoidance_enabled(false)
 
-	var puff := PUFF_SCENE.instantiate()
-	get_parent().add_child(puff)
-	puff.global_position = global_position
-	await puff.full
-
-	if multiplayer.is_server():
-		Level.spawn_coins(global_position, coins_count)
-
-	await get_tree().create_timer(0.5).timeout
-
-	queue_free()
+	_beetle_skin.power_off()
 
 
-func _on_body_entered(body: Node3D) -> void:
-	if body is Player:
-		_targets.append(body)
+func _reset_target_index() -> void:
+	super._reset_target_index()
 
-
-func _on_body_exited(body: Node3D) -> void:
-	if body is Player:
-		var body_index: int = _targets.find(body)
-		if _target_index == body_index:
-			_target_index = -1
-			_switch_timer = switch_delay
-			_navigation_agent.target_position = global_position
-			_lost_target.rpc()
-			_beetle_skin.idle()
-		elif _target_index > body_index:
-			_target_index -= 1
-		_targets.remove_at(body_index)
+	_navigation_agent.target_position = global_position
+	_beetle_skin.idle()
