@@ -1,6 +1,5 @@
 extends RigidBody3D
 
-const COIN_SCENE := preload("../player/coin/coin.tscn")
 const PUFF_SCENE := preload("smoke_puff/smoke_puff.tscn")
 
 ## Initial delay before shooting the first time after seeing a player
@@ -85,6 +84,8 @@ func _play_spit_attack():
 
 
 func damage(impact_point: Vector3, force: Vector3) -> void:
+	if not is_multiplayer_authority():
+		return
 	_receive_damage.rpc(impact_point, force)
 
 
@@ -101,8 +102,9 @@ func _receive_damage(impact_point: Vector3, force: Vector3):
 
 	_flying_animation_player.stop()
 	_flying_animation_player.seek(0.0, true)
-	_detection_area.body_entered.disconnect(_on_body_entered)
-	_detection_area.body_exited.disconnect(_on_body_exited)
+	if is_multiplayer_authority():
+		_detection_area.body_entered.disconnect(_on_body_entered)
+		_detection_area.body_exited.disconnect(_on_body_exited)
 	_target_index = -1
 	_targets.clear()
 	_death_mesh_collider.set_deferred("disabled", false)
@@ -118,11 +120,9 @@ func _receive_damage(impact_point: Vector3, force: Vector3):
 	get_parent().add_child(puff)
 	puff.global_position = global_position
 	await puff.full
-	for i in range(coins_count):
-		var coin := COIN_SCENE.instantiate()
-		get_parent().add_child(coin)
-		coin.global_position = global_position
-		coin.spawn()
+
+	if multiplayer.is_server():
+		Level.spawn_coins(global_position, coins_count)
 
 	await get_tree().create_timer(0.5).timeout
 
@@ -142,5 +142,5 @@ func _on_body_exited(body: Node3D) -> void:
 			_switch_timer = switch_delay
 			_lost_target.rpc()
 		elif _target_index > body_index:
-			_target_index = _target_index - 1
+			_target_index -= 1
 		_targets.remove_at(body_index)

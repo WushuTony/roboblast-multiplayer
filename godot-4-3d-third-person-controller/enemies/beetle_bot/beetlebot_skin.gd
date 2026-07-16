@@ -7,8 +7,10 @@ extends Node3D
 @onready var _secondary_action_timer : Timer = $SecondaryActionTimer
 
 var state: StringName = "Idle":
-	set(value): if _main_state_machine != null: _main_state_machine.travel(value)
-	get(): return _main_state_machine.get_current_node()
+	set(value):
+		state = value
+		if _main_state_machine != null:
+			_main_state_machine.travel(value)
 
 func _ready():
 	_animation_tree.active = true

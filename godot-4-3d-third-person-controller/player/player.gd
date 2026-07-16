@@ -3,8 +3,6 @@ extends CharacterBody3D
 
 signal weapon_switched(weapon_name: String)
 
-const COIN_SCENE := preload("coin/coin.tscn")
-
 enum WEAPON_TYPE { DEFAULT, GRENADE }
 
 ## Character maximum run speed on the ground.
@@ -46,17 +44,17 @@ enum WEAPON_TYPE { DEFAULT, GRENADE }
 @onready var _step_sound: AudioStreamPlayer3D = $StepSound
 @onready var _landing_sound: AudioStreamPlayer3D = $LandingSound
 
-@onready var _equipped_weapon: WEAPON_TYPE = WEAPON_TYPE.DEFAULT
-@onready var _move_direction := Vector3.ZERO
-@onready var _last_strong_direction := Vector3.FORWARD
-@onready var _gravity: float = -30.0
-@onready var _ground_height: float = 0.0
-@onready var _start_position := global_transform.origin
-@onready var _coins := 0
-@onready var _is_on_floor_buffer := false
-
+@onready var _start_position: Vector3 = global_transform.origin
 @onready var _shoot_cooldown_tick := shoot_cooldown
 @onready var _grenade_cooldown_tick := grenade_cooldown
+
+var _equipped_weapon: WEAPON_TYPE = WEAPON_TYPE.DEFAULT
+var _move_direction: Vector3 = Vector3.ZERO
+var _last_strong_direction: Vector3 = Vector3.FORWARD
+var _gravity: float = -30.0
+var _ground_height: float = 0.0
+var _coins: int = 0
+var _is_on_floor_buffer: bool = false
 
 var peer_id: int = 1 # The peer that controls this player
 var local: bool = true # If this instance is controlled by the local peer
@@ -294,20 +292,30 @@ func reset_position() -> void:
 	transform.origin = _start_position
 
 
-func collect_coin() -> void:
-	_coins += 1
+func collect_coins(count: int = 1) -> void:
+	if not local:
+		return
+	
+	_coins += count
 	_ui_coins_container.update_coins_amount(_coins)
 
 
-func lose_coins() -> void:
-	var lost_coins: int = min(_coins, 5)
+func lose_coins(count: int = 5) -> void:
+	if not local:
+		return
+	
+	var lost_coins: int = min(_coins, count)
+	if lost_coins < 1:
+		return
+	
 	_coins -= lost_coins
-	for i in lost_coins:
-		var coin := COIN_SCENE.instantiate()
-		get_parent().add_child(coin)
-		coin.global_position = global_position
-		coin.spawn(1.5)
 	_ui_coins_container.update_coins_amount(_coins)
+	_server_lost_coins.rpc_id(1, lost_coins)
+
+
+@rpc("authority", "call_local", "reliable")
+func _server_lost_coins(count: int) -> void:
+	Level.spawn_coins(global_position, count, 1.5)
 
 
 func _get_camera_oriented_input() -> Vector3:

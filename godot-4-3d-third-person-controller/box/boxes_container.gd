@@ -24,11 +24,13 @@ func _ready():
 
 	for child in get_children():
 		if child is Box:
-			child.on_destroyed.connect(on_box_destroyed)
+			if multiplayer.is_server():
+				child.on_destroyed.connect(_on_server_box_destroyed)
 			_boxes.append(child)
 
-	# This callback makes sure any late joiner doesn't see boxes that are already destroyed
-	_client_synchronizer.delta_synchronized.connect(_on_delta_synchronized)
+	if not multiplayer.is_server():
+		# This callback makes sure any late joiner doesn't see boxes that are already destroyed
+		_client_synchronizer.delta_synchronized.connect(_on_delta_synchronized)
 
 
 func _on_delta_synchronized():
@@ -51,11 +53,10 @@ func _process(delta: float):
 			set_process(false)
 
 
-func on_box_destroyed(box: Box):
+func _on_server_box_destroyed(box: Box):
 	_boxes.erase(box)
-	if is_multiplayer_authority():
-		_destroyed_boxes.append(box.name)
-	
+	_destroyed_boxes.append(box.name)
+
 	if _navigation_region == null or not _navigation_region.enabled:
 		return
 

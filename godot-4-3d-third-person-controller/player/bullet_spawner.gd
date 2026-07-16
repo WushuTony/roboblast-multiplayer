@@ -1,4 +1,5 @@
-extends MultiplayerSpawner
+@tool
+extends DynamicSpawner
 class_name BulletSpawner
 
 ## Speed of shot bullets.
@@ -8,16 +9,18 @@ class_name BulletSpawner
 ## If projectiles can damage other players/enemies.
 @export var friendly_fire: bool = false
 
-func _enter_tree() -> void:
-	spawn_function = _custom_spawn
+func _init() -> void:
+	if Engine.is_editor_hint():
+		container_name = "Bullets"
+		prefix_owner_name = true
+		use_custom_spawn = true
 
-func _ready() -> void:
-	var dynamic_objects: Node = Level.get_dynamic_objects_node(self)
-	if dynamic_objects != null:
-		var bullets_container = Node.new()
-		bullets_container.set_name("BulletsContainer" + owner.name)
-		dynamic_objects.add_child(bullets_container)
-		set_spawn_path(bullets_container.get_path())
+func _enter_tree() -> void:
+	if Engine.is_editor_hint():
+		return
+	
+	if use_custom_spawn:
+		spawn_function = _custom_bullet_spawn
 
 func shoot(position: Vector3, target_position: Vector3) -> Node:
 	var bullet_index: int = get_spawnable_bullet_index()
@@ -30,7 +33,7 @@ func shoot(position: Vector3, target_position: Vector3) -> Node:
 	}
 	return spawn(spawn_data)
 
-func _custom_spawn(data: Variant) -> Node:
+func _custom_bullet_spawn(data: Variant) -> Node:
 	var bullet_index: int = data.get("index", -1)
 	var bullet_scene: PackedScene = get_bullet_scene(bullet_index)
 	if bullet_scene == null:

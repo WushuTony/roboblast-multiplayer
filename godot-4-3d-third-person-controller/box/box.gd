@@ -1,10 +1,8 @@
 extends RigidBody3D
 class_name Box
 
-const COIN_SCENE := preload("../player/coin/coin.tscn")
-const DESTROYED_BOX_SCENE := preload("destroyed_box.tscn")
-
-const COINS_COUNT := 5
+## Coins spawned when destroyed
+@export var coins_count: int = 5
 
 @onready var _collision_shape: CollisionShape3D = $CollisionShape3d
 @onready var _crate_visual: Node3D = $CrateVisual
@@ -28,32 +26,20 @@ func damage(_impact_point: Vector3, _force: Vector3):
 
 @rpc("authority", "call_local", "reliable")
 func _receive_damage():
-	var dynamic_objects: Node = Level.get_dynamic_objects_node(self)
+	if multiplayer.is_server():
+		Level.spawn_broken_box_with_coins(global_position, coins_count)
 
-	# TODO: Make a multiplayer spawner for coins
-	for i in range(COINS_COUNT):
-		var coin := COIN_SCENE.instantiate()
-		dynamic_objects.add_child(coin)
-		coin.global_position = global_position
-		coin.spawn()
-
-	# TODO: Make a multiplayer spawner for destroyed boxes
-	var destroyed_box := DESTROYED_BOX_SCENE.instantiate()
-	dynamic_objects.add_child(destroyed_box)
-	destroyed_box.global_position = global_position
-
-	play_destroy_sound(dynamic_objects)
+	play_destroy_sound()
 
 	prepare_destroy()
 
 
-func play_destroy_sound(new_parent: Node) -> void:
+func play_destroy_sound() -> void:
 	if not is_instance_valid(_destroy_sound) or _destroy_sound.is_playing():
 		return
 
-	if new_parent != null:
-		# Add it to the parent so it survives after the box is destroyed
-		_destroy_sound.reparent(new_parent)
+	# Add it to the dynamic objects so it survives after the box is destroyed
+	Level.reparent_target_to_dynamic_objects(_destroy_sound)
 
 	_destroy_sound.global_position = global_position
 	_destroy_sound.pitch_scale = randfn(1.0, 0.1)

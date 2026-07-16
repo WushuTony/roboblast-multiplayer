@@ -1,6 +1,5 @@
 extends RigidBody3D
 
-const COIN_SCENE := preload("../player/coin/coin.tscn")
 const PUFF_SCENE := preload("smoke_puff/smoke_puff.tscn")
 
 ## Movement speed when chasing a player
@@ -141,6 +140,8 @@ func _play_attack():
 
 
 func damage(impact_point: Vector3, force: Vector3) -> void:
+	if not is_multiplayer_authority():
+		return
 	_receive_damage.rpc(impact_point, force)
 
 
@@ -158,8 +159,9 @@ func _receive_damage(impact_point: Vector3, force: Vector3):
 	_beetle_skin.power_off()
 	set_physics_process(false)
 
-	_detection_area.body_entered.disconnect(_on_body_entered)
-	_detection_area.body_exited.disconnect(_on_body_exited)
+	if is_multiplayer_authority():
+		_detection_area.body_entered.disconnect(_on_body_entered)
+		_detection_area.body_exited.disconnect(_on_body_exited)
 	_target_index = -1
 	_targets.clear()
 	_navigation_agent.target_position = global_position
@@ -177,11 +179,9 @@ func _receive_damage(impact_point: Vector3, force: Vector3):
 	get_parent().add_child(puff)
 	puff.global_position = global_position
 	await puff.full
-	for i in range(coins_count):
-		var coin := COIN_SCENE.instantiate()
-		get_parent().add_child(coin)
-		coin.global_position = global_position
-		coin.spawn()
+
+	if multiplayer.is_server():
+		Level.spawn_coins(global_position, coins_count)
 
 	await get_tree().create_timer(0.5).timeout
 
@@ -203,5 +203,5 @@ func _on_body_exited(body: Node3D) -> void:
 			_lost_target.rpc()
 			_beetle_skin.idle()
 		elif _target_index > body_index:
-			_target_index = _target_index - 1
+			_target_index -= 1
 		_targets.remove_at(body_index)

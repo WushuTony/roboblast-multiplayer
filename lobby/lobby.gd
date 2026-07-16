@@ -119,21 +119,15 @@ func load_level(new_level_idx: int) -> void:
 	var level_path: String = level_spawner.get_spawnable_scene(new_level_idx)
 	
 	# Free previous level
-	if (level != null): level.queue_free()
+	if (level != null):
+		$Level.remove_child(level)
+		level.queue_free()
 	
 	# Load new level
 	var level_scn: PackedScene = load(level_path)
 	level = level_scn.instantiate()
 	level_idx = new_level_idx
-	#$Level.add_child.call_deferred(level, true)
 	$Level.add_child(level, true)
-	
-	# Listen to level events
-	#level.goal_reached.connect(_on_goal_reached)
-	#level.kill_plane_triggered.connect(_on_kill_plane_triggered)
-	
-	# Teleport players
-	#teleport_players(level.get_spawn_position())
 
 func unload_level() -> void:
 	if (level != null): level.queue_free()
@@ -148,17 +142,6 @@ func next_level() -> void:
 func is_final_level() -> bool:
 	var level_spawner: MultiplayerSpawner = $LevelSpawner
 	return (level_idx == level_spawner.get_spawnable_scene_count() - 1)
-
-# Level Events
-
-#func _on_goal_reached(_player: Player) -> void:
-	## Detect when a player reaches the goal and switch levels
-	#if level.players_pending_goal.is_empty():
-		#next_level()
-#
-#func _on_kill_plane_triggered(_player: Player) -> void:
-	## Detect when a player reaches the kill plane and teleport them back at the last checkpoint
-	#_player.teleport.rpc(level.get_last_checkpoint_position())
 
 # Player Management
 
@@ -200,7 +183,3 @@ func remove_player(peer_id: int) -> void:
 	
 	# Free player
 	player.queue_free()
-
-#func teleport_players(new_pos: Vector3) -> void:
-	#for player: Player in get_players():
-		#player.teleport.rpc(new_pos)

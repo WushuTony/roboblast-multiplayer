@@ -19,8 +19,10 @@ var moving : bool = false : set = set_moving
 @onready var state_machine : AnimationNodeStateMachinePlayback = animation_tree.get("parameters/StateMachine/playback")
 
 var state: StringName = "idle":
-	set(value): if state_machine != null: state_machine.travel(value)
-	get(): return state_machine.get_current_node()
+	set(value):
+		state = value
+		if state_machine != null:
+			state_machine.travel(value)
 
 
 func _ready():
