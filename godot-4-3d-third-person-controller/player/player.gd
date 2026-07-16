@@ -59,6 +59,18 @@ var _is_on_floor_buffer: bool = false
 var peer_id: int = 1 # The peer that controls this player
 var local: bool = true # If this instance is controlled by the local peer
 
+var display_name: String = "":
+	set(value):
+		display_name = value
+		if _username != null and not value.is_empty():
+			_username.text = value
+
+var custom_color: Color = Color.TRANSPARENT:
+	set(value):
+		custom_color = value
+		if _character_skin != null and is_equal_approx(value.a, 1.0):
+			_character_skin.set_color(value)
+
 # Cache inputs and movement state
 var raw_move_input: Vector2 = Vector2.ZERO
 var is_attack_held: bool = false
@@ -109,21 +121,29 @@ func generate_random_hsv_color(color_seed: int) -> Color:
  	)
 
 func set_multiplayer_data():
-#	Give the player model the color of this client
-	_character_skin.set_color(generate_random_hsv_color(peer_id))
-	
-#	Display the username of this client
-	_username.text = "Player " + name
-	
-#	Make sure to only display the username of OTHER players, not yourself
-	_username.visible = !local
-	
 	# Give authority to this client
 	const recursive: bool = false
 	set_multiplayer_authority(peer_id, recursive)
 	if !recursive:
 		$ClientSynchronizer.set_multiplayer_authority(peer_id, false)
 		_bullet_spawner.set_multiplayer_authority(peer_id, false)
+	
+	if local:
+		var lobby: Lobby = get_node("/root/Lobby")
+		if lobby != null:
+			display_name = lobby.local_player_name
+			custom_color = lobby.local_player_color
+	
+	# Give the player model the color of this client
+	var player_color: Color = custom_color if (is_equal_approx(custom_color.a, 1.0)) else generate_random_hsv_color(peer_id)
+	_character_skin.set_color(player_color)
+	
+	# Display the username of this client
+	var player_name: String = display_name if (not display_name.is_empty()) else "Player " + name
+	_username.text = player_name
+	
+	# Make sure to only display the username of OTHER players, not yourself
+	_username.visible = !local
 	
 	if (local):
 		# Activate the camera if local

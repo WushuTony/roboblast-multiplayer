@@ -13,6 +13,9 @@ var level_idx: int = -1
 
 var default_content_scale_mode: Window.ContentScaleMode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
 
+var local_player_name: String = ""
+var local_player_color: Color = Color.TRANSPARENT
+
 # Lifecycle
 
 func _enter_tree() -> void:

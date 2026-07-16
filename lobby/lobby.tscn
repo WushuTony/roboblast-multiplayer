@@ -57,64 +57,80 @@ layout_mode = 2
 text = "RoboBlast: Multiplayer"
 horizontal_alignment = 1
 
-[node name="Join" type="PanelContainer" parent="UI/Start/ENet" unique_id=1760155448]
+[node name="Panel" type="PanelContainer" parent="UI/Start/ENet" unique_id=1760155448]
 layout_mode = 2
 
-[node name="VBox" type="VBoxContainer" parent="UI/Start/ENet/Join" unique_id=1597361803]
+[node name="VBox" type="VBoxContainer" parent="UI/Start/ENet/Panel" unique_id=1597361803]
 layout_mode = 2
 
-[node name="Options" type="GridContainer" parent="UI/Start/ENet/Join/VBox" unique_id=1999029939]
+[node name="Options" type="GridContainer" parent="UI/Start/ENet/Panel/VBox" unique_id=1999029939]
 layout_mode = 2
 columns = 2
 
-[node name="AddressLabel" type="Label" parent="UI/Start/ENet/Join/VBox/Options" unique_id=1097606763]
+[node name="AddressLabel" type="Label" parent="UI/Start/ENet/Panel/VBox/Options" unique_id=1097606763]
 layout_mode = 2
 text = "Address:"
 
-[node name="Address" type="LineEdit" parent="UI/Start/ENet/Join/VBox/Options" unique_id=748805473]
+[node name="Address" type="LineEdit" parent="UI/Start/ENet/Panel/VBox/Options" unique_id=748805473]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "127.0.0.1"
 
-[node name="PortLabel" type="Label" parent="UI/Start/ENet/Join/VBox/Options" unique_id=362821]
+[node name="PortLabel" type="Label" parent="UI/Start/ENet/Panel/VBox/Options" unique_id=362821]
 layout_mode = 2
 text = "Port:"
 
-[node name="Port" type="SpinBox" parent="UI/Start/ENet/Join/VBox/Options" unique_id=1494281130]
+[node name="Port" type="SpinBox" parent="UI/Start/ENet/Panel/VBox/Options" unique_id=1494281130]
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 65535.0
 value = 47218.0
 
-[node name="Start" type="Button" parent="UI/Start/ENet/Join/VBox" unique_id=1375069569]
+[node name="HostButton" type="Button" parent="UI/Start/ENet/Panel/VBox" unique_id=636682018]
+layout_mode = 2
+size_flags_vertical = 3
+text = "Host"
+
+[node name="JoinButton" type="Button" parent="UI/Start/ENet/Panel/VBox" unique_id=1375069569]
 layout_mode = 2
 size_flags_vertical = 3
 text = "Join"
 
-[node name="Host" type="PanelContainer" parent="UI/Start/ENet" unique_id=2017373821]
+[node name="CustomTitle" type="Label" parent="UI/Start/ENet" unique_id=1232765509]
+layout_mode = 2
+text = "Player Customisation"
+horizontal_alignment = 1
+
+[node name="Custom" type="PanelContainer" parent="UI/Start/ENet" unique_id=2066190326]
 layout_mode = 2
 
-[node name="VBox" type="VBoxContainer" parent="UI/Start/ENet/Host" unique_id=658902332]
+[node name="VBox" type="VBoxContainer" parent="UI/Start/ENet/Custom" unique_id=675902590]
 layout_mode = 2
 
-[node name="Options" type="GridContainer" parent="UI/Start/ENet/Host/VBox" unique_id=1779616638]
+[node name="Options" type="GridContainer" parent="UI/Start/ENet/Custom/VBox" unique_id=1062377456]
 layout_mode = 2
 columns = 2
 
-[node name="PortLabel" type="Label" parent="UI/Start/ENet/Host/VBox/Options" unique_id=329703100]
+[node name="NameLabel" type="Label" parent="UI/Start/ENet/Custom/VBox/Options" unique_id=1953231904]
 layout_mode = 2
-text = "Port:"
+text = "Name:"
 
-[node name="Port" type="SpinBox" parent="UI/Start/ENet/Host/VBox/Options" unique_id=400419918]
+[node name="Name" type="LineEdit" parent="UI/Start/ENet/Custom/VBox/Options" unique_id=1544836097]
 layout_mode = 2
 size_flags_horizontal = 3
-max_value = 65535.0
-value = 47218.0
+placeholder_text = "Player Name"
+max_length = 18
 
-[node name="Start" type="Button" parent="UI/Start/ENet/Host/VBox" unique_id=636682018]
+[node name="ColorLabel" type="Label" parent="UI/Start/ENet/Custom/VBox/Options" unique_id=2063235326]
+layout_mode = 2
+text = "Color:"
+
+[node name="ColorPicker" type="ColorPickerButton" parent="UI/Start/ENet/Custom/VBox/Options" unique_id=1239331528]
+custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
 size_flags_vertical = 3
-text = "Host"
+color = Color(1, 1, 1, 1)
+edit_alpha = false
 
 [node name="WebSocket" type="VBoxContainer" parent="UI/Start" unique_id=918090232]
 visible = false
@@ -300,8 +316,8 @@ text = "Host"
 
 [node name="Level" type="Node" parent="." unique_id=470910834]
 
-[connection signal="pressed" from="UI/Start/ENet/Join/VBox/Start" to="UI" method="_on_enet_join_pressed"]
-[connection signal="pressed" from="UI/Start/ENet/Host/VBox/Start" to="UI" method="_on_enet_host_pressed"]
+[connection signal="pressed" from="UI/Start/ENet/Panel/VBox/HostButton" to="UI" method="_on_enet_host_pressed"]
+[connection signal="pressed" from="UI/Start/ENet/Panel/VBox/JoinButton" to="UI" method="_on_enet_join_pressed"]
 [connection signal="pressed" from="UI/Start/WebSocket/Join/VBox/Start" to="UI" method="_on_websocket_join_pressed"]
 [connection signal="pressed" from="UI/Start/WebSocket/Host/VBox/Start" to="UI" method="_on_websocket_host_pressed"]
 [connection signal="pressed" from="UI/Start/Relay/List/VBox/Actions/Refresh" to="UI" method="_on_relay_refresh_pressed"]
