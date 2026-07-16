@@ -120,8 +120,7 @@ func move(motion: Vector3) -> void:
 			# Throws player up a little bit
 			force.y = 0.5
 			force *= 10.0
-			collider.damage(impact_point, force)
-			_play_attack.rpc()
+			_attack_player.rpc(collider.get_path(), impact_point, force)
 
 
 @rpc("authority", "call_local", "reliable")
@@ -135,7 +134,11 @@ func _lost_target():
 
 
 @rpc("authority", "call_local", "reliable")
-func _play_attack():
+func _attack_player(path: String, _impact_point: Vector3, force: Vector3):
+	var target: Player = get_node_or_null(path)
+	if target != null and target.is_multiplayer_authority():
+		target.damage(_impact_point, force)
+	
 	_beetle_skin.attack()
 
 
