@@ -61,3 +61,11 @@ func _custom_spawn(data: Variant) -> Node:
 	var position: Vector3 = data.get("position", Vector3.ZERO)
 	spawned_node.transform.origin = position
 	return spawned_node
+
+func _exit_tree() -> void:
+	if Engine.is_editor_hint():
+		return
+	
+	var spawn_container: Node = get_node_or_null(get_spawn_path())
+	if spawn_container != null:
+		spawn_container.queue_free()
