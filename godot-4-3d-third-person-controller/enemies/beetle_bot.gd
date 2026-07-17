@@ -112,10 +112,10 @@ func move(motion: Vector3) -> void:
 
 
 @rpc("authority", "call_local", "reliable")
-func _attack_player(path: String, _impact_point: Vector3, force: Vector3):
-	var target: Player = get_node_or_null(path)
+func _attack_player(path: String, impact_point: Vector3, force: Vector3):
+	var target: Player = get_node(path)
 	if target != null and target.is_multiplayer_authority():
-		target.damage(_impact_point, force)
+		target.damage(impact_point, force)
 	
 	_beetle_skin.attack()
 

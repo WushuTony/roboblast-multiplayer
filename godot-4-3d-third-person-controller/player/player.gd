@@ -134,6 +134,7 @@ func set_multiplayer_data():
 	if !recursive:
 		$ClientSynchronizer.set_multiplayer_authority(peer_id, false)
 		_bullet_spawner.set_multiplayer_authority(peer_id, false)
+		_grenade_aim_controller._grenade_spawner.set_multiplayer_authority(peer_id, false)
 	
 	if local:
 		var lobby: Lobby = get_node("/root/Lobby")

@@ -67,7 +67,7 @@ func _collect_for_player(path : String):
 	_collect_audio.pitch_scale = randfn(1.0, 0.1)
 	_collect_audio.play()
 	
-	var target: Player = get_node_or_null(path)
+	var target: Player = get_node(path)
 	if target != null:
 		target.collect_coins()
 	
