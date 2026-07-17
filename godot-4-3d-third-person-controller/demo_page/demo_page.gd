@@ -10,19 +10,28 @@ enum INSTRUCTION_TYPES {KEYBOARD, JOYPAD}
 @onready var grid_container_keyboard: GridContainer = %GridContainerKeyboard
 @onready var grid_container_joypad: GridContainer = %GridContainerJoypad
 
-var can_pause_game: bool = true
+var game_paused: bool = true:
+	set(value):
+		game_paused = value
+		if is_inside_tree():
+			get_tree().paused = value
 var headless_mode: bool = (DisplayServer.get_name() == "headless")
-var players_pausing_game: Array[int] = []
+var players_pausing_game: PackedInt32Array = []
+
+
+func _enter_tree() -> void:
+	get_tree().paused = game_paused
 
 
 func _ready() -> void:
-	if can_pause_game:
-		get_tree().paused = true
+	if multiplayer.is_server():
+		multiplayer.peer_connected.connect(_on_peer_connected)
+		multiplayer.peer_disconnected.connect(_on_peer_disconnected)
+		if not headless_mode:
+			players_pausing_game.append(1)
 	
 	if headless_mode:
 		return
-	
-	request_pause_demo.rpc()
 	
 	resume_button.grab_focus.call_deferred()
 	
@@ -38,6 +47,24 @@ func _ready() -> void:
 		change_instruction(INSTRUCTION_TYPES.KEYBOARD)
 
 
+func _on_peer_connected(peer_id: int) -> void:
+	if not multiplayer.is_server():
+		return
+	
+	if game_paused and not players_pausing_game.has(peer_id):
+		players_pausing_game.append(peer_id)
+
+
+func _on_peer_disconnected(peer_id: int) -> void:
+	if not multiplayer.is_server():
+		return
+	
+	if game_paused and players_pausing_game.has(peer_id):
+		players_pausing_game.erase(peer_id)
+		if players_pausing_game.is_empty():
+			game_paused = false
+
+
 func _demo_page_root_gui_input(_event: InputEvent) -> void:
 	if demo_page_root.is_visible():
 		demo_page_root.accept_event()
@@ -49,16 +76,7 @@ func _input(event: InputEvent) -> void:
 	
 	if event.is_action_pressed("pause") and not event.is_echo():
 		demo_page_root.accept_event()
-		if can_pause_game:
-			if demo_page_root.is_visible():
-				request_resume_demo.rpc()
-			else:
-				request_pause_demo.rpc()
-		else:
-			if demo_page_root.is_visible():
-				hide_demo_page()
-			else:
-				show_demo_page()
+		toggle_demo_page()
 
 
 func _shortcut_input(event: InputEvent) -> void:
@@ -82,29 +100,25 @@ func change_instruction(type: int) -> void:
 
 
 @rpc("any_peer", "call_local", "reliable")
-func request_pause_demo() -> void:
+func pause_demo_for_player() -> void:
 	if not multiplayer.is_server():
 		return
 	var peer_id: int = multiplayer.get_remote_sender_id() if (multiplayer.get_remote_sender_id() != 0) else multiplayer.get_unique_id()
 	if not players_pausing_game.has(peer_id):
 		players_pausing_game.append(peer_id)
-	pause_demo.rpc()
-
-
-@rpc("authority", "call_local", "reliable")
-func pause_demo() -> void:
-	if can_pause_game:
-		get_tree().paused = true
-	show_demo_page()
+	game_paused = true
 
 
 func _on_resume_button_pressed() -> void:
-	request_resume_demo.rpc()
+	if game_paused:
+		resume_demo_for_player.rpc_id(1)
+	else:
+		hide_demo_page()
 
 
 @rpc("any_peer", "call_local", "reliable")
-func request_resume_demo() -> void:
-	if not multiplayer.is_server():
+func resume_demo_for_player() -> void:
+	if not game_paused or not multiplayer.is_server():
 		return
 	var peer_id: int = multiplayer.get_remote_sender_id() if (multiplayer.get_remote_sender_id() != 0) else multiplayer.get_unique_id()
 	players_pausing_game.erase(peer_id)
@@ -113,17 +127,28 @@ func request_resume_demo() -> void:
 
 
 @rpc("authority", "call_local", "reliable")
-func resume_demo() -> void:
+func resume_demo(hide_ui: bool = true) -> void:
 	if multiplayer.is_server():
 		players_pausing_game.clear()
-	get_tree().paused = false
-	# If the game has been unpaused once, only show/hide the demo page
-	can_pause_game = false
-	hide_demo_page()
+		game_paused = false
+	if hide_ui:
+		hide_demo_page()
+
+
+func toggle_demo_page() -> void:
+	if demo_page_root.is_visible():
+		if game_paused:
+			resume_demo_for_player.rpc_id(1)
+		else:
+			hide_demo_page()
+	else:
+		if game_paused:
+			pause_demo_for_player.rpc_id(1)
+		show_demo_page()
 
 
 func show_demo_page() -> void:
-	if headless_mode:
+	if headless_mode or demo_page_root.is_visible():
 		return
 	demo_page_root.show()
 	var tween := create_tween()
@@ -133,7 +158,7 @@ func show_demo_page() -> void:
 
 
 func hide_demo_page() -> void:
-	if headless_mode:
+	if headless_mode or not demo_page_root.is_visible():
 		return
 	var tween := create_tween()
 	tween.tween_property(demo_page_root, "modulate", Color.TRANSPARENT, 0.3)
