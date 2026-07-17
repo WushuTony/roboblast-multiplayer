@@ -95,7 +95,7 @@ fractal_octaves = 1
 noise = SubResource("FastNoiseLite_4kwk8")
 seamless = true
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_7a44n"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_10hq7"]
 resource_local_to_scene = true
 render_priority = 0
 shader = ExtResource("23_seu75")
@@ -128,7 +128,7 @@ fractal_octaves = 2
 noise = SubResource("FastNoiseLite_wnnmc")
 seamless = true
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_cxhwh"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_7a44n"]
 resource_local_to_scene = true
 render_priority = 0
 shader = ExtResource("24_htxhm")
@@ -148,7 +148,7 @@ fractal_octaves = 1
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_a2w6x"]
 noise = SubResource("FastNoiseLite_sxisx")
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_p0afh"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_cxhwh"]
 resource_local_to_scene = true
 render_priority = 10
 shader = ExtResource("27_0rl1p")
@@ -168,7 +168,7 @@ fractal_octaves = 1
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_s56rg"]
 noise = SubResource("FastNoiseLite_6jv1k")
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_ypgwf"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_p0afh"]
 resource_local_to_scene = true
 render_priority = 10
 shader = ExtResource("28_ok6jj")
@@ -1705,17 +1705,17 @@ script = ExtResource("20_xuqvo")
 visible = false
 script = null
 
-[node name="grenade" parent="StutterFixes/Grenade" index="1" unique_id=1923784380]
+[node name="grenade" parent="StutterFixes/Grenade" index="2" unique_id=1923784380]
 script = null
 
 [node name="Explosion" parent="StutterFixes" unique_id=1124962162 instance=ExtResource("22_kq58d")]
 visible = false
 
 [node name="Shell" parent="StutterFixes/Explosion" index="0" unique_id=674671704]
-material_override = SubResource("ShaderMaterial_7a44n")
+material_override = SubResource("ShaderMaterial_10hq7")
 
 [node name="Blast" parent="StutterFixes/Explosion" index="1" unique_id=601050963]
-material_override = SubResource("ShaderMaterial_cxhwh")
+material_override = SubResource("ShaderMaterial_7a44n")
 
 [node name="Coin" parent="StutterFixes" unique_id=1505589733 instance=ExtResource("25_jq2sk")]
 visible = false
@@ -1726,19 +1726,25 @@ visible = false
 script = null
 
 [node name="Cube" parent="StutterFixes/smoke_puff/smoke_ball" parent_id_path=PackedInt32Array(1464888597, 1652704592) index="0" unique_id=1623868212]
-material_override = SubResource("ShaderMaterial_p0afh")
+material_override = SubResource("ShaderMaterial_cxhwh")
 
 [node name="Cube" parent="StutterFixes/smoke_puff/smoke_ball2" parent_id_path=PackedInt32Array(1464888597, 1778003220) index="0" unique_id=1623868212]
-material_override = SubResource("ShaderMaterial_ypgwf")
+material_override = SubResource("ShaderMaterial_p0afh")
 
 [node name="SpawnPoints" type="Node" parent="." unique_id=233337308]
 unique_name_in_owner = true
 
 [node name="SpawnPoint" type="Node3D" parent="SpawnPoints" unique_id=689024123]
-transform = Transform3D(0.9659258, 0, -0.25881904, 0, 1, 0, 0.25881904, 0, 0.9659258, 0, 0.5, -15.022)
+transform = Transform3D(0.9659258, 0, -0.25881904, 0, 1, 0, 0.25881904, 0, 0.9659258, 0, 0.5, -15)
 
 [node name="SpawnPoint2" type="Node3D" parent="SpawnPoints" unique_id=446784594]
-transform = Transform3D(0.9659258, 0, -0.25881904, 0, 1, 0, 0.25881904, 0, 0.9659258, 3.5, 0.5, -14.052)
+transform = Transform3D(0.9659258, 0, -0.25881904, 0, 1, 0, 0.25881904, 0, 0.9659258, 3.5, 0.5, -14)
+
+[node name="SpawnPoint3" type="Node3D" parent="SpawnPoints" unique_id=913156325]
+transform = Transform3D(0.9659258, 0, -0.25881904, 0, 1, 0, 0.25881904, 0, 0.9659258, 0, 0.5, -11.5)
+
+[node name="SpawnPoint4" type="Node3D" parent="SpawnPoints" unique_id=2098665837]
+transform = Transform3D(0.9659258, 0, -0.25881904, 0, 1, 0, 0.25881904, 0, 0.9659258, 3.5, 0.5, -10.5)
 
 [editable path="NavigationRegion3D/terrain"]
 [editable path="StutterFixes/Grenade"]

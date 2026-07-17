@@ -3,7 +3,7 @@ class_name Lobby
 
 const PLAYER_SCN: PackedScene = preload("res://godot-4-3d-third-person-controller/player/player.tscn")
 
-const MAX_PLAYERS: int = 2
+const MAX_PLAYERS: int = 4
 const DEFAULT_PORT: int = 47218
 
 var headless_mode: bool = (DisplayServer.get_name() == "headless")

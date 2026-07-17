@@ -30,7 +30,7 @@ func _get_configuration_warnings() -> PackedStringArray:
 
 func _enter_tree() -> void:
 	if Engine.is_editor_hint():
-		spawn_path = get_path()
+		spawn_path = "."
 		return
 	
 	if use_custom_spawn:
