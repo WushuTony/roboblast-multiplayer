@@ -39,8 +39,10 @@ enum WEAPON_TYPE { DEFAULT, GRENADE }
 @onready var _melee_attack_area: MeleeAttackArea = $CharacterRotationRoot/MeleeAttackArea
 @onready var _character_skin: CharacterSkin = $CharacterRotationRoot/CharacterSkin
 @onready var _username: Label3D = $Username
+@onready var _ui_HUD: Control = %HUD
 @onready var _ui_aim_reticle: ColorRect = %AimReticle
 @onready var _ui_coins_container: HBoxContainer = %CoinsContainer
+@onready var _ui_weapon: WeaponUI = %WeaponUI
 @onready var _step_sound: AudioStreamPlayer3D = $StepSound
 @onready var _landing_sound: AudioStreamPlayer3D = $LandingSound
 
@@ -96,6 +98,11 @@ func _ready() -> void:
 	if local and !get_tree().paused:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	_camera_controller.setup(self)
+
+	if _ui_HUD != null:
+		_ui_HUD.visible = local
+	if local and _ui_weapon != null:
+		weapon_switched.connect(_ui_weapon.switch_to)
 	_grenade_aim_controller.visible = false
 	weapon_switched.emit(WEAPON_TYPE.keys()[0])
 

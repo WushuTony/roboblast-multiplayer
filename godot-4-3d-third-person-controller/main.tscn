@@ -1,6 +1,5 @@
 [gd_scene format=3 uid="uid://vmbppkwmx2xk"]
 
-[ext_resource type="PackedScene" uid="uid://mb58xbunfaep" path="res://godot-4-3d-third-person-controller/icons/weapon_ui.tscn" id="1_3u7h6"]
 [ext_resource type="Script" uid="uid://ryebhisgiwvk" path="res://godot-4-3d-third-person-controller/level/level.gd" id="1_xswyf"]
 [ext_resource type="Sky" uid="uid://jonn5eom7asv" path="res://godot-4-3d-third-person-controller/environment/sky/blue_sky.tres" id="2_4bjxn"]
 [ext_resource type="PackedScene" uid="uid://7j15r0ej4fwx" path="res://godot-4-3d-third-person-controller/jumping_pad/jumping_pad.tscn" id="3_w2mh2"]
@@ -201,19 +200,6 @@ spawn_path = NodePath(".")
 script = ExtResource("10_10hq7")
 container_name = "Coins"
 metadata/_custom_type_script = "uid://df51mfiv3a7th"
-
-[node name="weapon_switch_ui" parent="." unique_id=733299686 instance=ExtResource("1_3u7h6")]
-anchors_preset = 2
-anchor_left = 0.0
-anchor_top = 1.0
-anchor_right = 0.0
-anchor_bottom = 1.0
-offset_left = 32.0
-offset_top = -92.0
-offset_right = 192.0
-offset_bottom = -24.0
-grow_horizontal = 1
-grow_vertical = 0
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=750593425]
 environment = SubResource("Environment_allox")

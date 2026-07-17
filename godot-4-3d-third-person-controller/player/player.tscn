@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://c0mo8tek77du4" path="res://godot-4-3d-third-person-controller/player/character_skin.tscn" id="4_ign62"]
 [ext_resource type="Script" uid="uid://dtf17612eybdg" path="res://godot-4-3d-third-person-controller/player/coins_container.gd" id="7_8eehq"]
 [ext_resource type="PackedScene" uid="uid://cqw64w6kb0fyg" path="res://godot-4-3d-third-person-controller/player/coin/coin_visuals/coin_model.tscn" id="8_6qxxt"]
+[ext_resource type="PackedScene" uid="uid://mb58xbunfaep" path="res://godot-4-3d-third-person-controller/icons/weapon_ui.tscn" id="9_upq7c"]
 [ext_resource type="AudioStream" uid="uid://bx0t7f2nuk2lr" path="res://godot-4-3d-third-person-controller/player/sounds/03_step_grass_03.wav" id="10_wx4h4"]
 [ext_resource type="AudioStream" uid="uid://cbcb2d63weegs" path="res://godot-4-3d-third-person-controller/player/sounds/45_landing_01.wav" id="11_3s4i7"]
 
@@ -192,7 +193,8 @@ disabled = true
 
 [node name="CharacterSkin" parent="CharacterRotationRoot" unique_id=84269285 instance=ExtResource("4_ign62")]
 
-[node name="PlayerUI" type="Control" parent="." unique_id=875027664 groups=["camera_mode_toggle"]]
+[node name="HUD" type="Control" parent="." unique_id=875027664 groups=["camera_mode_toggle"]]
+unique_name_in_owner = true
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -201,7 +203,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="AimReticle" type="ColorRect" parent="PlayerUI" unique_id=1261313606]
+[node name="AimReticle" type="ColorRect" parent="HUD" unique_id=1261313606]
 unique_name_in_owner = true
 layout_mode = 0
 anchor_left = 0.5
@@ -217,7 +219,7 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0, 0, 0, 0.290196)
 
-[node name="CoinsContainer" type="HBoxContainer" parent="PlayerUI" unique_id=1774114733]
+[node name="CoinsContainer" type="HBoxContainer" parent="HUD" unique_id=1774114733]
 unique_name_in_owner = true
 layout_mode = 0
 anchor_left = 1.0
@@ -232,13 +234,13 @@ theme_override_constants/separation = 30
 alignment = 2
 script = ExtResource("7_8eehq")
 
-[node name="SubViewportContainer" type="SubViewportContainer" parent="PlayerUI/CoinsContainer" unique_id=1685255978]
+[node name="SubViewportContainer" type="SubViewportContainer" parent="HUD/CoinsContainer" unique_id=1685255978]
 custom_minimum_size = Vector2(96, 96)
 layout_mode = 2
 size_flags_horizontal = 2
 stretch = true
 
-[node name="SubViewport" type="SubViewport" parent="PlayerUI/CoinsContainer/SubViewportContainer" unique_id=1728643708]
+[node name="SubViewport" type="SubViewport" parent="HUD/CoinsContainer/SubViewportContainer" unique_id=1728643708]
 own_world_3d = true
 transparent_bg = true
 handle_input_locally = false
@@ -246,28 +248,43 @@ gui_disable_input = true
 size = Vector2i(96, 96)
 render_target_update_mode = 4
 
-[node name="Coin" parent="PlayerUI/CoinsContainer/SubViewportContainer/SubViewport" unique_id=1210448026 instance=ExtResource("8_6qxxt")]
+[node name="Coin" parent="HUD/CoinsContainer/SubViewportContainer/SubViewport" unique_id=1210448026 instance=ExtResource("8_6qxxt")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.812403)
 
-[node name="godot_coin" parent="PlayerUI/CoinsContainer/SubViewportContainer/SubViewport/Coin" index="0" unique_id=1900794341]
+[node name="godot_coin" parent="HUD/CoinsContainer/SubViewportContainer/SubViewport/Coin" index="0" unique_id=1900794341]
 transform = Transform3D(0.278847, 0, 0.960336, 0, 1, 0, -0.960336, 0, 0.278847, 0, 0, 0)
 y_amplitude = 0.0
 
-[node name="Camera3D" type="Camera3D" parent="PlayerUI/CoinsContainer/SubViewportContainer/SubViewport" unique_id=2131838704]
+[node name="Camera3D" type="Camera3D" parent="HUD/CoinsContainer/SubViewportContainer/SubViewport" unique_id=2131838704]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.604131)
 current = true
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="PlayerUI/CoinsContainer/SubViewportContainer/SubViewport" unique_id=1122932426]
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="HUD/CoinsContainer/SubViewportContainer/SubViewport" unique_id=1122932426]
 
-[node name="CoinsLabel" type="Label" parent="PlayerUI/CoinsContainer" unique_id=1906044772]
+[node name="CoinsLabel" type="Label" parent="HUD/CoinsContainer" unique_id=1906044772]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 64
 text = "0"
 
-[node name="Timer" type="Timer" parent="PlayerUI/CoinsContainer" unique_id=591638833]
+[node name="Timer" type="Timer" parent="HUD/CoinsContainer" unique_id=591638833]
 wait_time = 3.0
 one_shot = true
+
+[node name="WeaponUI" parent="HUD" unique_id=192274453 instance=ExtResource("9_upq7c")]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 2
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 0.0
+anchor_bottom = 1.0
+offset_left = 32.0
+offset_top = -92.0
+offset_right = 192.0
+offset_bottom = -24.0
+grow_horizontal = 1
+grow_vertical = 0
 
 [node name="StepSound" type="AudioStreamPlayer3D" parent="." unique_id=514297165]
 stream = ExtResource("10_wx4h4")
@@ -277,4 +294,4 @@ volume_db = 1.0
 stream = ExtResource("11_3s4i7")
 volume_db = 1.0
 
-[editable path="PlayerUI/CoinsContainer/SubViewportContainer/SubViewport/Coin"]
+[editable path="HUD/CoinsContainer/SubViewportContainer/SubViewport/Coin"]
