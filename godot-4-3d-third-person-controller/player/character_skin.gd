@@ -39,6 +39,7 @@ func set_moving(value : bool):
 		state = "idle"
 
 
+@rpc("any_peer", "call_local", "unreliable_ordered")
 func set_moving_speed(value : float):
 	move_speed = clamp(value, 0.0, 1.0)
 	animation_tree.set(moving_blend_path, move_speed)
