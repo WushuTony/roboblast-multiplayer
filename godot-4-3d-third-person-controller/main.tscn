@@ -1695,6 +1695,7 @@ skeleton = NodePath("../..")
 
 [node name="StageMusic" type="AudioStreamPlayer" parent="." unique_id=2142174248]
 stream = ExtResource("17_mil5a")
+volume_db = -10.0
 autoplay = true
 
 [node name="StutterFixes" type="Node" parent="." unique_id=397390947]
