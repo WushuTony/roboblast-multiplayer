@@ -56,6 +56,7 @@ func _initialise_bullet(bullet: Bullet, position: Vector3, target_position: Vect
 	var aim_direction: Vector3 = (target_position - position).normalized()
 	bullet.velocity = aim_direction * bullet_speed
 	bullet.friendly_fire = friendly_fire
+	bullet.set_multiplayer_authority(get_multiplayer_authority())
 
 func get_spawnable_bullet_index() -> int:
 	if get_spawnable_scene_count() < 1:

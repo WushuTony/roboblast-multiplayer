@@ -43,10 +43,14 @@ func _ready() -> void:
 	var dynamic_objects: Node = Level.get_dynamic_objects_node()
 	if dynamic_objects != null:
 		var container: Node = Node.new()
-		var new_container_name: StringName = (owner.name + container_name) if (prefix_owner_name) else container_name
+		var new_container_name: StringName = _generate_container_name()
 		container.set_name(new_container_name)
 		dynamic_objects.add_child(container)
 		set_spawn_path(container.get_path())
+
+func _generate_container_name() -> StringName:
+	var new_container_name: StringName = (owner.name + container_name) if (prefix_owner_name) else container_name
+	return new_container_name
 
 func _custom_spawn(data: Variant) -> Node:
 	var spawn_container: Node = get_node(get_spawn_path())
@@ -61,6 +65,7 @@ func _custom_spawn(data: Variant) -> Node:
 		return null
 	var position: Vector3 = data.get("position", Vector3.ZERO)
 	spawned_node.transform.origin = position
+	spawned_node.set_multiplayer_authority(get_multiplayer_authority())
 	return spawned_node
 
 func _exit_tree() -> void:

@@ -20,6 +20,10 @@ func _enter_tree() -> void:
 	if use_custom_spawn:
 		spawn_function = _custom_grenade_spawn
 
+func _generate_container_name() -> StringName:
+	var new_container_name: StringName = (_grenade_launcher.get_owner().name + container_name) if (prefix_owner_name) else container_name
+	return new_container_name
+
 func throw(position: Vector3, velocity: Vector3) -> Node:
 	var grenade_index: int = get_spawnable_grenade_index()
 	if grenade_index < 0:
@@ -54,6 +58,7 @@ func _initialise_grenade(grenade: Grenade, position: Vector3, velocity: Vector3)
 	grenade.transform.origin = position
 	grenade._velocity = velocity
 	grenade.friendly_fire = friendly_fire
+	grenade.set_multiplayer_authority(get_multiplayer_authority())
 
 func get_spawnable_grenade_index() -> int:
 	if get_spawnable_scene_count() < 1:

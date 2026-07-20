@@ -19,11 +19,6 @@ radius = 0.1
 top_level = true
 collision_layer = 0
 script = ExtResource("1_ak024")
-max_bounces = null
-bounce_on_bots = null
-bounce_on_players = null
-bounce_on_other_damageables = null
-explode_after_delay = null
 
 [node name="ClientSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1488299886]
 replication_config = SubResource("SceneReplicationConfig_87y71")
