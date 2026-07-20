@@ -18,7 +18,8 @@ const EXPLOSION_SCENE := preload("explosion_visuals/explosion_scene.tscn")
 var shooter: Node = null
 var friendly_fire: bool = false
 
-@onready var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
+# Custom gravity value that matches the trajectory predicted by the grenade launcher
+var gravity: float = 0.0
 
 var _bounces: int = 0
 var _thrown_timer: float = 0.0
@@ -34,6 +35,9 @@ func _ready() -> void:
 		_explosion_start_timer.timeout.connect(_explode)
 	else:
 		set_physics_process(false)
+
+	if is_zero_approx(gravity):
+		gravity = ProjectSettings.get_setting("physics/3d/default_gravity")
 
 
 func _physics_process(delta) -> void:

@@ -57,6 +57,7 @@ func _initialise_grenade(grenade: Grenade, position: Vector3, velocity: Vector3)
 		PhysicsServer3D.body_add_collision_exception(grenade.shooter.get_rid(), grenade.get_rid())
 	grenade.transform.origin = position
 	grenade._velocity = velocity
+	grenade.gravity = _grenade_launcher.gravity
 	grenade.friendly_fire = friendly_fire
 	grenade.set_multiplayer_authority(get_multiplayer_authority())
 
