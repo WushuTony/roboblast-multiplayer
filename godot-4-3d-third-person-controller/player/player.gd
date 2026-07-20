@@ -22,6 +22,8 @@ enum WEAPON_TYPE { DEFAULT, GRENADE }
 @export var stopping_speed := 1.0
 ## Max throwback force after player takes a hit
 @export var max_throwback_force := 15.0
+## Force to bounce off when landing on another player's head or on top of an enemy
+@export var bounce_off_force: Vector3 = Vector3(20.0, 10.0, 20.0)
 ## Projectile cooldown
 @export var shoot_cooldown := 0.5
 ## Grenade cooldown
@@ -83,6 +85,7 @@ var is_aim_held: bool = false
 var is_swapping_weapons: bool = false
 
 var is_using_jumping_pad: bool = false
+var is_bouncing: bool = false
 
 func _enter_tree() -> void:
 	# Set node authority
@@ -254,7 +257,7 @@ func _physics_process(delta: float) -> void:
 
 	velocity.y += _gravity * delta
 
-	if not is_using_jumping_pad:
+	if not is_using_jumping_pad and not is_bouncing:
 		if is_just_jumping:
 			velocity.y += jump_initial_impulse
 		elif is_air_boosting:
@@ -278,6 +281,31 @@ func _physics_process(delta: float) -> void:
 
 	var position_before := global_position
 	move_and_slide()
+
+	# Any "flat" surface can be considered as floor, but in some cases
+	# we might want to exclude them (e.g. when landing on another
+	# player's head or an enemy) and do some custom behaviour
+	# like bounce away and/or take damage
+	is_bouncing = false
+	if is_on_floor():
+		var collision: KinematicCollision3D = get_last_slide_collision()
+		if (collision != null and
+			collision.get_normal().dot(up_direction) >= 0.5):
+			var collider: Object = collision.get_collider()
+			var bounce_direction: Vector3 = Vector3.ZERO
+			if collider.is_in_group("players"):
+				# Bounce forward
+				bounce_direction = (_last_strong_direction + up_direction).normalized()
+			elif collider.is_in_group("enemies"):
+				# Bounce away
+				bounce_direction = (up_direction - _last_strong_direction).normalized()
+
+			if bounce_direction != Vector3.ZERO:
+				is_bouncing = true
+				velocity = bounce_direction * bounce_off_force
+				print_verbose("Bouncing player ", name, " off with velocity ", velocity)
+				move_and_slide()
+
 	var position_after := global_position
 
 	# If velocity is not 0 but the difference of positions after move_and_slide is,

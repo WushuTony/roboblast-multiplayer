@@ -106,6 +106,7 @@ height = 2.65424
 axis_lock_angular_x = true
 axis_lock_angular_y = true
 axis_lock_angular_z = true
+platform_floor_layers = 4294967294
 script = ExtResource("1_rvo1c")
 acceleration = 6.0
 
