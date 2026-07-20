@@ -103,6 +103,8 @@ radius = 0.721485
 height = 2.65424
 
 [node name="Player" type="CharacterBody3D" unique_id=126940387 groups=["damageables", "players"]]
+collision_layer = 8
+collision_mask = 27
 axis_lock_angular_x = true
 axis_lock_angular_y = true
 axis_lock_angular_z = true
@@ -142,6 +144,7 @@ transform = Transform3D(-0.994522, 0.0400013, -0.0965717, 0, 0.92388, 0.382683, 
 
 [node name="CameraSpringArm" type="SpringArm3D" parent="CameraController" unique_id=880047906]
 transform = Transform3D(-1, -5.15034e-15, -8.74228e-08, -3.23484e-08, 0.929023, 0.370022, 8.12178e-08, 0.370022, -0.929023, 0, 2.33984, 0)
+collision_mask = 3
 shape = SubResource("SeparationRayShape3D_gqx4v")
 spring_length = 10.0
 
@@ -157,6 +160,7 @@ fov = 50.0
 [node name="CameraRayCast" type="RayCast3D" parent="CameraController/PlayerCamera" unique_id=1063302130]
 transform = Transform3D(1, 0, -7.10543e-15, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 target_position = Vector3(0, 0, -100)
+collision_mask = 17
 debug_shape_custom_color = Color(0, 0, 0, 0)
 
 [node name="GrenadeLauncher" parent="." unique_id=1056604266 instance=ExtResource("3_54qc4")]
@@ -167,6 +171,7 @@ shape = SubResource("CylinderShape3D_s5n07")
 target_position = Vector3(0, -2.6, 0)
 margin = 0.5
 max_results = 1
+collision_mask = 27
 debug_shape_custom_color = Color(0.658824, 1, 0, 1)
 
 [node name="CharacterRotationRoot" type="Node3D" parent="." unique_id=1616488823]
@@ -185,6 +190,8 @@ libraries/ = SubResource("AnimationLibrary_8t03j")
 
 [node name="MeleeAttackArea" type="Area3D" parent="CharacterRotationRoot" unique_id=166313747]
 transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 0, 0.959482, 1.0525)
+collision_layer = 0
+collision_mask = 25
 script = ExtResource("3_v1vve")
 
 [node name="CollisionShape3d" type="CollisionShape3D" parent="CharacterRotationRoot/MeleeAttackArea" unique_id=2052814824]

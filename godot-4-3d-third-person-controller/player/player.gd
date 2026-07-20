@@ -24,6 +24,8 @@ enum WEAPON_TYPE { DEFAULT, GRENADE }
 @export var max_throwback_force := 15.0
 ## Force to bounce off when landing on another player's head or on top of an enemy
 @export var bounce_off_force: Vector3 = Vector3(20.0, 10.0, 20.0)
+## Add an offset to the spawn location of the coins the player loses
+@export var lost_coins_upward_offset: float = 1.0
 ## Projectile cooldown
 @export var shoot_cooldown := 0.5
 ## Grenade cooldown
@@ -356,7 +358,7 @@ func collect_coins(count: int = 1) -> void:
 	_ui_coins_container.update_coins_amount(_coins)
 
 
-func lose_coins(count: int = 5) -> void:
+func lose_coins(count: int = 5, spawn_coins: bool = true) -> void:
 	if not local:
 		return
 	
@@ -366,12 +368,15 @@ func lose_coins(count: int = 5) -> void:
 	
 	_coins -= lost_coins
 	_ui_coins_container.update_coins_amount(_coins)
-	_server_lost_coins.rpc_id(1, lost_coins)
+	
+	if spawn_coins:
+		var spawn_position: Vector3 = global_position + up_direction * lost_coins_upward_offset
+		_server_lost_coins.rpc_id(1, lost_coins, spawn_position)
 
 
 @rpc("authority", "call_local", "reliable")
-func _server_lost_coins(count: int) -> void:
-	Level.spawn_coins(global_position, count, 1.5)
+func _server_lost_coins(count: int, spawn_position: Vector3) -> void:
+	Level.spawn_coins(spawn_position, count, 1.5)
 
 
 func _get_camera_oriented_input() -> Vector3:

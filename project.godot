@@ -112,10 +112,12 @@ pause={
 
 [layer_names]
 
-3d_physics/layer_1="Entities"
-3d_physics/layer_2="Level"
+3d_physics/layer_1="Dynamic Objects"
+3d_physics/layer_2="Static Objects"
 3d_physics/layer_3="Coins"
-3d_physics/layer_4="Player"
+3d_physics/layer_4="Players"
+3d_physics/layer_5="Bots"
+3d_physics/layer_6="Pushable Objects"
 
 [physics]
 

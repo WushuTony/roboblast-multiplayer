@@ -229,26 +229,62 @@ metadata/_edit_lock_ = true
 [node name="large_trunk" parent="NavigationRegion3D/terrain" index="1" unique_id=1135229518]
 material_override = ExtResource("6_q3y6j")
 
+[node name="StaticBody3D" parent="NavigationRegion3D/terrain/large_trunk" index="0" unique_id=647123211]
+collision_layer = 2
+collision_mask = 13
+
 [node name="large_trunk_001" parent="NavigationRegion3D/terrain" index="2" unique_id=2108439743]
 material_override = ExtResource("6_q3y6j")
+
+[node name="StaticBody3D" parent="NavigationRegion3D/terrain/large_trunk_001" index="0" unique_id=647688130]
+collision_layer = 2
+collision_mask = 13
 
 [node name="large_trunk_002" parent="NavigationRegion3D/terrain" index="3" unique_id=684973634]
 material_override = ExtResource("6_q3y6j")
 
+[node name="StaticBody3D" parent="NavigationRegion3D/terrain/large_trunk_002" index="0" unique_id=1667963571]
+collision_layer = 2
+collision_mask = 13
+
 [node name="large_trunk_003" parent="NavigationRegion3D/terrain" index="4" unique_id=1084252591]
 material_override = ExtResource("6_q3y6j")
+
+[node name="StaticBody3D" parent="NavigationRegion3D/terrain/large_trunk_003" index="0" unique_id=361023997]
+collision_layer = 2
+collision_mask = 13
+
+[node name="StaticBody3D" parent="NavigationRegion3D/terrain/terrain2" parent_id_path=PackedInt32Array(1886230333, 221881130) index="0" unique_id=785256241]
+collision_layer = 2
+collision_mask = 13
 
 [node name="large_trunk_004" parent="NavigationRegion3D/terrain" index="6" unique_id=935325880]
 material_override = ExtResource("6_q3y6j")
 
+[node name="StaticBody3D" parent="NavigationRegion3D/terrain/large_trunk_004" index="0" unique_id=1004003738]
+collision_layer = 2
+collision_mask = 13
+
 [node name="large_trunk_005" parent="NavigationRegion3D/terrain" index="7" unique_id=1893359585]
 material_override = ExtResource("6_q3y6j")
+
+[node name="StaticBody3D" parent="NavigationRegion3D/terrain/large_trunk_005" index="0" unique_id=726427963]
+collision_layer = 2
+collision_mask = 13
 
 [node name="large_trunk_006" parent="NavigationRegion3D/terrain" index="8" unique_id=651535562]
 material_override = ExtResource("6_q3y6j")
 
+[node name="StaticBody3D" parent="NavigationRegion3D/terrain/large_trunk_006" index="0" unique_id=1942153257]
+collision_layer = 2
+collision_mask = 13
+
 [node name="large_trunk_007" parent="NavigationRegion3D/terrain" index="9" unique_id=642404948]
 material_override = ExtResource("6_q3y6j")
+
+[node name="StaticBody3D" parent="NavigationRegion3D/terrain/large_trunk_007" index="0" unique_id=538015989]
+collision_layer = 2
+collision_mask = 13
 
 [node name="Trees" type="Node3D" parent="NavigationRegion3D" unique_id=361007208]
 
@@ -537,7 +573,11 @@ mesh = SubResource("PlaneMesh_eflel")
 
 [node name="DeathPlane" type="Area3D" parent="." unique_id=505926151]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5, 0)
+collision_layer = 0
+collision_mask = 29
+monitorable = false
 script = ExtResource("9_i1hvo")
+spawn_player_coins = true
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="DeathPlane" unique_id=306286441]
 shape = SubResource("BoxShape3D_gym67")

@@ -1,13 +1,15 @@
 [gd_scene format=3 uid="uid://7j15r0ej4fwx"]
 
-[ext_resource type="Script" uid="uid://3l3b6jwotibg" path="res://jumping_pad/jumping_pad.gd" id="1_w7mtj"]
-[ext_resource type="PackedScene" uid="uid://d3jgve1g030hy" path="res://environment/mushroom/mushroom.glb" id="2_3e4pb"]
-[ext_resource type="PackedScene" uid="uid://ueivw4w2t3rj" path="res://jumping_pad/jumping_pad_visuals/jumping_pad_model.tscn" id="2_otx0r"]
+[ext_resource type="Script" uid="uid://3l3b6jwotibg" path="res://godot-4-3d-third-person-controller/jumping_pad/jumping_pad.gd" id="1_w7mtj"]
+[ext_resource type="PackedScene" uid="uid://d3jgve1g030hy" path="res://godot-4-3d-third-person-controller/environment/mushroom/mushroom.glb" id="2_3e4pb"]
+[ext_resource type="PackedScene" uid="uid://ueivw4w2t3rj" path="res://godot-4-3d-third-person-controller/jumping_pad/jumping_pad_visuals/jumping_pad_model.tscn" id="2_otx0r"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_dspj3"]
 size = Vector3(1, 1.4, 1)
 
 [node name="JumpingPad" type="Area3D" unique_id=2095558454]
+collision_layer = 2
+collision_mask = 8
 script = ExtResource("1_w7mtj")
 
 [node name="mushroom" parent="." unique_id=1243719881 instance=ExtResource("2_3e4pb")]

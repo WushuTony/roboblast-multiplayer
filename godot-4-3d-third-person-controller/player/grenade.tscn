@@ -17,13 +17,15 @@ radius = 0.1
 
 [node name="Grenade" type="CharacterBody3D" unique_id=615295745]
 top_level = true
-collision_layer = 0
+collision_mask = 27
 script = ExtResource("1_ak024")
 
 [node name="ClientSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1488299886]
 replication_config = SubResource("SceneReplicationConfig_87y71")
 
 [node name="ExplosionArea" type="Area3D" parent="." unique_id=403393285]
+collision_layer = 0
+collision_mask = 17
 
 [node name="CollisionShape3d" type="CollisionShape3D" parent="ExplosionArea" unique_id=1193283679]
 shape = SubResource("SphereShape3D_wbj5b")

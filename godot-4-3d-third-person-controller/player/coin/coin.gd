@@ -10,6 +10,7 @@ const SPAWN_TWEEN_DURATION := 1.0
 const FOLLOW_TWEEN_DURATION := 0.5
 
 @onready var _collect_audio: AudioStreamPlayer3D = $CollectAudio
+@onready var _collect_delay: Timer = $CollectDelay
 @onready var _player_detection_area: Area3D = $PlayerDetectionArea
 
 var _initial_tween_position: Vector3 = Vector3.ZERO
@@ -27,8 +28,14 @@ func spawn(coin_delay: float = 0.5) -> void:
 	apply_central_impulse(rand_pos)
 
 	# Delay time for player to be able to collect it
-	get_tree().create_timer(coin_delay).timeout.connect(set_collision_layer_value.bind(3, true))
+	_collect_delay.timeout.connect(_on_collect_delay_finished)
+	_collect_delay.start(coin_delay)
 	_player_detection_area.body_entered.connect(_on_body_entered)
+
+
+func _on_collect_delay_finished() -> void:
+	_player_detection_area.monitoring = true
+	_player_detection_area.monitorable = true
 
 
 func set_target(new_target: Player) -> void:
