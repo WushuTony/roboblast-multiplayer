@@ -30,5 +30,5 @@ func _on_body_entered(body: Node3D) -> void:
 		body.lose_coins(player_coins_count, spawn_player_coins)
 		body.reset_position()
 	else:
-		print(body.name, " has hit the death plane and is being destroyed")
+		print_verbose(body.name, " has hit the death plane and is being destroyed")
 		body.queue_free.call_deferred()

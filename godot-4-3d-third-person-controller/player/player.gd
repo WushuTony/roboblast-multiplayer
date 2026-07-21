@@ -301,6 +301,8 @@ func _physics_process(delta: float) -> void:
 			elif collider.is_in_group("enemies"):
 				# Bounce away
 				bounce_direction = (up_direction - _last_strong_direction).normalized()
+				# and lose coins
+				lose_coins()
 
 			if bounce_direction != Vector3.ZERO:
 				is_bouncing = true

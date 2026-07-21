@@ -3,12 +3,15 @@ class_name BeetleBot
 
 ## Movement speed when chasing a player
 @export var move_speed: float = 3.0
+## Cooldown between two attacks on a player
+@export var attack_cooldown: float = 0.5
 ## Cooldown between target switch if multiple players are in range but the target becomes unreachable
 @export var navigation_switch_cooldown: float = 1.0
 
 @onready var _beetle_skin: Node3D = $BeetlebotSkin
 @onready var _navigation_agent: NavigationAgent3D = $NavigationAgent3D
 
+var _attack_timer: float = 0.0
 var _navigation_switch_timer: float = 0.0
 
 
@@ -68,6 +71,8 @@ func _physics_process(delta: float) -> void:
 		if target_look_position != Vector3.ZERO:
 			look_at(target_look_position)
 
+	_attack_timer = max(_attack_timer - delta, 0.0)
+
 	if _navigation_agent.is_navigation_finished():
 		_beetle_skin.idle()
 		if not _navigation_agent.is_target_reachable():
@@ -100,7 +105,7 @@ func move(motion: Vector3) -> void:
 		if collider is not Player:
 			motion = motion.slide(collision.get_normal())
 	collision = move_and_collide(motion)
-	if collision:
+	if collision and is_zero_approx(_attack_timer):
 		var collider := collision.get_collider()
 		if collider is Player:
 			var impact_point: Vector3 = global_position - collider.global_position
@@ -118,6 +123,7 @@ func _attack_player(path: String, impact_point: Vector3, force: Vector3):
 		target.damage(impact_point, force)
 	
 	_beetle_skin.attack()
+	_attack_timer = attack_cooldown
 
 
 func _cleanup_dead_bot() -> void:
