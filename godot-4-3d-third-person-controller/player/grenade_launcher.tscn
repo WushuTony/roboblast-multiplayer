@@ -1,8 +1,9 @@
 [gd_scene format=3 uid="uid://b2ew46dlu7u7x"]
 
-[ext_resource type="Script" uid="uid://di8d4fxee0obj" path="res://player/grenade_launcher.gd" id="1_n50mh"]
-[ext_resource type="Material" uid="uid://dus6jtbfyqwj8" path="res://player/grenade_visuals/aim_material.tres" id="2_qr0pg"]
-[ext_resource type="Material" uid="uid://b6h7p7jogt6ep" path="res://player/grenade_visuals/trajectory_material.tres" id="3_s7dm5"]
+[ext_resource type="Script" uid="uid://di8d4fxee0obj" path="res://godot-4-3d-third-person-controller/player/grenade_launcher.gd" id="1_n50mh"]
+[ext_resource type="Script" uid="uid://2xxl5qxsxstd" path="res://godot-4-3d-third-person-controller/player/grenade_spawner.gd" id="2_0bagw"]
+[ext_resource type="Material" uid="uid://dus6jtbfyqwj8" path="res://godot-4-3d-third-person-controller/player/grenade_visuals/aim_material.tres" id="2_qr0pg"]
+[ext_resource type="Material" uid="uid://b6h7p7jogt6ep" path="res://godot-4-3d-third-person-controller/player/grenade_visuals/trajectory_material.tres" id="3_s7dm5"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_we0uy"]
 
@@ -12,6 +13,15 @@ radius = 0.25
 [node name="GrenadeLauncher" type="Node3D" unique_id=2016596305]
 script = ExtResource("1_n50mh")
 gravity = 16.0
+
+[node name="GrenadeSpawner" type="MultiplayerSpawner" parent="." unique_id=1822019196]
+unique_name_in_owner = true
+_spawnable_scenes = PackedStringArray("uid://bq562nfq7puh")
+spawn_path = NodePath("/root/@EditorNode@18098/@Panel@14/@VBoxContainer@15/DockHSplitMain/@VBoxContainer@28/DockVSplitCenter/@VSplitContainer@70/@VBoxContainer@71/@EditorMainScreen@125/MainScreen/@CanvasItemEditor@9322/@VSplitContainer@9105/@HSplitContainer@9107/@HSplitContainer@9109/@Control@9110/@SubViewportContainer@9111/@SubViewport@9112/GrenadeLauncher/GrenadeSpawner")
+script = ExtResource("2_0bagw")
+container_name = "Grenades"
+prefix_owner_name = true
+metadata/_custom_type_script = "uid://2xxl5qxsxstd"
 
 [node name="SnapMesh" type="Node3D" parent="." unique_id=1033533672]
 unique_name_in_owner = true
@@ -39,6 +49,7 @@ unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.06958, 0)
 shape = SubResource("SphereShape3D_22ctb")
 max_results = 1
+collision_mask = 17
 debug_shape_custom_color = Color(0.839216, 0.619608, 0.207843, 1)
 
 [node name="TrailMeshInstance" type="MeshInstance3D" parent="LaunchPoint" unique_id=1629127817]

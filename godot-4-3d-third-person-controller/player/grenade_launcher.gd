@@ -1,26 +1,21 @@
-class_name GrenadeLauncher extends Node3D
+extends Node3D
+class_name GrenadeLauncher
 
-const GRENADE_SCENE := preload("grenade.tscn")
-
-@export var min_throw_distance := 7.0
-@export var max_throw_distance := 16.0
+@export var min_throw_distance: float = 7.0
+@export var max_throw_distance: float = 16.0
 @export var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
-@onready var from_look_position := Vector3.ZERO
-@onready var throw_direction := Vector3.ZERO
+var from_look_position: Vector3 = Vector3.ZERO
+var throw_direction: Vector3 = Vector3.ZERO
 
+@onready var _grenade_spawner: DynamicSpawner = %GrenadeSpawner
 @onready var _snap_mesh: Node3D = %SnapMesh
 @onready var _raycast: ShapeCast3D = %ShapeCast3D
 @onready var _launch_point: Marker3D = %LaunchPoint
 @onready var _trail_mesh_instance: MeshInstance3D = %TrailMeshInstance
 
-var _throw_velocity := Vector3.ZERO
-var _time_to_land := 0.0
-
-
-func _ready() -> void:
-	if Engine.is_editor_hint():
-		set_physics_process(false)
+var _throw_velocity: Vector3 = Vector3.ZERO
+var _time_to_land: float = 0.0
 
 
 func _physics_process(_delta: float) -> void:
@@ -30,15 +25,11 @@ func _physics_process(_delta: float) -> void:
 
 
 func throw_grenade() -> bool:
-	if not visible:
+	if not visible or not _grenade_spawner.is_multiplayer_authority():
 		return false
 
-	var grenade: CharacterBody3D = GRENADE_SCENE.instantiate()
-	get_parent().add_child(grenade)
-	grenade.global_position = _launch_point.global_position
-	grenade.throw(_throw_velocity)
-	PhysicsServer3D.body_add_collision_exception(get_parent().get_rid(), grenade.get_rid())
-	return true
+	var grenade: Grenade = _grenade_spawner.throw(_launch_point.global_position, _throw_velocity)
+	return grenade != null
 
 
 func _update_throw_velocity() -> void:

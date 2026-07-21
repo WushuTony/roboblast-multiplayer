@@ -1,8 +1,13 @@
 [gd_scene format=3 uid="uid://c54mpt43fs4wc"]
 
-[ext_resource type="PackedScene" uid="uid://cqw64w6kb0fyg" path="res://player/coin/coin_visuals/coin_model.tscn" id="1_ajpkd"]
-[ext_resource type="Script" uid="uid://dltx4bc41etqs" path="res://player/coin/coin.gd" id="1_netfc"]
-[ext_resource type="AudioStream" uid="uid://dxv00m8q7huw5" path="res://player/coin/audio/completetask_0.mp3" id="3_bn2wr"]
+[ext_resource type="PackedScene" uid="uid://cqw64w6kb0fyg" path="res://godot-4-3d-third-person-controller/player/coin/coin_visuals/coin_model.tscn" id="1_ajpkd"]
+[ext_resource type="Script" uid="uid://dltx4bc41etqs" path="res://godot-4-3d-third-person-controller/player/coin/coin.gd" id="1_netfc"]
+[ext_resource type="AudioStream" uid="uid://dxv00m8q7huw5" path="res://godot-4-3d-third-person-controller/player/coin/audio/completetask_0.mp3" id="3_bn2wr"]
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_yhx4a"]
+properties/0/path = NodePath(".:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_5al5l"]
 radius = 0.731329
@@ -11,12 +16,16 @@ radius = 0.731329
 radius = 5.0
 
 [node name="Coin" type="RigidBody3D" unique_id=1505589733]
-collision_layer = 0
+collision_layer = 4
+collision_mask = 3
 axis_lock_angular_x = true
 axis_lock_angular_y = true
 axis_lock_angular_z = true
 lock_rotation = true
 script = ExtResource("1_netfc")
+
+[node name="ClientSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1478524279]
+replication_config = SubResource("SceneReplicationConfig_yhx4a")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=430493035]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.439197, 0)
@@ -29,7 +38,15 @@ transform = Transform3D(4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0.679386, 0)
 stream = ExtResource("3_bn2wr")
 volume_db = 1.0
 
+[node name="CollectDelay" type="Timer" parent="." unique_id=1641469354]
+wait_time = 0.5
+one_shot = true
+
 [node name="PlayerDetectionArea" type="Area3D" parent="." unique_id=1623999518]
+collision_layer = 4
+collision_mask = 8
+monitoring = false
+monitorable = false
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="PlayerDetectionArea" unique_id=213537764]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.697551, 0)

@@ -15,7 +15,10 @@ func _ready() -> void:
 		piece.show()
 		piece.freeze = false
 		piece.sleeping = false
-		piece.set_collision_mask_value(1, true)
+		piece.set_collision_layer_value(6, true) # Pushable Objects
+		piece.set_collision_mask_value(1, true) # Dynamic Objects
+		piece.set_collision_mask_value(2, true) # Static Objects
+		piece.set_collision_mask_value(4, true) # Players
 		
 		var rand_vector := (Vector3.ONE * 0.5) - Vector3(randf(), randf(), randf())
 		

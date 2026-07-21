@@ -1,8 +1,19 @@
 [gd_scene format=3 uid="uid://oxyn25v5khuk"]
 
-[ext_resource type="Script" uid="uid://cqc5pcgf243iw" path="res://enemies/beetle_bot.gd" id="1_mefon"]
-[ext_resource type="PackedScene" uid="uid://cxt8d0d4ift6" path="res://enemies/beetle_bot/beetlebot_skin.tscn" id="2_1wpkj"]
-[ext_resource type="AudioStream" uid="uid://c66nnoqtanfw2" path="res://enemies/sounds/robot_defeat.wav" id="3_w5eam"]
+[ext_resource type="Script" uid="uid://cqc5pcgf243iw" path="res://godot-4-3d-third-person-controller/enemies/beetle_bot.gd" id="1_mefon"]
+[ext_resource type="PackedScene" uid="uid://cxt8d0d4ift6" path="res://godot-4-3d-third-person-controller/enemies/beetle_bot/beetlebot_skin.tscn" id="2_1wpkj"]
+[ext_resource type="AudioStream" uid="uid://c66nnoqtanfw2" path="res://godot-4-3d-third-person-controller/enemies/sounds/robot_defeat.wav" id="3_w5eam"]
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_2ywuq"]
+properties/0/path = NodePath(".:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:rotation")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+properties/2/path = NodePath("BeetlebotSkin:state")
+properties/2/spawn = true
+properties/2/replication_mode = 2
 
 [sub_resource type="Animation" id="Animation_aq46q"]
 length = 0.001
@@ -92,8 +103,9 @@ _data = {
 &"lost_player": SubResource("Animation_gbkdk")
 }
 
-[sub_resource type="SphereShape3D" id="SphereShape3D_h03f6"]
-radius = 12.0
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_2ywuq"]
+height = 3.0
+radius = 10.0
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_g3iuo"]
 radius = 0.489449
@@ -101,14 +113,18 @@ radius = 0.489449
 [sub_resource type="BoxShape3D" id="BoxShape3D_bm81s"]
 size = Vector3(1.4, 0.2, 1.4)
 
-[node name="GroundEnemy" type="RigidBody3D" unique_id=975349901 groups=["damageables", "targeteables"]]
+[node name="GroundEnemy" type="RigidBody3D" unique_id=975349901 groups=["damageables", "enemies", "targeteables"]]
+collision_layer = 16
+collision_mask = 27
 axis_lock_angular_x = true
 axis_lock_angular_y = true
 axis_lock_angular_z = true
-gravity_scale = 0.0
 lock_rotation = true
 continuous_cd = true
 script = ExtResource("1_mefon")
+
+[node name="ClientSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1732642700]
+replication_config = SubResource("SceneReplicationConfig_2ywuq")
 
 [node name="ReactionLabel" type="Label3D" parent="." unique_id=209592691]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8034, 0)
@@ -123,9 +139,11 @@ libraries/ = SubResource("AnimationLibrary_gbkdk")
 
 [node name="PlayerDetectionArea" type="Area3D" parent="." unique_id=90367802]
 collision_layer = 0
+collision_mask = 8
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="PlayerDetectionArea" unique_id=388576875]
-shape = SubResource("SphereShape3D_h03f6")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -2.5)
+shape = SubResource("CylinderShape3D_2ywuq")
 
 [node name="CollisionShapeBody" type="CollisionShape3D" parent="." unique_id=1007667630]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0.397976, -0.189352)
@@ -141,8 +159,11 @@ shape = SubResource("BoxShape3D_bm81s")
 disabled = true
 
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="." unique_id=1795128100]
-target_desired_distance = 0.1
-path_height_offset = 1.0
+path_desired_distance = 2.0
+target_desired_distance = 0.2
+path_height_offset = 0.5
+path_max_distance = 1.51
+avoidance_enabled = true
 
 [node name="DefeatSound" type="AudioStreamPlayer3D" parent="." unique_id=1752519346]
 stream = ExtResource("3_w5eam")

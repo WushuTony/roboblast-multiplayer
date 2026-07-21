@@ -1,32 +1,38 @@
 [gd_scene format=3 uid="uid://cnj0t3ad178q6"]
 
-[ext_resource type="Script" uid="uid://b7yy50wudgtxi" path="res://demo_page/demo_page.gd" id="1_4brsx"]
-[ext_resource type="Shader" uid="uid://dfj6cddppv3g8" path="res://demo_page/assets/blur_shader.gdshader" id="2_07raf"]
-[ext_resource type="Texture2D" uid="uid://3fxtm3u8im2" path="res://demo_page/assets/gdquest_logo_white.svg" id="3_n7elw"]
-[ext_resource type="Texture2D" uid="uid://c1h5gk8rsf3va" path="res://demo_page/assets/rounded_rectangle.png" id="4_paxwi"]
-[ext_resource type="Texture2D" uid="uid://bisdpbdirkat6" path="res://demo_page/assets/demo_page_background.png" id="5_3cf56"]
-[ext_resource type="FontFile" uid="uid://ch2aef1jex81f" path="res://demo_page/fonts/Montserrat-Bold.ttf" id="6_r37av"]
-[ext_resource type="FontFile" uid="uid://t50djx4didf7" path="res://demo_page/fonts/Montserrat-Medium.ttf" id="7_8vsh6"]
-[ext_resource type="Texture2D" uid="uid://xhe0n1psocjo" path="res://demo_page/controller_icons/wasd.png" id="8_ftfx8"]
-[ext_resource type="Texture2D" uid="uid://078sfj6nla2e" path="res://demo_page/controller_icons/spacebar2.png" id="9_0yun6"]
-[ext_resource type="Texture2D" uid="uid://dr3g38uhvcdhd" path="res://demo_page/controller_icons/joystickL_side.png" id="9_16jmy"]
-[ext_resource type="Script" uid="uid://desb6kwvhb4wi" path="res://demo_page/link_button.gd" id="9_scsih"]
-[ext_resource type="Texture2D" uid="uid://cgkvjl80iqkeg" path="res://demo_page/controller_icons/tab.png" id="10_6dsjm"]
-[ext_resource type="Texture2D" uid="uid://tfus7d2ysvap" path="res://demo_page/controller_icons/keyboard.png" id="10_uxdfh"]
-[ext_resource type="Texture2D" uid="uid://drxg34lsicm31" path="res://demo_page/controller_icons/mouse.png" id="10_y1v2l"]
-[ext_resource type="Texture2D" uid="uid://cwnhk6pv52ilv" path="res://demo_page/controller_icons/gamepad.png" id="11_eh4lo"]
-[ext_resource type="Texture2D" uid="uid://cercyyjcwv0x8" path="res://demo_page/controller_icons/esc.png" id="11_ittqo"]
-[ext_resource type="Texture2D" uid="uid://betbepmba8wdn" path="res://demo_page/controller_icons/mouseRight.png" id="11_pk6rw"]
-[ext_resource type="Texture2D" uid="uid://dnanigj1fkkop" path="res://demo_page/controller_icons/mouseLeft.png" id="12_baaxu"]
-[ext_resource type="Texture2D" uid="uid://cgp8kkys51rsh" path="res://demo_page/controller_icons/joystickR_side.png" id="15_svyf1"]
-[ext_resource type="Texture2D" uid="uid://26gko37h02x" path="res://demo_page/controller_icons/down_button.png" id="16_rl0yy"]
-[ext_resource type="Texture2D" uid="uid://b8tabivxbgcgj" path="res://demo_page/controller_icons/up_button.png" id="17_det7k"]
-[ext_resource type="Texture2D" uid="uid://bm4i5limc5q4h" path="res://demo_page/controller_icons/r2_button.png" id="18_64dkh"]
-[ext_resource type="Texture2D" uid="uid://cwxudh6hj0dx" path="res://demo_page/controller_icons/l2_button.png" id="19_ymr5x"]
-[ext_resource type="Texture2D" uid="uid://dnk6rxv8ejgny" path="res://demo_page/controller_icons/buttonStart.png" id="21_hfiqr"]
-[ext_resource type="Texture2D" uid="uid://u8dgw2xh1ofy" path="res://demo_page/assets/discord-icon.png" id="24_2yjb0"]
-[ext_resource type="Texture2D" uid="uid://4028ms3tu0f0" path="res://demo_page/assets/twitter-icon.png" id="26_jj2ra"]
-[ext_resource type="Texture2D" uid="uid://bu5fw8vbrfsmm" path="res://demo_page/assets/itch-icon.png" id="27_mjmj1"]
+[ext_resource type="Script" uid="uid://b7yy50wudgtxi" path="res://godot-4-3d-third-person-controller/demo_page/demo_page.gd" id="1_4brsx"]
+[ext_resource type="Shader" uid="uid://dfj6cddppv3g8" path="res://godot-4-3d-third-person-controller/demo_page/assets/blur_shader.gdshader" id="2_07raf"]
+[ext_resource type="Texture2D" uid="uid://3fxtm3u8im2" path="res://godot-4-3d-third-person-controller/demo_page/assets/gdquest_logo_white.svg" id="3_n7elw"]
+[ext_resource type="Texture2D" uid="uid://c1h5gk8rsf3va" path="res://godot-4-3d-third-person-controller/demo_page/assets/rounded_rectangle.png" id="4_paxwi"]
+[ext_resource type="Texture2D" uid="uid://bisdpbdirkat6" path="res://godot-4-3d-third-person-controller/demo_page/assets/demo_page_background.png" id="5_3cf56"]
+[ext_resource type="FontFile" uid="uid://ch2aef1jex81f" path="res://godot-4-3d-third-person-controller/demo_page/fonts/Montserrat-Bold.ttf" id="6_r37av"]
+[ext_resource type="FontFile" uid="uid://t50djx4didf7" path="res://godot-4-3d-third-person-controller/demo_page/fonts/Montserrat-Medium.ttf" id="7_8vsh6"]
+[ext_resource type="Texture2D" uid="uid://xhe0n1psocjo" path="res://godot-4-3d-third-person-controller/demo_page/controller_icons/wasd.png" id="8_ftfx8"]
+[ext_resource type="Texture2D" uid="uid://078sfj6nla2e" path="res://godot-4-3d-third-person-controller/demo_page/controller_icons/spacebar2.png" id="9_0yun6"]
+[ext_resource type="Texture2D" uid="uid://dr3g38uhvcdhd" path="res://godot-4-3d-third-person-controller/demo_page/controller_icons/joystickL_side.png" id="9_16jmy"]
+[ext_resource type="Script" uid="uid://desb6kwvhb4wi" path="res://godot-4-3d-third-person-controller/demo_page/link_button.gd" id="9_scsih"]
+[ext_resource type="Texture2D" uid="uid://cgkvjl80iqkeg" path="res://godot-4-3d-third-person-controller/demo_page/controller_icons/tab.png" id="10_6dsjm"]
+[ext_resource type="Texture2D" uid="uid://tfus7d2ysvap" path="res://godot-4-3d-third-person-controller/demo_page/controller_icons/keyboard.png" id="10_uxdfh"]
+[ext_resource type="Texture2D" uid="uid://drxg34lsicm31" path="res://godot-4-3d-third-person-controller/demo_page/controller_icons/mouse.png" id="10_y1v2l"]
+[ext_resource type="Texture2D" uid="uid://cwnhk6pv52ilv" path="res://godot-4-3d-third-person-controller/demo_page/controller_icons/gamepad.png" id="11_eh4lo"]
+[ext_resource type="Texture2D" uid="uid://cercyyjcwv0x8" path="res://godot-4-3d-third-person-controller/demo_page/controller_icons/esc.png" id="11_ittqo"]
+[ext_resource type="Texture2D" uid="uid://betbepmba8wdn" path="res://godot-4-3d-third-person-controller/demo_page/controller_icons/mouseRight.png" id="11_pk6rw"]
+[ext_resource type="Texture2D" uid="uid://dnanigj1fkkop" path="res://godot-4-3d-third-person-controller/demo_page/controller_icons/mouseLeft.png" id="12_baaxu"]
+[ext_resource type="Texture2D" uid="uid://cgp8kkys51rsh" path="res://godot-4-3d-third-person-controller/demo_page/controller_icons/joystickR_side.png" id="15_svyf1"]
+[ext_resource type="Texture2D" uid="uid://26gko37h02x" path="res://godot-4-3d-third-person-controller/demo_page/controller_icons/down_button.png" id="16_rl0yy"]
+[ext_resource type="Texture2D" uid="uid://b8tabivxbgcgj" path="res://godot-4-3d-third-person-controller/demo_page/controller_icons/up_button.png" id="17_det7k"]
+[ext_resource type="Texture2D" uid="uid://bm4i5limc5q4h" path="res://godot-4-3d-third-person-controller/demo_page/controller_icons/r2_button.png" id="18_64dkh"]
+[ext_resource type="Texture2D" uid="uid://cwxudh6hj0dx" path="res://godot-4-3d-third-person-controller/demo_page/controller_icons/l2_button.png" id="19_ymr5x"]
+[ext_resource type="Texture2D" uid="uid://dnk6rxv8ejgny" path="res://godot-4-3d-third-person-controller/demo_page/controller_icons/buttonStart.png" id="21_hfiqr"]
+[ext_resource type="ButtonGroup" uid="uid://c0w5t6xattmh6" path="res://godot-4-3d-third-person-controller/demo_page/input_device_button_group.tres" id="22_4268h"]
+[ext_resource type="Texture2D" uid="uid://u8dgw2xh1ofy" path="res://godot-4-3d-third-person-controller/demo_page/assets/discord-icon.png" id="24_2yjb0"]
+[ext_resource type="Texture2D" uid="uid://4028ms3tu0f0" path="res://godot-4-3d-third-person-controller/demo_page/assets/twitter-icon.png" id="26_jj2ra"]
+[ext_resource type="Texture2D" uid="uid://bu5fw8vbrfsmm" path="res://godot-4-3d-third-person-controller/demo_page/assets/itch-icon.png" id="27_mjmj1"]
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_4268h"]
+properties/0/path = NodePath(".:game_paused")
+properties/0/spawn = true
+properties/0/replication_mode = 2
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_oq2x4"]
 shader = ExtResource("2_07raf")
@@ -50,14 +56,18 @@ font_size = 32
 font = ExtResource("7_8vsh6")
 font_size = 26
 
-[node name="DemoPage" type="Node" unique_id=630159235]
+[node name="DemoPage" type="Node" unique_id=2029187443]
 process_mode = 3
 script = ExtResource("1_4brsx")
+
+[node name="ClientSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=456491164]
+replication_config = SubResource("SceneReplicationConfig_4268h")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1782828390]
 layer = 128
 
 [node name="DemoPageRoot" type="Control" parent="CanvasLayer" unique_id=1029788002]
+unique_name_in_owner = true
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -85,6 +95,7 @@ modulate = Color(1, 1, 1, 0.54902)
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.35
+mouse_filter = 1
 
 [node name="TextureRect" type="TextureRect" parent="CanvasLayer/DemoPageRoot/Content/Title" unique_id=76376585]
 layout_mode = 0
@@ -114,6 +125,7 @@ size_flags_vertical = 3
 [node name="SampleImageContainer" type="Control" parent="CanvasLayer/DemoPageRoot/Content/Content" unique_id=943888396]
 layout_mode = 2
 size_flags_horizontal = 3
+mouse_filter = 1
 
 [node name="Mask" type="NinePatchRect" parent="CanvasLayer/DemoPageRoot/Content/Content/SampleImageContainer" unique_id=1654519180]
 clip_children = 1
@@ -146,6 +158,7 @@ texture = ExtResource("5_3cf56")
 [node name="GameDescription" type="Control" parent="CanvasLayer/DemoPageRoot/Content/Content" unique_id=1082685009]
 layout_mode = 2
 size_flags_horizontal = 3
+mouse_filter = 1
 
 [node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/DemoPageRoot/Content/Content/GameDescription" unique_id=1728753304]
 layout_mode = 0
@@ -187,6 +200,7 @@ autowrap_mode = 2
 [node name="ControlsDescription" type="Control" parent="CanvasLayer/DemoPageRoot/Content/Content/GameDescription/MarginContainer/ContentContainer" unique_id=1776745193]
 layout_mode = 2
 size_flags_vertical = 3
+mouse_filter = 1
 
 [node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/DemoPageRoot/Content/Content/GameDescription/MarginContainer/ContentContainer/ControlsDescription" unique_id=2147053720]
 layout_mode = 0
@@ -442,7 +456,11 @@ layout_mode = 2
 unique_name_in_owner = true
 custom_minimum_size = Vector2(96, 64)
 layout_mode = 2
+focus_neighbor_right = NodePath("../JoypadButton")
+focus_neighbor_bottom = NodePath("../../../../../../../../../MarginContainer/Buttons/ResumeButton")
 mouse_default_cursor_shape = 2
+toggle_mode = true
+button_group = ExtResource("22_4268h")
 icon = ExtResource("10_uxdfh")
 icon_alignment = 1
 expand_icon = true
@@ -451,7 +469,11 @@ expand_icon = true
 unique_name_in_owner = true
 custom_minimum_size = Vector2(96, 64)
 layout_mode = 2
+focus_neighbor_left = NodePath("../KeyboardButton")
+focus_neighbor_bottom = NodePath("../../../../../../../../../MarginContainer/Buttons/ResumeButton")
 mouse_default_cursor_shape = 2
+toggle_mode = true
+button_group = ExtResource("22_4268h")
 icon = ExtResource("11_eh4lo")
 icon_alignment = 1
 expand_icon = true
@@ -460,6 +482,7 @@ expand_icon = true
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.2
+mouse_filter = 1
 
 [node name="Buttons" type="HBoxContainer" parent="CanvasLayer/DemoPageRoot/Content/MarginContainer" unique_id=2046998715]
 layout_mode = 0
@@ -478,16 +501,23 @@ size_flags_stretch_ratio = 0.2
 theme_override_constants/separation = 50
 alignment = 1
 
-[node name="Resume" type="Button" parent="CanvasLayer/DemoPageRoot/Content/MarginContainer/Buttons" unique_id=845596905]
+[node name="ResumeButton" type="Button" parent="CanvasLayer/DemoPageRoot/Content/MarginContainer/Buttons" unique_id=845596905]
+unique_name_in_owner = true
 layout_mode = 2
+focus_neighbor_top = NodePath("../../../Content/GameDescription/MarginContainer/ContentContainer/ControlsDescription/MarginContainer/VBoxContainer/ButtonContainer/KeyboardButton")
+focus_neighbor_right = NodePath("../ExitButton")
 mouse_default_cursor_shape = 2
 theme_override_fonts/font = ExtResource("6_r37av")
 theme_override_font_sizes/font_size = 26
 action_mode = 0
 text = "  Resume demo  "
 
-[node name="Exit" type="Button" parent="CanvasLayer/DemoPageRoot/Content/MarginContainer/Buttons" unique_id=423092051]
+[node name="ExitButton" type="Button" parent="CanvasLayer/DemoPageRoot/Content/MarginContainer/Buttons" unique_id=423092051]
+unique_name_in_owner = true
 layout_mode = 2
+focus_neighbor_left = NodePath("../ResumeButton")
+focus_neighbor_top = NodePath("../../../Content/GameDescription/MarginContainer/ContentContainer/ControlsDescription/MarginContainer/VBoxContainer/ButtonContainer/KeyboardButton")
+focus_neighbor_right = NodePath("../../../../HBoxContainer/DiscordButton")
 mouse_default_cursor_shape = 2
 theme_override_fonts/font = ExtResource("6_r37av")
 theme_override_font_sizes/font_size = 26
@@ -510,6 +540,9 @@ grow_vertical = 0
 [node name="DiscordButton" type="TextureButton" parent="CanvasLayer/DemoPageRoot/HBoxContainer" unique_id=987804303]
 layout_mode = 2
 size_flags_horizontal = 3
+focus_neighbor_left = NodePath("../../Content/MarginContainer/Buttons/ExitButton")
+focus_neighbor_top = NodePath("../../Content/Content/GameDescription/MarginContainer/ContentContainer/ControlsDescription/MarginContainer/VBoxContainer/ButtonContainer/JoypadButton")
+focus_neighbor_right = NodePath("../TwitterButton")
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("24_2yjb0")
 ignore_texture_size = true
@@ -520,6 +553,9 @@ link = "https://discord.gg/BDe4y6Z4cf"
 [node name="TwitterButton" type="TextureButton" parent="CanvasLayer/DemoPageRoot/HBoxContainer" unique_id=1468592514]
 layout_mode = 2
 size_flags_horizontal = 3
+focus_neighbor_left = NodePath("../DiscordButton")
+focus_neighbor_top = NodePath("../../Content/Content/GameDescription/MarginContainer/ContentContainer/ControlsDescription/MarginContainer/VBoxContainer/ButtonContainer/JoypadButton")
+focus_neighbor_right = NodePath("../ItchButton")
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("26_jj2ra")
 ignore_texture_size = true
@@ -530,6 +566,8 @@ link = "https://twitter.com/NathanGDQuest"
 [node name="ItchButton" type="TextureButton" parent="CanvasLayer/DemoPageRoot/HBoxContainer" unique_id=241297475]
 layout_mode = 2
 size_flags_horizontal = 3
+focus_neighbor_left = NodePath("../TwitterButton")
+focus_neighbor_top = NodePath("../../Content/Content/GameDescription/MarginContainer/ContentContainer/ControlsDescription/MarginContainer/VBoxContainer/ButtonContainer/JoypadButton")
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("27_mjmj1")
 ignore_texture_size = true

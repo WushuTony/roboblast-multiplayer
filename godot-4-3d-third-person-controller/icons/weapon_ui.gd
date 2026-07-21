@@ -1,4 +1,5 @@
 extends PanelContainer
+class_name WeaponUI
 
 @onready var nodes := {
 	"DEFAULT" : %Flash,

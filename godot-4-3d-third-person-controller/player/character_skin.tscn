@@ -1,13 +1,79 @@
 [gd_scene format=3 uid="uid://c0mo8tek77du4"]
 
-[ext_resource type="Script" uid="uid://q1mov6uggysn" path="res://player/character_skin.gd" id="2_cp6td"]
-[ext_resource type="PackedScene" uid="uid://db7wkegkjmixy" path="res://player/model/gdbot.glb" id="2_v8h3f"]
-[ext_resource type="Material" uid="uid://dh42cdejchkr3" path="res://player/model/materials/face_mat.tres" id="3_fvn82"]
-[ext_resource type="AnimationNodeBlendTree" uid="uid://ctycm6blx4sw4" path="res://player/model/character_blend_tree.tres" id="3_hscum"]
-[ext_resource type="Material" uid="uid://cq6bdna8ieu87" path="res://player/model/materials/heart_core_mat.tres" id="3_oijnk"]
-[ext_resource type="Animation" uid="uid://b627b68jhaqwt" path="res://player/model/custom_animations/default_heartbeat.tres" id="3_xjurk"]
-[ext_resource type="Animation" uid="uid://diuutac72yquv" path="res://player/model/custom_animations/simple_blink.tres" id="4_5i6m7"]
-[ext_resource type="Material" uid="uid://4ugdxr58llu8" path="res://player/model/materials/glass_mat.tres" id="4_5srhf"]
+[ext_resource type="Script" uid="uid://q1mov6uggysn" path="res://godot-4-3d-third-person-controller/player/character_skin.gd" id="2_cp6td"]
+[ext_resource type="PackedScene" uid="uid://db7wkegkjmixy" path="res://godot-4-3d-third-person-controller/player/model/gdbot.glb" id="2_v8h3f"]
+[ext_resource type="AnimationNodeBlendTree" uid="uid://ctycm6blx4sw4" path="res://godot-4-3d-third-person-controller/player/model/character_blend_tree.tres" id="3_hscum"]
+[ext_resource type="Texture2D" uid="uid://dbag7f8i27ub1" path="res://godot-4-3d-third-person-controller/player/model/faces/open.png" id="3_v6hbp"]
+[ext_resource type="Animation" uid="uid://b627b68jhaqwt" path="res://godot-4-3d-third-person-controller/player/model/custom_animations/default_heartbeat.tres" id="3_xjurk"]
+[ext_resource type="Animation" uid="uid://diuutac72yquv" path="res://godot-4-3d-third-person-controller/player/model/custom_animations/simple_blink.tres" id="4_5i6m7"]
+
+[sub_resource type="Shader" id="Shader_323ai"]
+code = "shader_type spatial;
+
+uniform sampler2D face_texture : filter_nearest, repeat_disable;
+uniform float intensity = 1.5;
+uniform vec4 screen_color : source_color = vec4(1.0);
+
+uniform vec2 screen_red_offset = vec2(0.0);
+uniform vec2 screen_green_offset = vec2(0.0);
+uniform vec2 screen_blue_offset = vec2(0.0);
+
+uniform float pixel_size = 20.0;
+
+void fragment() {
+	
+	vec2 scaled_uv = round(UV * pixel_size) / pixel_size;
+	
+	float face_red = 1.0 - texture(face_texture, screen_red_offset + scaled_uv).x;
+	float face_green = 1.0 - texture(face_texture, screen_green_offset +  scaled_uv).x;
+	float face_blue = 1.0 - texture(face_texture, screen_blue_offset + scaled_uv).x;
+	
+	vec2 grid_2d = sin(fract(UV * pixel_size + 0.5) * 3.14);
+	float grid = grid_2d.x * grid_2d.y;
+	grid = grid * 0.6 + 0.4;
+	
+	ALBEDO = vec3(0.0);
+	SPECULAR = 0.25;
+	ROUGHNESS = 0.45;
+	
+	vec3 iris = vec3(0.0);
+	
+	iris.r = ((screen_color.r * face_red) / 3.0);
+	iris.g = ((screen_color.g * face_green)  / 3.0);
+	iris.b = ((screen_color.b * face_blue)  / 3.0);
+	iris.rgb *= 1.0 - screen_color.a;
+	
+	vec3 fill = screen_color.rgb * screen_color.a;
+	
+	EMISSION = (iris + fill) * grid * intensity;
+	
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_323ai"]
+resource_local_to_scene = true
+render_priority = 0
+shader = SubResource("Shader_323ai")
+shader_parameter/face_texture = ExtResource("3_v6hbp")
+shader_parameter/intensity = 4.0
+shader_parameter/screen_color = Color(0.0784314, 0.556863, 1, 0.00784314)
+shader_parameter/screen_red_offset = Vector2(0, 0)
+shader_parameter/screen_green_offset = Vector2(0, 0)
+shader_parameter/screen_blue_offset = Vector2(0, 0)
+shader_parameter/pixel_size = 44.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_y4h74"]
+resource_local_to_scene = true
+albedo_color = Color(0, 0, 0, 1)
+emission_enabled = true
+emission = Color(0, 1, 0.392157, 1)
+emission_energy_multiplier = 2.1751935
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_47jua"]
+transparency = 1
+albedo_color = Color(1, 1, 1, 0.443137)
+metallic_specular = 1.0
+roughness = 0.1
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_o4xm5"]
 _data = {
@@ -22,12 +88,63 @@ main_animation_player = NodePath("gdbot/AnimationPlayer")
 
 [node name="gdbot" parent="." unique_id=74471081 instance=ExtResource("2_v8h3f")]
 
-[node name="gdbot_mesh" parent="gdbot/Armature/Skeleton3D" parent_id_path=PackedInt32Array(74471081, 460414800) index="0" unique_id=2141520832]
-surface_material_override/1 = ExtResource("3_fvn82")
-surface_material_override/2 = ExtResource("3_oijnk")
-surface_material_override/3 = ExtResource("4_5srhf")
+[node name="Skeleton3D" parent="gdbot/Armature" parent_id_path=PackedInt32Array(74471081, 1006689074) index="0" unique_id=1058924511]
+bones/2/position = Vector3(0.01920321, -1.678798e-09, 0.53176713)
+bones/2/rotation = Quaternion(0.06251533, 0.70533425, 0.7043379, 0.050035305)
+bones/3/rotation = Quaternion(1, 5.9830457e-12, -7.922319e-08, -2.0978691e-11)
+bones/4/rotation = Quaternion(-0.055881474, -0.2605406, -0.09452964, 0.9591977)
+bones/5/rotation = Quaternion(0.11270538, 4.7308603e-08, -2.820721e-08, 0.9936285)
+bones/7/rotation = Quaternion(-0.12110263, 0.08807452, 0.06323327, 0.98670095)
+bones/8/rotation = Quaternion(0.24001974, -4.6988823e-08, 7.40386e-08, 0.97076803)
+bones/10/rotation = Quaternion(-0.5541827, -0.42367643, -0.4495945, 0.55789304)
+bones/11/rotation = Quaternion(4.302223e-10, 2.2215133e-08, -0.0017633345, 0.9999985)
+bones/13/rotation = Quaternion(0.08193458, 1.6622e-07, 5.5676956e-09, 0.9966377)
+bones/14/rotation = Quaternion(-0.08192356, 0.0013445464, 0.01635477, 0.9965036)
+bones/16/rotation = Quaternion(-0.6338793, -0.24237058, -0.7010158, 0.21915868)
+bones/17/rotation = Quaternion(2.78174e-09, 2.4416554e-08, -0.4579264, 0.8889902)
+bones/19/rotation = Quaternion(-0.39111385, -0.007980099, -0.0012922136, 0.9203068)
+bones/20/rotation = Quaternion(-0.27750662, -2.5235823e-07, -9.943411e-08, 0.96072376)
+bones/21/rotation = Quaternion(-0.3850397, -0.13018121, 0.0023969114, 0.91366935)
+bones/22/rotation = Quaternion(-0.27750576, 6.908925e-07, -4.390391e-08, 0.960724)
+bones/23/rotation = Quaternion(-0.3911237, 0.0040795035, 0.00066061213, 0.92032886)
+bones/24/rotation = Quaternion(-0.27750576, 5.786109e-07, 1.10348175e-07, 0.960724)
+bones/25/rotation = Quaternion(-0.3868965, 0.08551782, -0.02272192, 0.917868)
+bones/26/rotation = Quaternion(-0.27750635, -2.5829185e-09, -9.822449e-08, 0.9607238)
+bones/27/rotation = Quaternion(-0.29395384, 0.7944381, -0.1057664, 0.52083844)
+bones/28/rotation = Quaternion(-0.27750617, -3.637084e-07, -5.313958e-07, 0.9607239)
+bones/29/rotation = Quaternion(-0.6338793, -0.24237058, -0.7010158, 0.21915868)
+bones/30/rotation = Quaternion(2.78174e-09, 2.4416554e-08, -0.4579264, 0.8889902)
+bones/32/rotation = Quaternion(0.021962272, -0.045174208, -0.43668282, 0.89821225)
+bones/33/rotation = Quaternion(-0.5067695, 0.5087001, 0.47820795, 0.5056938)
+bones/34/rotation = Quaternion(2.0215838e-08, 5.8841105e-09, 0.35169166, 0.9361159)
+bones/37/rotation = Quaternion(-0.7146512, 0.21382955, 0.6184656, 0.24708495)
+bones/38/rotation = Quaternion(-6.364866e-09, 6.8904495e-09, 0.37422845, 0.92733663)
+bones/40/rotation = Quaternion(-0.39111385, 0.007980112, 0.0012922129, 0.9203068)
+bones/41/rotation = Quaternion(-0.27750662, 2.4190692e-07, 1.2057872e-07, 0.96072376)
+bones/42/rotation = Quaternion(-0.38503975, 0.1301812, -0.0023968779, 0.91366935)
+bones/43/rotation = Quaternion(-0.27750582, -6.493296e-07, 2.0153664e-08, 0.960724)
+bones/44/rotation = Quaternion(-0.3911237, -0.0040795435, -0.00066070183, 0.92032886)
+bones/45/rotation = Quaternion(-0.27750576, -6.018462e-07, -9.9927256e-08, 0.960724)
+bones/46/rotation = Quaternion(-0.3868965, -0.08551778, 0.022721883, 0.917868)
+bones/47/rotation = Quaternion(-0.27750644, -2.3665457e-08, 1.0042173e-07, 0.9607238)
+bones/48/rotation = Quaternion(-0.29395372, -0.7944382, 0.1057664, 0.52083844)
+bones/49/rotation = Quaternion(-0.2775061, 3.6960515e-07, 5.0651926e-07, 0.9607239)
+bones/50/rotation = Quaternion(-0.7146512, 0.21382955, 0.6184656, 0.24708495)
+bones/51/rotation = Quaternion(-6.364866e-09, 6.8904495e-09, 0.37422845, 0.92733663)
+bones/53/rotation = Quaternion(-0.031465106, -0.06472057, 0.4361012, 0.8970156)
+bones/54/position = Vector3(-0.17458457, 0.0040630754, 0.113820925)
+bones/54/rotation = Quaternion(0, 0, 0.14700903, 0.98913515)
+bones/55/position = Vector3(-1.620777e-08, -5.7643526e-09, 7.269912e-08)
+bones/58/position = Vector3(0.17140284, -0.05102797, 0.113820925)
+bones/58/rotation = Quaternion(0, 0, -0.15167966, 0.9884297)
+bones/59/position = Vector3(-1.1318328e-08, -5.1431908e-09, 4.2374882e-08)
 
-[node name="AnimationPlayer" parent="gdbot" index="1" unique_id=82722205]
+[node name="gdbot_mesh" parent="gdbot/Armature/Skeleton3D" index="0" unique_id=1695994973]
+surface_material_override/1 = SubResource("ShaderMaterial_323ai")
+surface_material_override/2 = SubResource("StandardMaterial3D_y4h74")
+surface_material_override/3 = SubResource("StandardMaterial3D_47jua")
+
+[node name="AnimationPlayer" parent="gdbot" index="1" unique_id=2026747696]
 libraries/custom_animations = SubResource("AnimationLibrary_o4xm5")
 playback_default_blend_time = 0.1
 

@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://cmwyiep10m4u4"]
 
-[ext_resource type="Script" uid="uid://in45yuu25p4m" path="res://box/box.gd" id="1_oklwc"]
-[ext_resource type="PackedScene" uid="uid://cqekaooy1ktfl" path="res://box/box_visuals/box.glb" id="2_ggurh"]
-[ext_resource type="AudioStream" uid="uid://dd7nemvkapogt" path="res://box/sounds/crate-break-1-93926.wav" id="3_71fsr"]
+[ext_resource type="Script" uid="uid://in45yuu25p4m" path="res://godot-4-3d-third-person-controller/box/box.gd" id="1_oklwc"]
+[ext_resource type="PackedScene" uid="uid://cqekaooy1ktfl" path="res://godot-4-3d-third-person-controller/box/box_visuals/box.glb" id="2_ggurh"]
+[ext_resource type="AudioStream" uid="uid://dd7nemvkapogt" path="res://godot-4-3d-third-person-controller/box/sounds/crate-break-1-93926.wav" id="3_71fsr"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_sjlkk"]
 rough = true
@@ -10,6 +10,10 @@ rough = true
 [sub_resource type="BoxShape3D" id="BoxShape3D_vcweg"]
 
 [node name="Box" type="RigidBody3D" unique_id=1409916337 groups=["damageables", "targeteables"]]
+collision_mask = 11
+axis_lock_angular_x = true
+axis_lock_angular_y = true
+axis_lock_angular_z = true
 physics_material_override = SubResource("PhysicsMaterial_sjlkk")
 lock_rotation = true
 script = ExtResource("1_oklwc")

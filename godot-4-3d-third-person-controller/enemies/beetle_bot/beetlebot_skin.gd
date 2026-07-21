@@ -6,6 +6,12 @@ extends Node3D
 @onready var _main_state_machine : AnimationNodeStateMachinePlayback = _animation_tree.get("parameters/StateMachine/playback")
 @onready var _secondary_action_timer : Timer = $SecondaryActionTimer
 
+var state: StringName = "Idle":
+	set(value):
+		state = value
+		if _main_state_machine != null:
+			_main_state_machine.travel(value)
+
 func _ready():
 	_animation_tree.active = true
 	for animation_name in _force_loop:
@@ -13,22 +19,22 @@ func _ready():
 		anim.loop_mode = Animation.LOOP_LINEAR
 
 func _on_secondary_action_timer_timeout():
-	if _main_state_machine.get_current_node() == "Idle":
+	if state == "Idle":
 		shake()
 	_secondary_action_timer.start(randf_range(3.0, 8.0))
 
 func idle():
-	_main_state_machine.travel("Idle")
+	state = "Idle"
 
 func walk():
-	_main_state_machine.travel("Walk")
+	state = "Walk"
 
 func shake():
-	_main_state_machine.travel("Shake")
+	state = "Shake"
 
 func attack():
-	_main_state_machine.travel("Attack")
+	state = "Attack"
 
 func power_off():
-	_main_state_machine.travel("PowerOff")
+	state = "PowerOff"
 	_secondary_action_timer.stop()

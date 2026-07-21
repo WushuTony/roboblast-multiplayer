@@ -1,8 +1,17 @@
 [gd_scene format=3 uid="uid://rn45gytkk6tv"]
 
-[ext_resource type="Script" uid="uid://cek4nujsmemif" path="res://enemies/bee_bot.gd" id="1_eehkx"]
-[ext_resource type="PackedScene" uid="uid://4nwp6xgihjc7" path="res://enemies/bee_bot/bee_root.tscn" id="2_btoc7"]
-[ext_resource type="AudioStream" uid="uid://c66nnoqtanfw2" path="res://enemies/sounds/robot_defeat.wav" id="3_1gs12"]
+[ext_resource type="Script" uid="uid://cek4nujsmemif" path="res://godot-4-3d-third-person-controller/enemies/bee_bot.gd" id="1_eehkx"]
+[ext_resource type="PackedScene" uid="uid://4nwp6xgihjc7" path="res://godot-4-3d-third-person-controller/enemies/bee_bot/bee_root.tscn" id="2_btoc7"]
+[ext_resource type="Script" uid="uid://k16jhrw5hsil" path="res://godot-4-3d-third-person-controller/player/bullet_spawner.gd" id="2_t27cg"]
+[ext_resource type="AudioStream" uid="uid://c66nnoqtanfw2" path="res://godot-4-3d-third-person-controller/enemies/sounds/robot_defeat.wav" id="3_1gs12"]
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_t27cg"]
+properties/0/path = NodePath(".:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:rotation")
+properties/1/spawn = true
+properties/1/replication_mode = 1
 
 [sub_resource type="Animation" id="Animation_3qg81"]
 length = 0.001
@@ -169,11 +178,26 @@ _data = {
 [sub_resource type="BoxShape3D" id="BoxShape3D_pl7mw"]
 size = Vector3(0.1, 0.5, 1)
 
-[node name="FlyingEnemy" type="RigidBody3D" unique_id=2019485036 groups=["damageables", "targeteables"]]
+[node name="FlyingEnemy" type="RigidBody3D" unique_id=2019485036 groups=["damageables", "enemies", "targeteables"]]
+collision_layer = 16
+collision_mask = 27
 gravity_scale = 0.0
 sleeping = true
+freeze = true
 continuous_cd = true
 script = ExtResource("1_eehkx")
+
+[node name="ClientSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1345791973]
+replication_config = SubResource("SceneReplicationConfig_t27cg")
+
+[node name="BulletSpawner" type="MultiplayerSpawner" parent="." unique_id=952112473]
+_spawnable_scenes = PackedStringArray("uid://bguebyvtegnv8")
+spawn_path = NodePath(".")
+script = ExtResource("2_t27cg")
+bullet_speed = 6.0
+container_name = "Bullets"
+prefix_owner_name = true
+metadata/_custom_type_script = "uid://k16jhrw5hsil"
 
 [node name="ReactionLabel" type="Label3D" parent="." unique_id=992890129]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.23854, 0)
@@ -188,6 +212,7 @@ libraries/ = SubResource("AnimationLibrary_j7o4b")
 
 [node name="PlayerDetectionArea" type="Area3D" parent="." unique_id=1616517252]
 collision_layer = 0
+collision_mask = 8
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="PlayerDetectionArea" unique_id=855201356]
 shape = SubResource("SphereShape3D_h03f6")
@@ -210,7 +235,7 @@ autoplay = &"default"
 [node name="bee_root" parent="MeshRoot" unique_id=551027300 instance=ExtResource("2_btoc7")]
 transform = Transform3D(0.999781, 0.0209424, 0, -0.0164124, 0.783522, 0.621148, 0.0130083, -0.621012, 0.783694, -0.0294347, -0.348716, 0.106444)
 
-[node name="DeathMeshCollider" type="CollisionShape3D" parent="." unique_id=2107340870]
+[node name="DeathCollisionShape" type="CollisionShape3D" parent="." unique_id=2107340870]
 transform = Transform3D(-1, -5.37025e-08, -6.89839e-08, 0, 0.789084, -0.614285, 8.74228e-08, -0.614285, -0.789084, 0, 0.244858, 0.372593)
 shape = SubResource("BoxShape3D_pl7mw")
 disabled = true

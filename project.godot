@@ -11,9 +11,9 @@ config_version=5
 [application]
 
 config/name="Roboblast Multiplayer"
-run/main_scene="uid://vmbppkwmx2xk"
+run/main_scene="uid://dpauvndyn1v0f"
 config/features=PackedStringArray("4.6", "Forward Plus")
-config/icon="uid://bhisslvb8otag"
+config/icon="uid://dj3eye6tsr06p"
 
 [autoload]
 
@@ -24,7 +24,8 @@ FullScreenHandler="*res://godot-4-3d-third-person-controller/full_screen_handler
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
-window/size/mode=3
+window/size/window_width_override=1152
+window/size/window_height_override=648
 window/stretch/mode="canvas_items"
 window/stretch/aspect="keep_height"
 
@@ -111,10 +112,12 @@ pause={
 
 [layer_names]
 
-3d_physics/layer_1="Entities"
-3d_physics/layer_2="Level"
+3d_physics/layer_1="Dynamic Objects"
+3d_physics/layer_2="Static Objects"
 3d_physics/layer_3="Coins"
-3d_physics/layer_4="Player"
+3d_physics/layer_4="Players"
+3d_physics/layer_5="Bots"
+3d_physics/layer_6="Pushable Objects"
 
 [physics]
 
