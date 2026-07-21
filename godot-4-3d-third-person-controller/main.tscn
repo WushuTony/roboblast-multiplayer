@@ -7,6 +7,7 @@
 [ext_resource type="NavigationMesh" uid="uid://d1ombvi6qufpk" path="res://godot-4-3d-third-person-controller/level/main_navmesh.res" id="5_n4asa"]
 [ext_resource type="Material" uid="uid://con3572kpt8a3" path="res://godot-4-3d-third-person-controller/environment/large_tree_trunk/large_tree_trunk_mat.tres" id="6_q3y6j"]
 [ext_resource type="PackedScene" uid="uid://dr8slkof1nc8r" path="res://godot-4-3d-third-person-controller/environment/trees/tree.tscn" id="7_rvx5i"]
+[ext_resource type="PackedScene" uid="uid://d1v2grjye45vh" path="res://godot-4-3d-third-person-controller/moving_platform/moving_platform.tscn" id="8_7a44n"]
 [ext_resource type="Shader" uid="uid://do5ydgs2eaepo" path="res://godot-4-3d-third-person-controller/environment/water/water_shader.gdshader" id="8_trepf"]
 [ext_resource type="Texture2D" uid="uid://ssrlnj65d4bs" path="res://godot-4-3d-third-person-controller/environment/water/textures/caustic_texture.png" id="9_8eqnd"]
 [ext_resource type="Script" uid="uid://6ebvqbxcwogc" path="res://godot-4-3d-third-person-controller/box/boxes_container.gd" id="9_e0bje"]
@@ -48,6 +49,13 @@ glow_enabled = true
 fog_light_energy = 2.99
 volumetric_fog_density = 0.001
 volumetric_fog_emission = Color(1, 1, 1, 1)
+
+[sub_resource type="Curve3D" id="Curve3D_7a44n"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 2.75, 0, -1, 0, 0, 0, 0, 0, 0, -2.75, 0, 1),
+"tilts": PackedFloat32Array(0, 0)
+}
+point_count = 2
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_e0bje"]
 properties/0/path = NodePath(".:_destroyed_boxes")
@@ -95,7 +103,7 @@ fractal_octaves = 1
 noise = SubResource("FastNoiseLite_4kwk8")
 seamless = true
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_10hq7"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_7a44n"]
 resource_local_to_scene = true
 render_priority = 0
 shader = ExtResource("23_seu75")
@@ -128,7 +136,7 @@ fractal_octaves = 2
 noise = SubResource("FastNoiseLite_wnnmc")
 seamless = true
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_7a44n"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_cxhwh"]
 resource_local_to_scene = true
 render_priority = 0
 shader = ExtResource("24_htxhm")
@@ -148,7 +156,7 @@ fractal_octaves = 1
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_a2w6x"]
 noise = SubResource("FastNoiseLite_sxisx")
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_cxhwh"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_p0afh"]
 resource_local_to_scene = true
 render_priority = 10
 shader = ExtResource("27_0rl1p")
@@ -168,7 +176,7 @@ fractal_octaves = 1
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_s56rg"]
 noise = SubResource("FastNoiseLite_6jv1k")
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_p0afh"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ypgwf"]
 resource_local_to_scene = true
 render_priority = 10
 shader = ExtResource("28_ok6jj")
@@ -219,6 +227,14 @@ transform = Transform3D(0.893364, 0, 0.449335, 0, 1, 0, -0.449335, 0, 0.893364, 
 [node name="JumpingPad3" parent="." unique_id=1650098193 instance=ExtResource("3_w2mh2")]
 transform = Transform3D(0.823187, 0, -0.567772, 0, 1, 0, 0.567772, 0, 0.823187, -43.7, 19.0958, 1.42115)
 
+[node name="MovingPlatform" parent="." unique_id=930574638 instance=ExtResource("8_7a44n")]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, -13.087461, 6.4542828, 9.483394)
+curve = SubResource("Curve3D_7a44n")
+
+[node name="PathFollow3D" parent="MovingPlatform" index="0" unique_id=108660892]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.237357e-07, 0, -8.204006e-08)
+progress = 2.9261749
+
 [node name="NavigationRegion3D" type="NavigationRegion3D" parent="." unique_id=1467016651]
 navigation_mesh = ExtResource("5_n4asa")
 use_edge_connections = false
@@ -226,63 +242,56 @@ metadata/_edit_lock_ = true
 
 [node name="terrain" parent="NavigationRegion3D" unique_id=1886230333 instance=ExtResource("4_vprlf")]
 
-[node name="large_trunk" parent="NavigationRegion3D/terrain" index="1" unique_id=1135229518]
+[node name="large_trunk" parent="NavigationRegion3D/terrain" index="1" unique_id=402891937]
 material_override = ExtResource("6_q3y6j")
 
-[node name="StaticBody3D" parent="NavigationRegion3D/terrain/large_trunk" index="0" unique_id=647123211]
+[node name="StaticBody3D" parent="NavigationRegion3D/terrain/large_trunk" index="0" unique_id=592821555]
 collision_layer = 2
 collision_mask = 13
 
-[node name="large_trunk_001" parent="NavigationRegion3D/terrain" index="2" unique_id=2108439743]
+[node name="large_trunk_001" parent="NavigationRegion3D/terrain" index="2" unique_id=1179788916]
 material_override = ExtResource("6_q3y6j")
 
-[node name="StaticBody3D" parent="NavigationRegion3D/terrain/large_trunk_001" index="0" unique_id=647688130]
+[node name="StaticBody3D" parent="NavigationRegion3D/terrain/large_trunk_001" index="0" unique_id=1618362595]
 collision_layer = 2
 collision_mask = 13
 
-[node name="large_trunk_002" parent="NavigationRegion3D/terrain" index="3" unique_id=684973634]
+[node name="large_trunk_003" parent="NavigationRegion3D/terrain" index="3" unique_id=243952758]
 material_override = ExtResource("6_q3y6j")
 
-[node name="StaticBody3D" parent="NavigationRegion3D/terrain/large_trunk_002" index="0" unique_id=1667963571]
+[node name="StaticBody3D" parent="NavigationRegion3D/terrain/large_trunk_003" index="0" unique_id=1493035560]
 collision_layer = 2
 collision_mask = 13
 
-[node name="large_trunk_003" parent="NavigationRegion3D/terrain" index="4" unique_id=1084252591]
-material_override = ExtResource("6_q3y6j")
-
-[node name="StaticBody3D" parent="NavigationRegion3D/terrain/large_trunk_003" index="0" unique_id=361023997]
+[node name="StaticBody3D" parent="NavigationRegion3D/terrain/terrain2" parent_id_path=PackedInt32Array(1886230333, 1604669818) index="0" unique_id=1108508982]
 collision_layer = 2
 collision_mask = 13
 
-[node name="StaticBody3D" parent="NavigationRegion3D/terrain/terrain2" parent_id_path=PackedInt32Array(1886230333, 221881130) index="0" unique_id=785256241]
+[node name="large_trunk_004" parent="NavigationRegion3D/terrain" index="5" unique_id=1547953780]
+material_override = ExtResource("6_q3y6j")
+
+[node name="StaticBody3D" parent="NavigationRegion3D/terrain/large_trunk_004" index="0" unique_id=762888189]
 collision_layer = 2
 collision_mask = 13
 
-[node name="large_trunk_004" parent="NavigationRegion3D/terrain" index="6" unique_id=935325880]
+[node name="large_trunk_005" parent="NavigationRegion3D/terrain" index="6" unique_id=201438044]
 material_override = ExtResource("6_q3y6j")
 
-[node name="StaticBody3D" parent="NavigationRegion3D/terrain/large_trunk_004" index="0" unique_id=1004003738]
+[node name="StaticBody3D" parent="NavigationRegion3D/terrain/large_trunk_005" index="0" unique_id=461748733]
 collision_layer = 2
 collision_mask = 13
 
-[node name="large_trunk_005" parent="NavigationRegion3D/terrain" index="7" unique_id=1893359585]
+[node name="large_trunk_006" parent="NavigationRegion3D/terrain" index="7" unique_id=1877501392]
 material_override = ExtResource("6_q3y6j")
 
-[node name="StaticBody3D" parent="NavigationRegion3D/terrain/large_trunk_005" index="0" unique_id=726427963]
+[node name="StaticBody3D" parent="NavigationRegion3D/terrain/large_trunk_006" index="0" unique_id=167557452]
 collision_layer = 2
 collision_mask = 13
 
-[node name="large_trunk_006" parent="NavigationRegion3D/terrain" index="8" unique_id=651535562]
+[node name="large_trunk_007" parent="NavigationRegion3D/terrain" index="8" unique_id=2135742570]
 material_override = ExtResource("6_q3y6j")
 
-[node name="StaticBody3D" parent="NavigationRegion3D/terrain/large_trunk_006" index="0" unique_id=1942153257]
-collision_layer = 2
-collision_mask = 13
-
-[node name="large_trunk_007" parent="NavigationRegion3D/terrain" index="9" unique_id=642404948]
-material_override = ExtResource("6_q3y6j")
-
-[node name="StaticBody3D" parent="NavigationRegion3D/terrain/large_trunk_007" index="0" unique_id=538015989]
+[node name="StaticBody3D" parent="NavigationRegion3D/terrain/large_trunk_007" index="0" unique_id=1359498284]
 collision_layer = 2
 collision_mask = 13
 
@@ -501,10 +510,10 @@ transform = Transform3D(0.91126, 0, 0.411832, 0, 1, 0, -0.411832, 0, 0.91126, -6
 transform = Transform3D(0.91126, 0, 0.411832, 0, 1, 0, -0.411832, 0, 0.91126, -7.65465, 1.01478, 8.41896)
 
 [node name="Box4" parent="NavigationRegion3D/Boxes" unique_id=2057730853 instance=ExtResource("12_xvr0j")]
-transform = Transform3D(-0.382119, 0, 0.924113, 0, 1, 0, -0.924113, 0, -0.382119, -10.8217, 7.21886, 8.73528)
+transform = Transform3D(0.4460572, 0, 0.8950045, 0, 1, 0, -0.8950045, 0, 0.4460572, -35.8, 7.191, -1.24)
 
 [node name="Box5" parent="NavigationRegion3D/Boxes" unique_id=1609922980 instance=ExtResource("12_xvr0j")]
-transform = Transform3D(-0.382119, 0, 0.924113, 0, 1, 0, -0.924113, 0, -0.382119, -10.3063, 7.22633, 9.80155)
+transform = Transform3D(0.4460572, 0, 0.8950045, 0, 1, 0, -0.8950045, 0, 0.4460572, -36.299, 7.200658, -0.315)
 
 [node name="Box6" parent="NavigationRegion3D/Boxes" unique_id=258581348 instance=ExtResource("12_xvr0j")]
 transform = Transform3D(0.713189, 0, 0.700972, 0, 1, 0, -0.700972, 0, 0.713189, 5.44704, 5.23165, 1.83539)
@@ -1753,10 +1762,10 @@ script = null
 visible = false
 
 [node name="Shell" parent="StutterFixes/Explosion" index="0" unique_id=674671704]
-material_override = SubResource("ShaderMaterial_10hq7")
+material_override = SubResource("ShaderMaterial_7a44n")
 
 [node name="Blast" parent="StutterFixes/Explosion" index="1" unique_id=601050963]
-material_override = SubResource("ShaderMaterial_7a44n")
+material_override = SubResource("ShaderMaterial_cxhwh")
 
 [node name="Coin" parent="StutterFixes" unique_id=1505589733 instance=ExtResource("25_jq2sk")]
 visible = false
@@ -1767,10 +1776,10 @@ visible = false
 script = null
 
 [node name="Cube" parent="StutterFixes/smoke_puff/smoke_ball" parent_id_path=PackedInt32Array(1464888597, 1652704592) index="0" unique_id=1623868212]
-material_override = SubResource("ShaderMaterial_cxhwh")
+material_override = SubResource("ShaderMaterial_p0afh")
 
 [node name="Cube" parent="StutterFixes/smoke_puff/smoke_ball2" parent_id_path=PackedInt32Array(1464888597, 1778003220) index="0" unique_id=1623868212]
-material_override = SubResource("ShaderMaterial_p0afh")
+material_override = SubResource("ShaderMaterial_ypgwf")
 
 [node name="SpawnPoints" type="Node" parent="." unique_id=233337308]
 unique_name_in_owner = true
@@ -1787,6 +1796,7 @@ transform = Transform3D(0.9659258, 0, -0.25881904, 0, 1, 0, 0.25881904, 0, 0.965
 [node name="SpawnPoint4" type="Node3D" parent="SpawnPoints" unique_id=2098665837]
 transform = Transform3D(0.9659258, 0, -0.25881904, 0, 1, 0, 0.25881904, 0, 0.9659258, 3.5, 0.5, -10.5)
 
+[editable path="MovingPlatform"]
 [editable path="NavigationRegion3D/terrain"]
 [editable path="StutterFixes/Grenade"]
 [editable path="StutterFixes/Explosion"]

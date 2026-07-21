@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://dybu873gyb8pm"]
+
+[ext_resource type="PackedScene" uid="uid://octunbukmgdx" path="res://godot-4-3d-third-person-controller/jumping_pad/jumping_pad_visuals/jumping_pad_model.glb" id="1_uobaj"]
+[ext_resource type="Shader" uid="uid://bemlmx84iefk" path="res://godot-4-3d-third-person-controller/jumping_pad/jumping_pad_visuals/jumping_pad_model_screen.gdshader" id="2_5ychf"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_liv1b"]
+render_priority = 0
+shader = ExtResource("2_5ychf")
+shader_parameter/screen_color = Color(0.376471, 0.615686, 1, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_v7h2g"]
+albedo_color = Color(0, 0, 0, 1)
+emission_enabled = true
+emission = Color(0.27451, 0.462745, 1, 1)
+emission_energy_multiplier = 2.0
+
+[node name="moving_platform" unique_id=1321292080 instance=ExtResource("1_uobaj")]
+
+[node name="Circle_002" parent="." index="1" unique_id=479655639]
+material_override = SubResource("ShaderMaterial_liv1b")
+
+[node name="Circle_003" parent="." index="2" unique_id=2054792163]
+material_override = SubResource("StandardMaterial3D_v7h2g")

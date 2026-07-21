@@ -1,0 +1,38 @@
+[gd_scene format=3 uid="uid://d1v2grjye45vh"]
+
+[ext_resource type="PackedScene" path="res://godot-4-3d-third-person-controller/moving_platform/moving_platform_visuals/moving_platform_model.tscn" id="1_k2a31"]
+[ext_resource type="Script" path="res://godot-4-3d-third-person-controller/moving_platform/moving_platform.gd" id="1_tm5vl"]
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_k2a31"]
+properties/0/path = NodePath("Platform:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_tm5vl"]
+height = 0.3
+radius = 1.1
+
+[node name="MovingPlatform" type="Path3D" unique_id=471272374]
+
+[node name="PathFollow3D" type="PathFollow3D" parent="." unique_id=108660892]
+rotation_mode = 0
+loop = false
+script = ExtResource("1_tm5vl")
+
+[node name="RemoteTransform3D" type="RemoteTransform3D" parent="PathFollow3D" unique_id=336289163]
+remote_path = NodePath("../../Platform")
+update_rotation = false
+update_scale = false
+
+[node name="Platform" type="AnimatableBody3D" parent="." unique_id=1361525942]
+collision_mask = 31
+
+[node name="ClientSynchronizer" type="MultiplayerSynchronizer" parent="Platform" unique_id=293957538]
+root_path = NodePath("../..")
+replication_config = SubResource("SceneReplicationConfig_k2a31")
+
+[node name="moving_platform" parent="Platform" unique_id=1321292080 instance=ExtResource("1_k2a31")]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Platform" unique_id=100497222]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.10925293, 0)
+shape = SubResource("CylinderShape3D_tm5vl")

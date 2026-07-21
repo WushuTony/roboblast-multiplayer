@@ -90,6 +90,7 @@ _subresources={
 },
 "PATH:large_trunk_002": {
 "generate/physics": true,
+"import/skip_import": true,
 "physics/layer": 3,
 "physics/mask": 3
 },
