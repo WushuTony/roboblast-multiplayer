@@ -40,6 +40,9 @@ func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
 	
+	_setup_container.call_deferred()
+
+func _setup_container() -> void:
 	var dynamic_objects: Node = Level.get_dynamic_objects_node()
 	if dynamic_objects != null:
 		var container: Node = Node.new()

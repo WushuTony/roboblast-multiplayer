@@ -1,4 +1,5 @@
 extends Node
+class_name DemoPage
 
 enum INSTRUCTION_TYPES {KEYBOARD, JOYPAD}
 
