@@ -17,7 +17,7 @@ gravity = 16.0
 [node name="GrenadeSpawner" type="MultiplayerSpawner" parent="." unique_id=1822019196]
 unique_name_in_owner = true
 _spawnable_scenes = PackedStringArray("uid://bq562nfq7puh")
-spawn_path = NodePath("/root/@EditorNode@18098/@Panel@14/@VBoxContainer@15/DockHSplitMain/@VBoxContainer@28/DockVSplitCenter/@VSplitContainer@70/@VBoxContainer@71/@EditorMainScreen@125/MainScreen/@CanvasItemEditor@9322/@VSplitContainer@9105/@HSplitContainer@9107/@HSplitContainer@9109/@Control@9110/@SubViewportContainer@9111/@SubViewport@9112/GrenadeLauncher/GrenadeSpawner")
+spawn_path = NodePath(".")
 script = ExtResource("2_0bagw")
 container_name = "Grenades"
 prefix_owner_name = true

@@ -13,7 +13,8 @@ class_name DynamicSpawner
 @export var container_name: String = "":
 	set(value):
 		container_name = value
-		update_configuration_warnings()
+		if Engine.is_editor_hint():
+			update_configuration_warnings()
 ## The owner's name will be added at the start of of the container node's name.[br][br]
 ## [b]Note:[/b] This allows similar containers to co-exist (e.g. bullet spawners).
 @export var prefix_owner_name: bool = false

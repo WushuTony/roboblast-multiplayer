@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://d1v2grjye45vh"]
 
-[ext_resource type="PackedScene" path="res://godot-4-3d-third-person-controller/moving_platform/moving_platform_visuals/moving_platform_model.tscn" id="1_k2a31"]
-[ext_resource type="Script" path="res://godot-4-3d-third-person-controller/moving_platform/moving_platform.gd" id="1_tm5vl"]
+[ext_resource type="PackedScene" uid="uid://dybu873gyb8pm" path="res://godot-4-3d-third-person-controller/moving_platform/moving_platform_visuals/moving_platform_model.tscn" id="1_k2a31"]
+[ext_resource type="Script" uid="uid://ctownuq8ts3ur" path="res://godot-4-3d-third-person-controller/moving_platform/moving_platform.gd" id="1_tm5vl"]
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_k2a31"]
 properties/0/path = NodePath("Platform:position")
