@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://dpauvndyn1v0f"]
 
-[ext_resource type="Script" uid="uid://dd68ons6qrff6" path="res://lobby/lobby.gd" id="1_1ig7j"]
-[ext_resource type="Script" uid="uid://cyrxpaol63y2b" path="res://lobby/ui.gd" id="2_ukx7c"]
+[ext_resource type="Script" uid="uid://dd68ons6qrff6" path="res://lobby/game_session_manager.gd" id="1_b1fqd"]
+[ext_resource type="Script" uid="uid://cyrxpaol63y2b" path="res://lobby/ui.gd" id="2_nagtv"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1ig7j"]
 content_margin_left = 8.0
@@ -22,8 +22,8 @@ HBoxContainer/constants/separation = 8
 PanelContainer/styles/panel = SubResource("StyleBoxFlat_1ig7j")
 VBoxContainer/constants/separation = 8
 
-[node name="Lobby" type="Node3D" unique_id=1334162202]
-script = ExtResource("1_1ig7j")
+[node name="GameSessionManager" type="Node3D" unique_id=1334162202]
+script = ExtResource("1_b1fqd")
 
 [node name="LevelSpawner" type="MultiplayerSpawner" parent="." unique_id=1219584272]
 _spawnable_scenes = PackedStringArray("uid://vmbppkwmx2xk")
@@ -33,10 +33,10 @@ spawn_limit = 1
 [node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=1589905524]
 _spawnable_scenes = PackedStringArray("uid://ciqrpd5675boy")
 spawn_path = NodePath("../Players")
-spawn_limit = 2
+spawn_limit = 4
 
 [node name="UI" type="CanvasLayer" parent="." unique_id=665468560]
-script = ExtResource("2_ukx7c")
+script = ExtResource("2_nagtv")
 
 [node name="Start" type="CenterContainer" parent="UI" unique_id=1007932019]
 anchors_preset = 15
@@ -49,6 +49,7 @@ size_flags_vertical = 4
 theme = SubResource("Theme_ukx7c")
 
 [node name="ENet" type="VBoxContainer" parent="UI/Start" unique_id=1223552750]
+visible = false
 custom_minimum_size = Vector2(256, 0)
 layout_mode = 2
 
@@ -192,7 +193,6 @@ size_flags_vertical = 3
 text = "Host"
 
 [node name="Relay" type="HBoxContainer" parent="UI/Start" unique_id=395810028]
-visible = false
 custom_minimum_size = Vector2(768, 512)
 layout_mode = 2
 
@@ -284,13 +284,18 @@ text = "Name"
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "My Epic Lobby"
+max_length = 18
 
-[node name="ServerLabel" type="Label" parent="UI/Start/Relay/Split/Host/VBox/Parameters" unique_id=1788474906]
+[node name="MaxPlayersLabel" type="Label" parent="UI/Start/Relay/Split/Host/VBox/Parameters" unique_id=1788474906]
 layout_mode = 2
-text = "Server"
+text = "Max Players"
 
-[node name="Server" type="OptionButton" parent="UI/Start/Relay/Split/Host/VBox/Parameters" unique_id=1106231411]
+[node name="MaxPlayers" type="SpinBox" parent="UI/Start/Relay/Split/Host/VBox/Parameters" unique_id=207603270]
 layout_mode = 2
+size_flags_horizontal = 3
+min_value = 2.0
+max_value = 4.0
+value = 4.0
 
 [node name="VisibilityLabel" type="Label" parent="UI/Start/Relay/Split/Host/VBox/Parameters" unique_id=588192807]
 layout_mode = 2
@@ -302,15 +307,159 @@ selected = 0
 item_count = 3
 popup/item_0/text = "Public"
 popup/item_0/id = 0
-popup/item_1/text = "Unlisted"
+popup/item_1/text = "Friends only"
 popup/item_1/id = 1
-popup/item_2/text = "Friends only"
+popup/item_2/text = "Invite only"
 popup/item_2/id = 2
 
 [node name="Host" type="Button" parent="UI/Start/Relay/Split/Host/VBox" unique_id=89352810]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Host"
+
+[node name="WaitingRoom" type="HBoxContainer" parent="UI/Start" unique_id=127365054]
+visible = false
+custom_minimum_size = Vector2(768, 512)
+layout_mode = 2
+
+[node name="List" type="PanelContainer" parent="UI/Start/WaitingRoom" unique_id=178497931]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="VBox" type="VBoxContainer" parent="UI/Start/WaitingRoom/List" unique_id=1615672497]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="UI/Start/WaitingRoom/List/VBox" unique_id=196124377]
+layout_mode = 2
+text = "PLAYERS"
+horizontal_alignment = 1
+
+[node name="ItemList" type="ItemList" parent="UI/Start/WaitingRoom/List/VBox" unique_id=463684754]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Actions" type="HBoxContainer" parent="UI/Start/WaitingRoom/List/VBox" unique_id=2104697516]
+layout_mode = 2
+
+[node name="Kick" type="Button" parent="UI/Start/WaitingRoom/List/VBox/Actions" unique_id=739008350]
+layout_mode = 2
+size_flags_horizontal = 3
+disabled = true
+text = "Kick"
+
+[node name="Play" type="Button" parent="UI/Start/WaitingRoom/List/VBox/Actions" unique_id=708282045]
+layout_mode = 2
+size_flags_horizontal = 3
+disabled = true
+text = "Play"
+
+[node name="Split" type="VBoxContainer" parent="UI/Start/WaitingRoom" unique_id=799258455]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Host" type="PanelContainer" parent="UI/Start/WaitingRoom/Split" unique_id=1959890535]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBox" type="VBoxContainer" parent="UI/Start/WaitingRoom/Split/Host" unique_id=166568149]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="UI/Start/WaitingRoom/Split/Host/VBox" unique_id=1736008795]
+layout_mode = 2
+text = "LOBBY SETTINGS"
+horizontal_alignment = 1
+
+[node name="Settings" type="GridContainer" parent="UI/Start/WaitingRoom/Split/Host/VBox" unique_id=1375641744]
+layout_mode = 2
+size_flags_vertical = 3
+columns = 2
+
+[node name="JoinCodeLabel" type="Label" parent="UI/Start/WaitingRoom/Split/Host/VBox/Settings" unique_id=460444838]
+layout_mode = 2
+text = "Join code"
+
+[node name="JoinCode" type="LineEdit" parent="UI/Start/WaitingRoom/Split/Host/VBox/Settings" unique_id=226700818]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "123ABC"
+max_length = 6
+editable = false
+
+[node name="NameLabel" type="Label" parent="UI/Start/WaitingRoom/Split/Host/VBox/Settings" unique_id=85023346]
+layout_mode = 2
+text = "Name"
+
+[node name="Name" type="LineEdit" parent="UI/Start/WaitingRoom/Split/Host/VBox/Settings" unique_id=1188636461]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "My Epic Lobby"
+max_length = 18
+editable = false
+
+[node name="MaxPlayersLabel" type="Label" parent="UI/Start/WaitingRoom/Split/Host/VBox/Settings" unique_id=1252396726]
+layout_mode = 2
+text = "Max Players"
+
+[node name="MaxPlayers" type="SpinBox" parent="UI/Start/WaitingRoom/Split/Host/VBox/Settings" unique_id=557000965]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 2.0
+max_value = 4.0
+value = 4.0
+editable = false
+
+[node name="VisibilityLabel" type="Label" parent="UI/Start/WaitingRoom/Split/Host/VBox/Settings" unique_id=2021256172]
+layout_mode = 2
+text = "Visibility"
+
+[node name="Visibility" type="OptionButton" parent="UI/Start/WaitingRoom/Split/Host/VBox/Settings" unique_id=1959202085]
+layout_mode = 2
+disabled = true
+selected = 0
+item_count = 3
+popup/item_0/text = "Public"
+popup/item_0/id = 0
+popup/item_1/text = "Friends only"
+popup/item_1/id = 1
+popup/item_2/text = "Invite only"
+popup/item_2/id = 2
+
+[node name="Custom" type="PanelContainer" parent="UI/Start/WaitingRoom/Split" unique_id=400755951]
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="UI/Start/WaitingRoom/Split/Custom" unique_id=761235265]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="UI/Start/WaitingRoom/Split/Custom/VBox" unique_id=53673755]
+layout_mode = 2
+text = "PLAYER CUSTOMISATION"
+horizontal_alignment = 1
+
+[node name="Options" type="GridContainer" parent="UI/Start/WaitingRoom/Split/Custom/VBox" unique_id=1135076142]
+layout_mode = 2
+columns = 2
+
+[node name="NameLabel" type="Label" parent="UI/Start/WaitingRoom/Split/Custom/VBox/Options" unique_id=1596159708]
+layout_mode = 2
+text = "Name:"
+
+[node name="Name" type="LineEdit" parent="UI/Start/WaitingRoom/Split/Custom/VBox/Options" unique_id=915046367]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Player Name"
+max_length = 18
+
+[node name="ColorLabel" type="Label" parent="UI/Start/WaitingRoom/Split/Custom/VBox/Options" unique_id=2121759966]
+layout_mode = 2
+text = "Color:"
+
+[node name="ColorPicker" type="ColorPickerButton" parent="UI/Start/WaitingRoom/Split/Custom/VBox/Options" unique_id=1007823821]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+size_flags_vertical = 3
+color = Color(1, 1, 1, 1)
+edit_alpha = false
 
 [node name="Players" type="Node" parent="." unique_id=1556107010]
 
@@ -324,3 +473,5 @@ text = "Host"
 [connection signal="pressed" from="UI/Start/Relay/List/VBox/Actions/Join" to="UI" method="_on_relay_join_pressed"]
 [connection signal="pressed" from="UI/Start/Relay/Split/Resolve/VBox/Resolve" to="UI" method="_on_relay_resolve_pressed"]
 [connection signal="pressed" from="UI/Start/Relay/Split/Host/VBox/Host" to="UI" method="_on_relay_host_pressed"]
+[connection signal="pressed" from="UI/Start/WaitingRoom/List/VBox/Actions/Kick" to="UI" method="_on_lobby_kick_pressed"]
+[connection signal="pressed" from="UI/Start/WaitingRoom/List/VBox/Actions/Play" to="UI" method="_on_lobby_play_pressed"]

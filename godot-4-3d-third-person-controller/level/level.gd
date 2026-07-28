@@ -8,6 +8,7 @@ class_name Level
 @onready var _broken_box_spawner: DynamicSpawner = %BrokenBoxSpawner
 @onready var _coin_spawner: DynamicSpawner = %CoinSpawner
 @onready var _spawn_points: Node = %SpawnPoints
+@onready var _game_session_manager: GameSessionManager = get_node("/root/GameSessionManager")
 
 var spawn_points: Array[Node3D]
 
@@ -24,8 +25,8 @@ func _ready() -> void:
 			push_warning("Child " + child.name + " in " + _spawn_points.name + " is not a valid spawn point, expecting Node3D")
 			continue
 		spawn_points.append(child)
-	if spawn_points.size() < Lobby.MAX_PLAYERS:
-		var missing_spawn_count: int = Lobby.MAX_PLAYERS - spawn_points.size()
+	if _game_session_manager != null and spawn_points.size() < _game_session_manager.get_max_players():
+		var missing_spawn_count: int = _game_session_manager.get_max_players() - spawn_points.size()
 		push_error(_spawn_points.name + " is missing " + str(missing_spawn_count) + " child" + ("ren" if (missing_spawn_count > 1) else "") + " Node3D")
 
 func _exit_tree() -> void:

@@ -33,6 +33,7 @@ enum WEAPON_TYPE { DEFAULT, GRENADE }
 ## If melee attacks can damage other players
 @export var friendly_fire: bool = false
 
+@onready var _client_synchronizer: MultiplayerSynchronizer = $ClientSynchronizer
 @onready var _bullet_spawner: BulletSpawner = $BulletSpawner
 @onready var _rotation_root: Node3D = $CharacterRotationRoot
 @onready var _camera_controller: CameraController = $CameraController
@@ -49,6 +50,7 @@ enum WEAPON_TYPE { DEFAULT, GRENADE }
 @onready var _ui_weapon: WeaponUI = %WeaponUI
 @onready var _step_sound: AudioStreamPlayer3D = $StepSound
 @onready var _landing_sound: AudioStreamPlayer3D = $LandingSound
+@onready var _game_session_manager: GameSessionManager = get_node("/root/GameSessionManager")
 
 @onready var _start_position: Vector3 = global_transform.origin
 @onready var _shoot_cooldown_tick := shoot_cooldown
@@ -137,15 +139,13 @@ func set_multiplayer_data():
 	const recursive: bool = false
 	set_multiplayer_authority(peer_id, recursive)
 	if !recursive:
-		$ClientSynchronizer.set_multiplayer_authority(peer_id, false)
+		_client_synchronizer.set_multiplayer_authority(peer_id, false)
 		_bullet_spawner.set_multiplayer_authority(peer_id, false)
 		_grenade_aim_controller._grenade_spawner.set_multiplayer_authority(peer_id, false)
 	
-	if local:
-		var lobby: Lobby = get_node("/root/Lobby")
-		if lobby != null:
-			display_name = lobby.local_player_name
-			custom_color = lobby.local_player_color
+	if local and _game_session_manager != null:
+		display_name = _game_session_manager.local_player_name
+		custom_color = _game_session_manager.local_player_color
 	
 	# Give the player model the color of this client
 	var player_color: Color = custom_color if (is_equal_approx(custom_color.a, 1.0)) else generate_random_hsv_color(peer_id)

@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Roboblast Multiplayer"
-run/main_scene="uid://dpauvndyn1v0f"
+run/main_scene="uid://7gwd2qwpgbrr"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="uid://dj3eye6tsr06p"
 
@@ -19,6 +19,17 @@ config/icon="uid://dj3eye6tsr06p"
 
 CameraMode="*res://godot-4-3d-third-person-controller/camera_mode/camera_mode.tscn"
 FullScreenHandler="*res://godot-4-3d-third-person-controller/full_screen_handler.gd"
+EOSGRuntime="*uid://7saywdx0ipep"
+HPlatform="*uid://yl2muvqrdiud"
+HAuth="*uid://786t1jiowvvg"
+HAchievements="*uid://bis404dty5u5c"
+HFriends="*uid://uumqbey8ji5t"
+HStats="*uid://dbckdip83oone"
+HLeaderboards="*uid://b06khhf20mplm"
+HLobbies="*uid://6iqvm33q0tb1"
+HP2P="*uid://u6ae5fpm6l8q"
+HSessions="*uid://bieh2rxxahuu2"
+RoboLobbyManager="*uid://bb3il8ykmc3yr"
 
 [display]
 
@@ -32,6 +43,10 @@ window/stretch/aspect="keep_height"
 [dotnet]
 
 project/assembly_name="Roboblast Multiplayer"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/epic-online-services-godot/plugin.cfg")
 
 [input]
 
