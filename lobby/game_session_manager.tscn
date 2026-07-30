@@ -201,17 +201,51 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="VBox" type="VBoxContainer" parent="UI/Start/Relay/List" unique_id=1685907247]
+[node name="VBox" type="VBoxContainer" parent="UI/Start/Relay/List" unique_id=176089985]
 layout_mode = 2
 
 [node name="Title" type="Label" parent="UI/Start/Relay/List/VBox" unique_id=2103321876]
+visible = false
 layout_mode = 2
-text = "FIND A LOBBY"
+text = "LOBBIES"
 horizontal_alignment = 1
 
-[node name="ItemList" type="ItemList" parent="UI/Start/Relay/List/VBox" unique_id=531999099]
+[node name="HBox" type="HBoxContainer" parent="UI/Start/Relay/List/VBox" unique_id=668267363]
+clip_contents = true
 layout_mode = 2
 size_flags_vertical = 3
+
+[node name="VBox" type="VBoxContainer" parent="UI/Start/Relay/List/VBox/HBox" unique_id=1685907247]
+clip_contents = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LobbyLabel" type="Label" parent="UI/Start/Relay/List/VBox/HBox/VBox" unique_id=1386390342]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Lobby Name"
+horizontal_alignment = 1
+
+[node name="LobbyList" type="ItemList" parent="UI/Start/Relay/List/VBox/HBox/VBox" unique_id=1125921353]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+wraparound_items = false
+
+[node name="VBox2" type="VBoxContainer" parent="UI/Start/Relay/List/VBox/HBox" unique_id=474193646]
+layout_mode = 2
+alignment = 1
+
+[node name="PlayersLabel" type="Label" parent="UI/Start/Relay/List/VBox/HBox/VBox2" unique_id=1093759370]
+layout_mode = 2
+text = "Players"
+horizontal_alignment = 1
+
+[node name="PlayersList" type="ItemList" parent="UI/Start/Relay/List/VBox/HBox/VBox2" unique_id=407353459]
+custom_minimum_size = Vector2(36, 0)
+layout_mode = 2
+size_flags_vertical = 3
+wraparound_items = false
 
 [node name="Actions" type="HBoxContainer" parent="UI/Start/Relay/List/VBox" unique_id=421211623]
 layout_mode = 2
@@ -312,6 +346,21 @@ popup/item_1/id = 1
 popup/item_2/text = "Invite only"
 popup/item_2/id = 2
 
+[node name="VoiceChatLabel" type="Label" parent="UI/Start/Relay/Split/Host/VBox/Parameters" unique_id=1332861389]
+layout_mode = 2
+text = "Voice Chat"
+
+[node name="VoiceChat" type="OptionButton" parent="UI/Start/Relay/Split/Host/VBox/Parameters" unique_id=965976908]
+layout_mode = 2
+selected = 0
+item_count = 3
+popup/item_0/text = "Disabled"
+popup/item_0/id = 0
+popup/item_1/text = "Enabled (Lobby only)"
+popup/item_1/id = 1
+popup/item_2/text = "Enabled (Lobby + In Game)"
+popup/item_2/id = 3
+
 [node name="Host" type="Button" parent="UI/Start/Relay/Split/Host/VBox" unique_id=89352810]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -339,14 +388,17 @@ horizontal_alignment = 1
 layout_mode = 2
 size_flags_vertical = 3
 
+[node name="PlayerActions" type="HBoxContainer" parent="UI/Start/WaitingRoom/List/VBox" unique_id=1771427914]
+visible = false
+layout_mode = 2
+
 [node name="Actions" type="HBoxContainer" parent="UI/Start/WaitingRoom/List/VBox" unique_id=2104697516]
 layout_mode = 2
 
-[node name="Kick" type="Button" parent="UI/Start/WaitingRoom/List/VBox/Actions" unique_id=739008350]
+[node name="Leave" type="Button" parent="UI/Start/WaitingRoom/List/VBox/Actions" unique_id=616252763]
 layout_mode = 2
 size_flags_horizontal = 3
-disabled = true
-text = "Kick"
+text = "Leave"
 
 [node name="Play" type="Button" parent="UI/Start/WaitingRoom/List/VBox/Actions" unique_id=708282045]
 layout_mode = 2
@@ -385,6 +437,7 @@ size_flags_horizontal = 3
 placeholder_text = "123ABC"
 max_length = 6
 editable = false
+select_all_on_focus = true
 
 [node name="NameLabel" type="Label" parent="UI/Start/WaitingRoom/Split/Host/VBox/Settings" unique_id=85023346]
 layout_mode = 2
@@ -396,6 +449,7 @@ size_flags_horizontal = 3
 placeholder_text = "My Epic Lobby"
 max_length = 18
 editable = false
+select_all_on_focus = true
 
 [node name="MaxPlayersLabel" type="Label" parent="UI/Start/WaitingRoom/Split/Host/VBox/Settings" unique_id=1252396726]
 layout_mode = 2
@@ -424,6 +478,22 @@ popup/item_1/text = "Friends only"
 popup/item_1/id = 1
 popup/item_2/text = "Invite only"
 popup/item_2/id = 2
+
+[node name="VoiceChatLabel" type="Label" parent="UI/Start/WaitingRoom/Split/Host/VBox/Settings" unique_id=377427589]
+layout_mode = 2
+text = "Voice Chat"
+
+[node name="VoiceChat" type="OptionButton" parent="UI/Start/WaitingRoom/Split/Host/VBox/Settings" unique_id=910585148]
+layout_mode = 2
+disabled = true
+selected = 0
+item_count = 3
+popup/item_0/text = "Disabled"
+popup/item_0/id = 0
+popup/item_1/text = "Enabled (Lobby only)"
+popup/item_1/id = 1
+popup/item_2/text = "Enabled (Lobby + In Game)"
+popup/item_2/id = 3
 
 [node name="Custom" type="PanelContainer" parent="UI/Start/WaitingRoom/Split" unique_id=400755951]
 layout_mode = 2
@@ -473,5 +543,6 @@ edit_alpha = false
 [connection signal="pressed" from="UI/Start/Relay/List/VBox/Actions/Join" to="UI" method="_on_relay_join_pressed"]
 [connection signal="pressed" from="UI/Start/Relay/Split/Resolve/VBox/Resolve" to="UI" method="_on_relay_resolve_pressed"]
 [connection signal="pressed" from="UI/Start/Relay/Split/Host/VBox/Host" to="UI" method="_on_relay_host_pressed"]
-[connection signal="pressed" from="UI/Start/WaitingRoom/List/VBox/Actions/Kick" to="UI" method="_on_lobby_kick_pressed"]
+[connection signal="item_activated" from="UI/Start/WaitingRoom/List/VBox/ItemList" to="UI" method="_on_lobby_player_activated"]
+[connection signal="pressed" from="UI/Start/WaitingRoom/List/VBox/Actions/Leave" to="UI" method="_on_lobby_leave_pressed"]
 [connection signal="pressed" from="UI/Start/WaitingRoom/List/VBox/Actions/Play" to="UI" method="_on_lobby_play_pressed"]

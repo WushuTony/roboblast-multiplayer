@@ -22,5 +22,5 @@ mono_crash.*.json
 # Builds ignores
 builds/
 
-# Epic Online Services ignores
-eos_credentials.cfg
+# Env ignores
+.env

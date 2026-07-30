@@ -5,8 +5,17 @@ extends CanvasLayer
 @onready var _enet_port_spin_box: SpinBox = $Start/ENet/Panel/VBox/Options/Port
 @onready var _enet_player_name_line_edit: LineEdit = $Start/ENet/Custom/VBox/Options/Name
 @onready var _enet_player_color_picker_button: ColorPickerButton = $Start/ENet/Custom/VBox/Options/ColorPicker
+@onready var _lobby_item_list: ItemList = $Start/Relay/List/VBox/HBox/VBox/LobbyList
+@onready var _lobby_players_count_item_list: ItemList = $Start/Relay/List/VBox/HBox/VBox2/PlayersList
+@onready var _lobby_player_item_list: ItemList = $Start/WaitingRoom/List/VBox/ItemList
 @onready var _lobby_player_name_line_edit: LineEdit = $Start/WaitingRoom/Split/Custom/VBox/Options/Name
 @onready var _lobby_player_color_picker_button: ColorPickerButton = $Start/WaitingRoom/Split/Custom/VBox/Options/ColorPicker
+
+var _current_dialog: AcceptDialog = null
+var _dialog_lobby_player_product_user_id: String = ""
+var _volume_slider: HSlider = null
+var _mute_button: Button = null
+var _hard_mute_button: Button = null
 
 func _ready():
 	if RoboLobbyManager.is_singleplayer:
@@ -81,16 +90,24 @@ func _load_lobby_list(_page: int = 1) -> void:
 	# Query the lobby list API
 	var lobby_list: Array[HLobby] = await RoboLobbyManager.query_lobbies_async()
 	
+	_lobby_item_list.clear()
+	_lobby_players_count_item_list.clear()
+
 	if lobby_list == null or lobby_list.is_empty():
 		return
 	
-	# Populate item list
-	var item_list: ItemList = $Start/Relay/List/VBox/ItemList
-	item_list.clear()
+	# Populate item lists
 	for cur_lobby: HLobby in lobby_list:
 		var lobby_name_attribute: Variant = cur_lobby.get_attribute("LOBBYNAME")
 		var lobby_name: String = lobby_name_attribute.value if (lobby_name_attribute != null and not lobby_name_attribute.is_empty()) else cur_lobby.lobby_id
-		item_list.add_item(lobby_name)
+		var idx: int = _lobby_item_list.add_item(lobby_name)
+		_lobby_item_list.set_item_metadata(idx, cur_lobby)
+		_lobby_item_list.set_item_tooltip_enabled(idx, false)
+		
+		var lobby_players: String = str(cur_lobby.members.size(), "/", cur_lobby.max_members)
+		idx = _lobby_players_count_item_list.add_item(lobby_players)
+		_lobby_players_count_item_list.set_item_selectable(idx, false)
+		_lobby_players_count_item_list.set_item_tooltip_enabled(idx, false)
 
 func _on_relay_refresh_pressed() -> void:
 	_load_lobby_list()
@@ -101,13 +118,12 @@ func _on_relay_refresh_pressed() -> void:
 
 func _on_relay_join_pressed() -> void:
 	# Determine the selected lobby
-	var selected_items: PackedInt32Array = $Start/Relay/List/VBox/ItemList.get_selected_items()
+	var selected_items: PackedInt32Array = _lobby_item_list.get_selected_items()
 	if selected_items.is_empty():
 		return
-	var lobby_list: Array[HLobby] = RoboLobbyManager.get_lobbies()
-	if lobby_list == null or selected_items[0] >= lobby_list.size():
+	var selected_lobby: HLobby = _lobby_item_list.get_item_metadata(selected_items[0])
+	if selected_lobby == null or not selected_lobby.is_valid():
 		return
-	var selected_lobby: HLobby = lobby_list[selected_items[0]]
 	
 	# Try to connect
 	$Start/Relay.hide()
@@ -136,10 +152,11 @@ func _on_relay_host_pressed() -> void:
 		return
 	var max_players: int = $Start/Relay/Split/Host/VBox/Parameters/MaxPlayers.value
 	var visibility_idx: int = $Start/Relay/Split/Host/VBox/Parameters/Visibility.get_selected_id()
+	var voice_chat_mode: int = $Start/Relay/Split/Host/VBox/Parameters/VoiceChat.get_selected_id()
 	
 	# Start a new lobby
 	$Start/Relay.hide()
-	if await RoboLobbyManager.create_lobby_async(lobby_name, max_players, visibility_idx):
+	if await RoboLobbyManager.create_lobby_async(lobby_name, max_players, visibility_idx, voice_chat_mode):
 		_init_waiting_room()
 	else:
 		$Start/Relay.show()
@@ -158,6 +175,9 @@ func _init_waiting_room(auto_show: bool = true) -> void:
 	$Start/WaitingRoom/Split/Host/VBox/Settings/JoinCode.text = join_code
 	$Start/WaitingRoom/Split/Host/VBox/Settings/MaxPlayers.value = RoboLobbyManager.local_lobby.max_members
 	$Start/WaitingRoom/Split/Host/VBox/Settings/Visibility.select(RoboLobbyManager.local_lobby.permission_level)
+	var voice_chat_mode_attribute: Dictionary = RoboLobbyManager.local_lobby.get_attribute("VOICECHATMODE")
+	var voice_chat_mode: int = voice_chat_mode_attribute.value if (voice_chat_mode_attribute != null) else 0
+	$Start/WaitingRoom/Split/Host/VBox/Settings/VoiceChat.select(voice_chat_mode)
 	
 	_update_waiting_room_players()
 	var peer: EOSGMultiplayerPeer = multiplayer.multiplayer_peer
@@ -174,13 +194,12 @@ func _init_waiting_room(auto_show: bool = true) -> void:
 		$Start/WaitingRoom.show()
 
 func _update_waiting_room_players() -> void:
-	if RoboLobbyManager.local_lobby == null or RoboLobbyManager.local_lobby.members == null:
-		$Start/WaitingRoom/List/VBox/Actions/Kick.disabled = true
+	_lobby_player_item_list.clear()
+	
+	if RoboLobbyManager.local_lobby == null or not RoboLobbyManager.local_lobby.is_valid():
 		return
 	
 	# Populate item list
-	var item_list: ItemList = $Start/WaitingRoom/List/VBox/ItemList
-	item_list.clear()
 	for cur_player: HLobbyMember in RoboLobbyManager.local_lobby.members:
 		var username_attribute: Dictionary = cur_player.get_attribute("USERNAME")
 		var username: String = username_attribute.value if (username_attribute != null and not username_attribute.is_empty()) else "Player" + cur_player.product_user_id
@@ -188,9 +207,8 @@ func _update_waiting_room_players() -> void:
 			username += " [Host]"
 		elif cur_player.is_self():
 			username += " [Self]"
-		item_list.add_item(username)
-	
-	$Start/WaitingRoom/List/VBox/Actions/Kick.disabled = item_list.item_count < 2 or not RoboLobbyManager.local_lobby.is_owner()
+		var idx: int = _lobby_player_item_list.add_item(username)
+		_lobby_player_item_list.set_item_metadata(idx, cur_player)
 
 func _on_peer_connection_established(_callback_data: Dictionary) -> void:
 	print("Connection established")
@@ -212,36 +230,140 @@ func _on_kicked_from_lobby() -> void:
 func _on_lobby_player_color_picker_created() -> void:
 	_on_player_color_picker_created(_lobby_player_color_picker_button)
 
-## Kick the selected player(s)
-func _on_lobby_kick_pressed() -> void:
-	if (RoboLobbyManager.local_lobby == null or
-		not RoboLobbyManager.local_lobby.is_owner() or
-		RoboLobbyManager.local_lobby.members == null):
+func _on_lobby_player_activated(index: int) -> void:
+	var cur_player: HLobbyMember = _lobby_player_item_list.get_item_metadata(index)
+	if cur_player == null:
+		push_warning("Trying to edit a lobby player that is not valid")
 		return
-	
-	var item_list: ItemList = $Start/WaitingRoom/List/VBox/ItemList
-	if not item_list.is_anything_selected():
-		return
-	
-	var selected_items: PackedInt32Array = item_list.get_selected_items()
-	# Sort the array in descending order (so we kick members starting from the end of the array)
-	selected_items.sort()
-	selected_items.reverse()
-	for i in selected_items:
-		var member: HLobbyMember = null
-		if i < RoboLobbyManager.local_lobby.members.size():
-			member = RoboLobbyManager.local_lobby.members[i]
-		
-		if member == null or member.is_owner():
-			continue
-		
-		await member.kick_member_async()
 
-func _on_game_started(_level_idx: int) -> void:
-	hide()
+	_current_dialog = AcceptDialog.new()
+	_current_dialog.title = _lobby_player_item_list.get_item_text(index)
+	_current_dialog.dialog_text = ""
+	_dialog_lobby_player_product_user_id = cur_player.product_user_id
+
+	_current_dialog.get_ok_button().hide()
+
+	var volume_container: HBoxContainer = HBoxContainer.new()
+	var volume_label: Label = Label.new()
+	volume_label.text = "Volume"
+	volume_container.add_child(volume_label)
+	_volume_slider = HSlider.new()
+	_volume_slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_volume_slider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_volume_slider.set_value_no_signal(_volume_slider.max_value) # TODO: Get the current volume
+	_volume_slider.drag_ended.connect(_on_lobby_player_volume_slider_drag_ended)
+	volume_container.add_child(_volume_slider)
+	_current_dialog.add_child(volume_container)
+
+	_mute_button = _current_dialog.add_button("Mute")
+	_mute_button.text = "Unmute" if cur_player.is_muted() else "Mute"
+	_mute_button.pressed.connect(_on_lobby_player_mute_pressed)
+
+	if (RoboLobbyManager.local_lobby != null and
+		RoboLobbyManager.local_lobby.is_valid() and
+		RoboLobbyManager.local_lobby.is_owner()):
+		if not cur_player.is_self():
+			_hard_mute_button = _current_dialog.add_button("Hard-mute")
+			_hard_mute_button.text = "Un Hard-mute" if cur_player.is_hard_muted() else "Hard-mute"
+			_hard_mute_button.pressed.connect(_on_lobby_player_hard_mute_pressed)
+
+			var kick_button: Button = _current_dialog.add_button("Kick")
+			kick_button.pressed.connect(_on_lobby_player_kick_pressed)
+
+	add_child(_current_dialog)
+	_current_dialog.popup_centered(Vector2i(300, 100))
+	_current_dialog.unresizable = true
+	_current_dialog.show()
+
+func _on_lobby_player_volume_slider_drag_ended(value_changed: bool) -> void:
+	if not value_changed:
+		return
+
+	if RoboLobbyManager.local_lobby == null or not RoboLobbyManager.local_lobby.is_valid():
+		return
+
+	var player_to_change_volume: HLobbyMember = RoboLobbyManager.local_lobby.get_member_by_product_user_id(_dialog_lobby_player_product_user_id)
+	if player_to_change_volume == null:
+		return
+
+	var new_volume: float = _volume_slider.ratio
+	await RoboLobbyManager.set_volume_member_async(player_to_change_volume, new_volume)
+
+func _on_lobby_player_mute_pressed() -> void:
+	if RoboLobbyManager.local_lobby == null or not RoboLobbyManager.local_lobby.is_valid():
+		return
+
+	var player_to_toggle_mute: HLobbyMember = RoboLobbyManager.local_lobby.get_member_by_product_user_id(_dialog_lobby_player_product_user_id)
+	if player_to_toggle_mute == null:
+		return
+
+	_mute_button.disabled = true
+	if await player_to_toggle_mute.toggle_mute_member_async():
+		if _mute_button == null:
+			return
+		_mute_button.text = "Unmute" if player_to_toggle_mute.is_muted() else "Mute"
+
+	_mute_button.disabled = false
+
+func _on_lobby_player_hard_mute_pressed() -> void:
+	if RoboLobbyManager.local_lobby == null or not RoboLobbyManager.local_lobby.is_valid():
+		return
+
+	var player_to_toggle_hard_mute: HLobbyMember = RoboLobbyManager.local_lobby.get_member_by_product_user_id(_dialog_lobby_player_product_user_id)
+	if player_to_toggle_hard_mute == null:
+		return
+
+	_hard_mute_button.disabled = true
+	if await player_to_toggle_hard_mute.toggle_hard_mute_member_async():
+		if _hard_mute_button == null:
+			return
+		_hard_mute_button.text = "Un Hard-mute" if player_to_toggle_hard_mute.is_hard_muted() else "Hard-mute"
+
+	_hard_mute_button.disabled = false
+
+func _on_lobby_player_kick_pressed() -> void:
+	remove_child(_current_dialog)
+	_current_dialog.queue_free()
+
+	if RoboLobbyManager.local_lobby == null or not RoboLobbyManager.local_lobby.is_valid():
+		return
+
+	var player_to_kick: HLobbyMember = RoboLobbyManager.local_lobby.get_member_by_product_user_id(_dialog_lobby_player_product_user_id)
+	if player_to_kick == null:
+		return
+
+	player_to_kick.kick_member_async()
+
+func _on_lobby_leave_pressed() -> void:
+	_current_dialog = ConfirmationDialog.new()
+	_current_dialog.title = "Leave Lobby"
+	_current_dialog.dialog_text = "You are about to leave the lobby, are you sure?"
+
+	_current_dialog.canceled.connect(_on_lobby_leave_canceled)
+	_current_dialog.confirmed.connect(_on_lobby_leave_confirmed)
+
+	add_child(_current_dialog)
+	_current_dialog.popup_centered()
+	_current_dialog.unresizable = true
+	_current_dialog.show()
+
+func _on_lobby_leave_canceled() -> void:
+	remove_child(_current_dialog)
+	_current_dialog.queue_free()
+
+func _on_lobby_leave_confirmed() -> void:
+	remove_child(_current_dialog)
+	_current_dialog.queue_free()
+
+	if await RoboLobbyManager.leave_async():
+		$Start/WaitingRoom.hide()
+		$Start/Relay.show()
 
 func _on_lobby_play_pressed() -> void:
 	RoboLobbyManager.start_game()
+
+func _on_game_started(_level_idx: int) -> void:
+	hide()
 
 # Player Customisation
 

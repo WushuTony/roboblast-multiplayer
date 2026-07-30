@@ -17,6 +17,8 @@ config/icon="uid://dj3eye6tsr06p"
 
 [autoload]
 
+Env="*uid://bnnx8601g2qg1"
+EOSCredentials="*uid://brrqmaah4ohu3"
 CameraMode="*res://godot-4-3d-third-person-controller/camera_mode/camera_mode.tscn"
 FullScreenHandler="*res://godot-4-3d-third-person-controller/full_screen_handler.gd"
 EOSGRuntime="*uid://7saywdx0ipep"

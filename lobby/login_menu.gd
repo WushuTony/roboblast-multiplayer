@@ -20,8 +20,10 @@ func _initialise_lobby():
 		message_label.text = "Online services initialised"
 		online_button.disabled = false
 	else:
-		message_label.text = "Failed to initialise online services\nTrying again"
-		_initialise_lobby()
+		if message_label.text.begins_with("Initialising"):
+			message_label.text = "Failed to initialise online services\nTrying again"
+		await get_tree().create_timer(1.0).timeout
+		_initialise_lobby.call_deferred()
 
 func _on_message_dots_timer_timeout() -> void:
 	if RoboLobbyManager.is_initialised():

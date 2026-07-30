@@ -29,7 +29,8 @@ func _ready() -> void:
 		multiplayer.peer_connected.connect(_on_peer_connected)
 		multiplayer.peer_disconnected.connect(_on_peer_disconnected)
 		if not headless_mode:
-			players_pausing_game.append(1)
+			players_pausing_game.append(multiplayer.get_unique_id())
+		players_pausing_game.append_array(multiplayer.get_peers())
 	
 	if headless_mode:
 		return
@@ -38,7 +39,7 @@ func _ready() -> void:
 	
 	demo_page_root.gui_input.connect(_demo_page_root_gui_input)
 	resume_button.pressed.connect(_on_resume_button_pressed)
-	exit_button.pressed.connect(get_tree().quit)
+	exit_button.pressed.connect(_on_exit_button_pressed)
 	keyboard_button.pressed.connect(change_instruction.bind(INSTRUCTION_TYPES.KEYBOARD))
 	joypad_button.pressed.connect(change_instruction.bind(INSTRUCTION_TYPES.JOYPAD))
 	
@@ -115,6 +116,13 @@ func _on_resume_button_pressed() -> void:
 		resume_demo_for_player.rpc_id(1)
 	else:
 		hide_demo_page()
+
+
+func _on_exit_button_pressed() -> void:
+	if get_tree().auto_accept_quit:
+		get_tree().quit()
+	else:
+		get_tree().root.propagate_notification(NOTIFICATION_WM_CLOSE_REQUEST)
 
 
 @rpc("any_peer", "call_local", "reliable")
