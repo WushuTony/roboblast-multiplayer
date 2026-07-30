@@ -177,7 +177,8 @@ func _init_waiting_room(auto_show: bool = true) -> void:
 	$Start/WaitingRoom/Split/Host/VBox/Settings/Visibility.select(RoboLobbyManager.local_lobby.permission_level)
 	var voice_chat_mode_attribute: Dictionary = RoboLobbyManager.local_lobby.get_attribute("VOICECHATMODE")
 	var voice_chat_mode: int = voice_chat_mode_attribute.value if (voice_chat_mode_attribute != null) else 0
-	$Start/WaitingRoom/Split/Host/VBox/Settings/VoiceChat.select(voice_chat_mode)
+	var vc_idx: int = $Start/WaitingRoom/Split/Host/VBox/Settings/VoiceChat.get_item_index(voice_chat_mode)
+	$Start/WaitingRoom/Split/Host/VBox/Settings/VoiceChat.select(vc_idx)
 	
 	_update_waiting_room_players()
 	var peer: EOSGMultiplayerPeer = multiplayer.multiplayer_peer
