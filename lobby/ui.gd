@@ -7,7 +7,9 @@ extends CanvasLayer
 @onready var _enet_player_color_picker_button: ColorPickerButton = $Start/ENet/Custom/VBox/Options/ColorPicker
 @onready var _lobby_item_list: ItemList = $Start/Relay/List/VBox/HBox/VBox/LobbyList
 @onready var _lobby_players_count_item_list: ItemList = $Start/Relay/List/VBox/HBox/VBox2/PlayersList
-@onready var _lobby_player_item_list: ItemList = $Start/WaitingRoom/List/VBox/ItemList
+@onready var _lobby_player_item_list: ItemList = $Start/WaitingRoom/VBox/List/VBox/ItemList
+@onready var _lobby_text_chat_item_list: AutowrapItemList = $Start/WaitingRoom/VBox/Chat/VBox/ItemList
+@onready var _lobby_text_chat_line_edit: LineEdit = $Start/WaitingRoom/VBox/Chat/VBox/Text
 @onready var _lobby_player_name_line_edit: LineEdit = $Start/WaitingRoom/Split/Custom/VBox/Options/Name
 @onready var _lobby_player_color_picker_button: ColorPickerButton = $Start/WaitingRoom/Split/Custom/VBox/Options/ColorPicker
 
@@ -49,6 +51,7 @@ func _ready():
 			_lobby_player_color_picker_button.picker_created.connect(_on_lobby_player_color_picker_created, CONNECT_ONE_SHOT)
 			_lobby_player_color_picker_button.popup_closed.connect(_on_player_color_picker_closed)
 			# Listen to the lobby manager's signals
+			RoboLobbyManager.chat_message_received.connect(_on_chat_message_received)
 			RoboLobbyManager.game_started.connect(_on_game_started)
 			# Prepare lobby list
 			_load_lobby_list()
@@ -105,8 +108,7 @@ func _load_lobby_list(_page: int = 1) -> void:
 		_lobby_item_list.set_item_tooltip_enabled(idx, false)
 		
 		var lobby_players: String = str(cur_lobby.members.size(), "/", cur_lobby.max_members)
-		idx = _lobby_players_count_item_list.add_item(lobby_players)
-		_lobby_players_count_item_list.set_item_selectable(idx, false)
+		idx = _lobby_players_count_item_list.add_item(lobby_players, null, false)
 		_lobby_players_count_item_list.set_item_tooltip_enabled(idx, false)
 
 func _on_relay_refresh_pressed() -> void:
@@ -165,7 +167,7 @@ func _init_waiting_room(auto_show: bool = true) -> void:
 	if RoboLobbyManager.local_lobby == null:
 		return
 	
-	$Start/WaitingRoom/List/VBox/Actions/Play.disabled = not RoboLobbyManager.local_lobby.is_owner()
+	$Start/WaitingRoom/VBox/List/VBox/Actions/Play.disabled = not RoboLobbyManager.local_lobby.is_owner()
 	
 	var lobby_name_attribute: Dictionary = RoboLobbyManager.local_lobby.get_attribute("LOBBYNAME")
 	var lobby_name: String = lobby_name_attribute.value if (lobby_name_attribute != null and not lobby_name_attribute.is_empty()) else RoboLobbyManager.local_lobby.lobby_id
@@ -210,6 +212,7 @@ func _update_waiting_room_players() -> void:
 			username += " [Self]"
 		var idx: int = _lobby_player_item_list.add_item(username)
 		_lobby_player_item_list.set_item_metadata(idx, cur_player)
+		_lobby_player_item_list.set_item_tooltip_enabled(idx, false)
 
 func _on_peer_connection_established(_callback_data: Dictionary) -> void:
 	print("Connection established")
@@ -226,6 +229,8 @@ func _on_lobby_updated() -> void:
 func _on_kicked_from_lobby() -> void:
 	print("Kicked from lobby")
 	$Start/WaitingRoom.hide()
+	if _lobby_text_chat_item_list != null:
+		_lobby_text_chat_item_list.clear()
 	$Start/Relay.show()
 
 func _on_lobby_player_color_picker_created() -> void:
@@ -358,6 +363,8 @@ func _on_lobby_leave_confirmed() -> void:
 
 	if await RoboLobbyManager.leave_async():
 		$Start/WaitingRoom.hide()
+		if _lobby_text_chat_item_list != null:
+			_lobby_text_chat_item_list.clear()
 		$Start/Relay.show()
 
 func _on_lobby_play_pressed() -> void:
@@ -365,6 +372,47 @@ func _on_lobby_play_pressed() -> void:
 
 func _on_game_started(_level_idx: int) -> void:
 	hide()
+
+# Text Chat
+
+func _on_lobby_text_chat_submitted(new_text: String) -> void:
+	if RoboLobbyManager.send_chat_message(new_text):
+		_lobby_text_chat_line_edit.clear()
+	else:
+		# Temporarily disable the text box and shake to indicate the failure
+		_lobby_text_chat_line_edit.editable = false
+		var tween: Tween = create_tween()
+		var original_text_position: Vector2 = _lobby_text_chat_line_edit.position
+		const shake_duration: float = 0.3
+		tween.tween_method(_lobby_text_chat_shake.bind(original_text_position), 1.0, 0.0, shake_duration)\
+			.set_trans(Tween.TRANS_LINEAR)\
+			.set_ease(Tween.EASE_IN_OUT)
+		tween.tween_callback(_on_lobby_text_chat_shake_finished.bind(original_text_position))
+
+func _lobby_text_chat_shake(decay: float, original_text_position: Vector2) -> void:
+	if _lobby_text_chat_line_edit == null:
+		return
+
+	# Calculate a random offset scaled by the current decay phase
+	const shake_intensity: float = 10.0
+	var current_intensity: float = shake_intensity * decay
+	var random_offset: Vector2 = Vector2(
+		randf_range(-current_intensity, current_intensity),
+		randf_range(-current_intensity, current_intensity)
+	)
+
+	_lobby_text_chat_line_edit.position = original_text_position + random_offset
+
+func _on_lobby_text_chat_shake_finished(original_text_position: Vector2) -> void:
+	if _lobby_text_chat_line_edit != null:
+		_lobby_text_chat_line_edit.position = original_text_position
+		_lobby_text_chat_line_edit.editable = true
+
+func _on_chat_message_received(username: String, message: String) -> void:
+	if _lobby_text_chat_item_list != null:
+		var item_indexes: Array[int] = _lobby_text_chat_item_list.add_wrapped_items(username + ": " + message, null, false)
+		for idx in item_indexes:
+			_lobby_text_chat_item_list.set_item_tooltip_enabled(idx, false)
 
 # Player Customisation
 

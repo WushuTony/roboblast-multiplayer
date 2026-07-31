@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dd68ons6qrff6" path="res://lobby/game_session_manager.gd" id="1_b1fqd"]
 [ext_resource type="Script" uid="uid://cyrxpaol63y2b" path="res://lobby/ui.gd" id="2_nagtv"]
+[ext_resource type="Script" uid="uid://74j4oyx4s7s0" path="res://lobby/autowrap_item_list.gd" id="3_nagtv"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1ig7j"]
 content_margin_left = 8.0
@@ -371,40 +372,76 @@ visible = false
 custom_minimum_size = Vector2(768, 512)
 layout_mode = 2
 
-[node name="List" type="PanelContainer" parent="UI/Start/WaitingRoom" unique_id=178497931]
+[node name="VBox" type="VBoxContainer" parent="UI/Start/WaitingRoom" unique_id=1313973505]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="List" type="PanelContainer" parent="UI/Start/WaitingRoom/VBox" unique_id=178497931]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+size_flags_stretch_ratio = 1.5
 
-[node name="VBox" type="VBoxContainer" parent="UI/Start/WaitingRoom/List" unique_id=1615672497]
+[node name="VBox" type="VBoxContainer" parent="UI/Start/WaitingRoom/VBox/List" unique_id=1615672497]
 layout_mode = 2
 
-[node name="Title" type="Label" parent="UI/Start/WaitingRoom/List/VBox" unique_id=196124377]
+[node name="Title" type="Label" parent="UI/Start/WaitingRoom/VBox/List/VBox" unique_id=196124377]
 layout_mode = 2
 text = "PLAYERS"
 horizontal_alignment = 1
 
-[node name="ItemList" type="ItemList" parent="UI/Start/WaitingRoom/List/VBox" unique_id=463684754]
+[node name="ItemList" type="ItemList" parent="UI/Start/WaitingRoom/VBox/List/VBox" unique_id=463684754]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="PlayerActions" type="HBoxContainer" parent="UI/Start/WaitingRoom/List/VBox" unique_id=1771427914]
+[node name="PlayerActions" type="HBoxContainer" parent="UI/Start/WaitingRoom/VBox/List/VBox" unique_id=1771427914]
 visible = false
 layout_mode = 2
 
-[node name="Actions" type="HBoxContainer" parent="UI/Start/WaitingRoom/List/VBox" unique_id=2104697516]
+[node name="Actions" type="HBoxContainer" parent="UI/Start/WaitingRoom/VBox/List/VBox" unique_id=2104697516]
 layout_mode = 2
 
-[node name="Leave" type="Button" parent="UI/Start/WaitingRoom/List/VBox/Actions" unique_id=616252763]
+[node name="Leave" type="Button" parent="UI/Start/WaitingRoom/VBox/List/VBox/Actions" unique_id=616252763]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Leave"
 
-[node name="Play" type="Button" parent="UI/Start/WaitingRoom/List/VBox/Actions" unique_id=708282045]
+[node name="Play" type="Button" parent="UI/Start/WaitingRoom/VBox/List/VBox/Actions" unique_id=708282045]
 layout_mode = 2
 size_flags_horizontal = 3
 disabled = true
 text = "Play"
+
+[node name="Chat" type="PanelContainer" parent="UI/Start/WaitingRoom/VBox" unique_id=1423157390]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBox" type="VBoxContainer" parent="UI/Start/WaitingRoom/VBox/Chat" unique_id=993603033]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="UI/Start/WaitingRoom/VBox/Chat/VBox" unique_id=1508185367]
+layout_mode = 2
+text = "TEXT CHAT"
+horizontal_alignment = 1
+
+[node name="ItemList" type="ItemList" parent="UI/Start/WaitingRoom/VBox/Chat/VBox" unique_id=1473197175]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/guide_color = Color(0.69803923, 0.69803923, 0.69803923, 0)
+text_overrun_behavior = 0
+scroll_hint_mode = 1
+script = ExtResource("3_nagtv")
+autowrap_mode = 3
+autoscroll_bottom = true
+max_item_count = 50
+metadata/_custom_type_script = "uid://74j4oyx4s7s0"
+
+[node name="Text" type="LineEdit" parent="UI/Start/WaitingRoom/VBox/Chat/VBox" unique_id=804102505]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Enter chat here"
+max_length = 128
+keep_editing_on_text_submit = true
 
 [node name="Split" type="VBoxContainer" parent="UI/Start/WaitingRoom" unique_id=799258455]
 layout_mode = 2
@@ -543,6 +580,7 @@ edit_alpha = false
 [connection signal="pressed" from="UI/Start/Relay/List/VBox/Actions/Join" to="UI" method="_on_relay_join_pressed"]
 [connection signal="pressed" from="UI/Start/Relay/Split/Resolve/VBox/Resolve" to="UI" method="_on_relay_resolve_pressed"]
 [connection signal="pressed" from="UI/Start/Relay/Split/Host/VBox/Host" to="UI" method="_on_relay_host_pressed"]
-[connection signal="item_activated" from="UI/Start/WaitingRoom/List/VBox/ItemList" to="UI" method="_on_lobby_player_activated"]
-[connection signal="pressed" from="UI/Start/WaitingRoom/List/VBox/Actions/Leave" to="UI" method="_on_lobby_leave_pressed"]
-[connection signal="pressed" from="UI/Start/WaitingRoom/List/VBox/Actions/Play" to="UI" method="_on_lobby_play_pressed"]
+[connection signal="item_activated" from="UI/Start/WaitingRoom/VBox/List/VBox/ItemList" to="UI" method="_on_lobby_player_activated"]
+[connection signal="pressed" from="UI/Start/WaitingRoom/VBox/List/VBox/Actions/Leave" to="UI" method="_on_lobby_leave_pressed"]
+[connection signal="pressed" from="UI/Start/WaitingRoom/VBox/List/VBox/Actions/Play" to="UI" method="_on_lobby_play_pressed"]
+[connection signal="text_submitted" from="UI/Start/WaitingRoom/VBox/Chat/VBox/Text" to="UI" method="_on_lobby_text_chat_submitted"]

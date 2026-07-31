@@ -6,6 +6,8 @@ extends Node
 @export_subgroup("Debug")
 @export var print_sdk_logs: bool = false
 
+## Emitted for all users when a player sends a text message in the lobby's chat.
+signal chat_message_received(username: String, message: String)
 ## Emitted for all users when the host of the local lobby starts the game.
 signal game_started(level_idx: int)
 
@@ -352,6 +354,29 @@ func set_volume_member_async(member: HLobbyMember, new_volume: float) -> bool:
 
 	return true
 
+## Send a chat message to all the players in the lobby[br]
+## Emits [signal chat_message_received][br]
+## Returns [code]true[/code] if the message was sent successfully
+func send_chat_message(message: String) -> bool:
+	# Don't send the message if we're not in a lobby or if we're alone
+	if local_lobby == null or not local_lobby.is_valid() or local_lobby.members.size() < 2:
+		return false
+
+	var username_attribute: Dictionary = local_lobby.get_current_member_attribute("USERNAME")
+	var username: String = username_attribute.value if (username_attribute != null and not username_attribute.is_empty()) else "Player" + HAuth.product_user_id
+	var data: Variant = {
+		"type": "chat",
+		"username": username,
+		"message": message
+	}
+	var success: bool = local_lobby.rtc_send_data(data)
+	if not success:
+		push_error("Failed to send chat message: ", message)
+		return false
+
+	chat_message_received.emit.call_deferred(data.username, data.message)
+	return true
+
 #GAME CODE
 #-----------------------------------#
 ## Notify all the players in the [member local_lobby] to start the game[br]
@@ -371,9 +396,9 @@ func start_game() -> void:
 		"type": "start_game",
 		"level_idx": 0
 	}
-	var success = local_lobby.rtc_send_data(data)
+	var success: bool = local_lobby.rtc_send_data(data)
 	if not success:
-		push_error("Failed to send start_game message")
+		push_error("Failed to send %s message" % data.type)
 		return
 
 	game_started.emit(data.level_idx)
@@ -381,6 +406,8 @@ func start_game() -> void:
 func _on_rtc_data_received(raw_data: PackedByteArray):
 	var data: Variant = bytes_to_var(raw_data)
 	match (data.type):
+		"chat":
+			chat_message_received.emit.call_deferred(data.username, data.message)
 		"start_game":
 			game_started.emit.call_deferred(data.level_idx)
 		_:
