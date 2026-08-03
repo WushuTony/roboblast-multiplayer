@@ -486,6 +486,7 @@ size_flags_horizontal = 3
 placeholder_text = "My Epic Lobby"
 max_length = 18
 editable = false
+emoji_menu_enabled = false
 select_all_on_focus = true
 
 [node name="MaxPlayersLabel" type="Label" parent="UI/Start/WaitingRoom/Split/Host/VBox/Settings" unique_id=1252396726]
@@ -556,6 +557,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Player Name"
 max_length = 18
+emoji_menu_enabled = false
 
 [node name="ColorLabel" type="Label" parent="UI/Start/WaitingRoom/Split/Custom/VBox/Options" unique_id=2121759966]
 layout_mode = 2

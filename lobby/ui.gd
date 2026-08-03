@@ -13,11 +13,20 @@ extends CanvasLayer
 @onready var _lobby_player_name_line_edit: LineEdit = $Start/WaitingRoom/Split/Custom/VBox/Options/Name
 @onready var _lobby_player_color_picker_button: ColorPickerButton = $Start/WaitingRoom/Split/Custom/VBox/Options/ColorPicker
 
+# This is different from the regex used for the final validation as we need to allow:
+# - Fewer characters (for when the player starts typing)
+# - A trailing space/dash (as the user might type a word after that)
+# - Editing the text without discarding a valid substr (in case a part failed validation)
+var _player_name_regex: RegEx = null
+
 var _current_dialog: AcceptDialog = null
 var _dialog_lobby_player_product_user_id: String = ""
 var _volume_slider: HSlider = null
 var _mute_button: Button = null
 var _hard_mute_button: Button = null
+
+func _init():
+	_player_name_regex = RegEx.create_from_string("([a-zA-Z0-9][ _-]?)*")
 
 func _ready():
 	if RoboLobbyManager.is_singleplayer:
@@ -28,25 +37,34 @@ func _ready():
 	$Start/WaitingRoom.hide()
 	
 	match (_game_session_manager.connection_mode):
-		0: # ENet
+		GameSessionManager.ConnectionMode.ENET:
 			$Start/ENet.show()
 			$Start/WebSocket.hide()
 			$Start/Relay.hide()
+			# Initialise the player customisation
+			_enet_player_name_line_edit.text = _game_session_manager.local_player_name
+			if _game_session_manager.validate_player_color(_game_session_manager.local_player_color):
+				_enet_player_color_picker_button.color = _game_session_manager.local_player_color
 			# Listen to the player customisation signals
 			_enet_player_name_line_edit.text_changed.connect(_on_player_name_changed)
 			_enet_player_color_picker_button.color_changed.connect(_on_player_color_changed)
 			_enet_player_color_picker_button.picker_created.connect(_on_enet_player_color_picker_created, CONNECT_ONE_SHOT)
 			_enet_player_color_picker_button.popup_closed.connect(_on_player_color_picker_closed)
-		1: # WebSocket
+		GameSessionManager.ConnectionMode.WEBSOCKET:
 			$Start/ENet.hide()
 			$Start/WebSocket.show()
 			$Start/Relay.hide()
-		2: # Relay
+		GameSessionManager.ConnectionMode.RELAY:
 			$Start/ENet.hide()
 			$Start/WebSocket.hide()
 			$Start/Relay.show()
+			# Initialise the player customisation
+			_lobby_player_name_line_edit.text = _game_session_manager.local_player_name
+			if _game_session_manager.validate_player_color(_game_session_manager.local_player_color):
+				_lobby_player_color_picker_button.color = _game_session_manager.local_player_color
 			# Listen to the player customisation signals
-			_lobby_player_name_line_edit.text_changed.connect(_on_player_name_changed)
+			_lobby_player_name_line_edit.text_changed.connect(_on_lobby_player_name_changed)
+			_lobby_player_name_line_edit.text_submitted.connect(_on_lobby_player_name_submitted)
 			_lobby_player_color_picker_button.color_changed.connect(_on_player_color_changed)
 			_lobby_player_color_picker_button.picker_created.connect(_on_lobby_player_color_picker_created, CONNECT_ONE_SHOT)
 			_lobby_player_color_picker_button.popup_closed.connect(_on_player_color_picker_closed)
@@ -232,6 +250,34 @@ func _on_kicked_from_lobby() -> void:
 	if _lobby_text_chat_item_list != null:
 		_lobby_text_chat_item_list.clear()
 	$Start/Relay.show()
+
+func _on_lobby_player_name_changed(new_name: String):
+	# Remember the position of the caret.
+	var caret_position: int = _lobby_player_name_line_edit.caret_column
+
+	# Filter the new name according to the regular expession.
+	var filtered: String = ""
+	for result: RegExMatch in _player_name_regex.search_all(new_name):
+		filtered += result.strings[0]
+
+	# If anything was filtered, restore the caret position accordingly.
+	if filtered != new_name:
+		_lobby_player_name_line_edit.text = filtered
+		_lobby_player_name_line_edit.caret_column = caret_position - (new_name.length() - filtered.length())
+
+	_on_player_name_changed(filtered)
+
+func _on_lobby_player_name_submitted(new_name: String):
+	if RoboLobbyManager.local_lobby == null or not RoboLobbyManager.local_lobby.is_valid():
+		return
+
+	if _game_session_manager == null or not _game_session_manager.validate_player_name(new_name):
+		# If the new_name is empty, then lets update anyway, the lobby might want to reset it to its
+		# default value.
+		if not new_name.is_empty():
+			return
+
+	await RoboLobbyManager.update_username_async(new_name)
 
 func _on_lobby_player_color_picker_created() -> void:
 	_on_player_color_picker_created(_lobby_player_color_picker_button)

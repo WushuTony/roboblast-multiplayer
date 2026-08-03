@@ -31,6 +31,7 @@ enum VoiceChatMode
 }
 
 var local_user_id: String = ""
+var local_username: String = ""
 var _is_initialising: bool = false
 var _init_status: InitialisationSequence = InitialisationSequence.INITIALISE_PLATFORM
 var _are_sdk_logs_setup: bool = false
@@ -198,7 +199,8 @@ func create_lobby_async(lobby_name: String, max_players: int = -1, visibility: i
 	var join_code: String = _generate_join_code()
 	new_lobby.add_attribute("JOINCODE", join_code)
 	new_lobby.add_attribute("VOICECHATMODE", voice_chat_mode)
-	new_lobby.add_current_member_attribute("USERNAME", HAuth.display_name)
+	var username: String = HAuth.display_name if local_username.is_empty() else local_username
+	new_lobby.add_current_member_attribute("USERNAME", username)
 	if not await new_lobby.update_async():
 		printerr("Failed to add attributes to the created lobby")
 		return false
@@ -249,7 +251,8 @@ func join_lobby_async(lobby: HLobby) -> bool:
 	if new_lobby == null:
 		return false
 
-	new_lobby.add_current_member_attribute("USERNAME", HAuth.display_name)
+	var username: String = HAuth.display_name if local_username.is_empty() else local_username
+	new_lobby.add_current_member_attribute("USERNAME", username)
 	if not await new_lobby.update_async():
 		push_warning("Failed to add attributes to the joined lobby")
 
@@ -333,6 +336,27 @@ func _on_kicked_from_lobby() -> void:
 
 #LOBBY MEMBER CODE
 #-----------------------------------#
+## Update the username of the current player in the lobby[br]
+## Returns [code]true[/code] if the update was successful
+func update_username_async(new_username: String) -> bool:
+	if local_lobby == null or not local_lobby.is_valid():
+		return false
+
+	# If the new_username is empty, then lets reset it to its default value
+	if new_username.is_empty():
+		new_username = HAuth.display_name
+
+	local_lobby.add_current_member_attribute("USERNAME", new_username)
+	if not await local_lobby.update_async():
+		push_error("Failed to update the username of the current player in the lobby")
+		return false
+
+	if new_username != HAuth.display_name:
+		local_username = new_username
+	else:
+		local_username = ""
+	return true
+
 ## Set the audio volume of the specified member[br]
 ## Returns [code]true[/code] if the logic was successful
 func set_volume_member_async(member: HLobbyMember, new_volume: float) -> bool:
