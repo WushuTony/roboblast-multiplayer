@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dd68ons6qrff6" path="res://lobby/game_session_manager.gd" id="1_b1fqd"]
 [ext_resource type="Script" uid="uid://cyrxpaol63y2b" path="res://lobby/ui.gd" id="2_nagtv"]
-[ext_resource type="Script" uid="uid://74j4oyx4s7s0" path="res://lobby/autowrap_item_list.gd" id="3_nagtv"]
+[ext_resource type="PackedScene" uid="uid://pevb5ntcp8hc" path="res://godot-4-3d-third-person-controller/chat/chat.tscn" id="3_nagtv"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1ig7j"]
 content_margin_left = 8.0
@@ -412,36 +412,9 @@ size_flags_horizontal = 3
 disabled = true
 text = "Play"
 
-[node name="Chat" type="PanelContainer" parent="UI/Start/WaitingRoom/VBox" unique_id=1423157390]
+[node name="Chat" parent="UI/Start/WaitingRoom/VBox" unique_id=1531325999 instance=ExtResource("3_nagtv")]
 layout_mode = 2
 size_flags_vertical = 3
-
-[node name="VBox" type="VBoxContainer" parent="UI/Start/WaitingRoom/VBox/Chat" unique_id=993603033]
-layout_mode = 2
-
-[node name="Title" type="Label" parent="UI/Start/WaitingRoom/VBox/Chat/VBox" unique_id=1508185367]
-layout_mode = 2
-text = "TEXT CHAT"
-horizontal_alignment = 1
-
-[node name="ItemList" type="ItemList" parent="UI/Start/WaitingRoom/VBox/Chat/VBox" unique_id=1473197175]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_colors/guide_color = Color(0.69803923, 0.69803923, 0.69803923, 0)
-text_overrun_behavior = 0
-scroll_hint_mode = 1
-script = ExtResource("3_nagtv")
-autowrap_mode = 3
-autoscroll_bottom = true
-max_item_count = 50
-metadata/_custom_type_script = "uid://74j4oyx4s7s0"
-
-[node name="Text" type="LineEdit" parent="UI/Start/WaitingRoom/VBox/Chat/VBox" unique_id=804102505]
-layout_mode = 2
-size_flags_horizontal = 3
-placeholder_text = "Enter chat here"
-max_length = 128
-keep_editing_on_text_submit = true
 
 [node name="Split" type="VBoxContainer" parent="UI/Start/WaitingRoom" unique_id=799258455]
 layout_mode = 2
@@ -570,9 +543,9 @@ size_flags_vertical = 3
 color = Color(1, 1, 1, 1)
 edit_alpha = false
 
-[node name="Players" type="Node" parent="." unique_id=1556107010]
-
 [node name="Level" type="Node" parent="." unique_id=470910834]
+
+[node name="Players" type="Node" parent="." unique_id=1556107010]
 
 [connection signal="pressed" from="UI/Start/ENet/Panel/VBox/HostButton" to="UI" method="_on_enet_host_pressed"]
 [connection signal="pressed" from="UI/Start/ENet/Panel/VBox/JoinButton" to="UI" method="_on_enet_join_pressed"]
@@ -585,4 +558,3 @@ edit_alpha = false
 [connection signal="item_activated" from="UI/Start/WaitingRoom/VBox/List/VBox/ItemList" to="UI" method="_on_lobby_player_activated"]
 [connection signal="pressed" from="UI/Start/WaitingRoom/VBox/List/VBox/Actions/Leave" to="UI" method="_on_lobby_leave_pressed"]
 [connection signal="pressed" from="UI/Start/WaitingRoom/VBox/List/VBox/Actions/Play" to="UI" method="_on_lobby_play_pressed"]
-[connection signal="text_submitted" from="UI/Start/WaitingRoom/VBox/Chat/VBox/Text" to="UI" method="_on_lobby_text_chat_submitted"]

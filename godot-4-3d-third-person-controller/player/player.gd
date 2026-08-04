@@ -47,6 +47,7 @@ enum WEAPON_TYPE { DEFAULT, GRENADE }
 @onready var _ui_HUD: Control = %HUD
 @onready var _ui_aim_reticle: ColorRect = %AimReticle
 @onready var _ui_coins_container: HBoxContainer = %CoinsContainer
+@onready var _ui_text_chat: RoboChat = %Chat
 @onready var _ui_weapon: WeaponUI = %WeaponUI
 @onready var _step_sound: AudioStreamPlayer3D = $StepSound
 @onready var _landing_sound: AudioStreamPlayer3D = $LandingSound
@@ -161,6 +162,13 @@ func set_multiplayer_data():
 	if (local):
 		# Activate the camera if local
 		_camera.make_current()
+		
+		# Enable the text chat if we're the local player coming from a multiplayer lobby
+		if _ui_text_chat != null and\
+			not RoboLobbyManager.is_singleplayer and\
+			_game_session_manager != null and\
+			_game_session_manager.connection_mode == GameSessionManager.ConnectionMode.RELAY:
+			_ui_text_chat.enable()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if (event.is_action("move_left")

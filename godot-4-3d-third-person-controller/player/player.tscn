@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://c0mo8tek77du4" path="res://godot-4-3d-third-person-controller/player/character_skin.tscn" id="4_ign62"]
 [ext_resource type="Script" uid="uid://dtf17612eybdg" path="res://godot-4-3d-third-person-controller/player/coins_container.gd" id="7_8eehq"]
 [ext_resource type="PackedScene" uid="uid://cqw64w6kb0fyg" path="res://godot-4-3d-third-person-controller/player/coin/coin_visuals/coin_model.tscn" id="8_6qxxt"]
+[ext_resource type="PackedScene" uid="uid://pevb5ntcp8hc" path="res://godot-4-3d-third-person-controller/chat/chat.tscn" id="9_um1wy"]
 [ext_resource type="PackedScene" uid="uid://mb58xbunfaep" path="res://godot-4-3d-third-person-controller/icons/weapon_ui.tscn" id="9_upq7c"]
 [ext_resource type="AudioStream" uid="uid://bx0t7f2nuk2lr" path="res://godot-4-3d-third-person-controller/player/sounds/03_step_grass_03.wav" id="10_wx4h4"]
 [ext_resource type="AudioStream" uid="uid://cbcb2d63weegs" path="res://godot-4-3d-third-person-controller/player/sounds/45_landing_01.wav" id="11_3s4i7"]
@@ -279,6 +280,24 @@ text = "0"
 wait_time = 3.0
 one_shot = true
 
+[node name="Chat" parent="HUD" unique_id=1531325999 instance=ExtResource("9_um1wy")]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 32.0
+offset_top = -326.0
+offset_right = 412.0
+offset_bottom = -124.0
+grow_vertical = 0
+grab_focus_on_press = true
+unfocus_on_pause = true
+unfocus_on_click = true
+
+[node name="Title" parent="HUD/Chat/VBox" parent_id_path=PackedInt32Array(1531325999, 1783223299) index="0" unique_id=1734396813]
+visible = false
+
 [node name="WeaponUI" parent="HUD" unique_id=192274453 instance=ExtResource("9_upq7c")]
 unique_name_in_owner = true
 layout_mode = 1
@@ -303,3 +322,4 @@ stream = ExtResource("11_3s4i7")
 volume_db = 1.0
 
 [editable path="HUD/CoinsContainer/SubViewportContainer/SubViewport/Coin"]
+[editable path="HUD/Chat"]
