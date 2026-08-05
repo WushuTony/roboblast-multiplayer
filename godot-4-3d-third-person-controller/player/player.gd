@@ -176,6 +176,9 @@ func set_multiplayer_data():
 			_ui_text_chat.enable()
 
 func _unhandled_input(event: InputEvent) -> void:
+	if not get_window().has_focus():
+		return
+	
 	if (event.is_action("move_left")
 		or event.is_action("move_right")
 		or event.is_action("move_up")
@@ -227,9 +230,10 @@ func _physics_process(delta: float) -> void:
 	# this also ensures a good normalized value for the rotation basis.
 	if _move_direction.length() > 0.2:
 		_last_strong_direction = _move_direction.normalized()
+	_camera_controller.stay_grounded = not is_aiming
 	if is_aiming:
 		if is_just_aiming and not aim_in_camera_direction:
-			_camera_controller.reset_rotation()
+			_camera_controller.set_euler_rotation_y(_rotation_root.global_rotation.y)
 		_last_strong_direction = (_camera_controller.global_transform.basis * Vector3.BACK).normalized()
 
 	_orient_character_to_direction(_last_strong_direction, delta)

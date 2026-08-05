@@ -2,12 +2,11 @@ class_name CameraController extends Node3D
 
 enum CAMERA_PIVOT { OVER_SHOULDER, THIRD_PERSON }
 
-@export var invert_mouse_y := false
+@export var invert_y_axis: bool = true
 @export_range(0.0, 1.0) var mouse_sensitivity: float = 0.004
 @export_range(0.0, 8.0) var joystick_sensitivity: float = 2.0
 @export var tilt_upper_limit: float = deg_to_rad(-60.0)
 @export var tilt_lower_limit: float = deg_to_rad(60.0)
-@export var camera_always_grounded: bool = false
 
 @onready var camera: Camera3D = $PlayerCamera
 @onready var _over_shoulder_pivot: Node3D = $CameraOverShoulderPivot
@@ -15,32 +14,50 @@ enum CAMERA_PIVOT { OVER_SHOULDER, THIRD_PERSON }
 @onready var _third_person_pivot: Node3D = $CameraSpringArm/CameraThirdPersonPivot
 @onready var _camera_raycast: RayCast3D = $PlayerCamera/CameraRayCast
 
+var stay_grounded: bool = true
+
 var _aim_target: Vector3 = Vector3.ZERO
 var _aim_collider: Node = null
 var _pivot: Node3D = null
 var _current_pivot_type: CAMERA_PIVOT
 var _rotation_input: float = 0.0
 var _tilt_input: float = 0.0
+var _raw_rotation_input: float = 0.0
+var _raw_tilt_input: float = 0.0
 var _offset: Vector3 = Vector3.ZERO
 var _anchor: CharacterBody3D = null
 var _euler_rotation: Vector3 = Vector3.ZERO
+var _using_mouse: bool = true
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if not get_window().has_focus():
+		return
+	
+	if event is InputEventMouse:
+		_using_mouse = true
+	elif event is InputEventJoypadMotion or event is InputEventJoypadButton:
+		_using_mouse = false
+	
 	var mouse_input: bool = event is InputEventMouseMotion and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED
 	if mouse_input:
 		_rotation_input = -event.relative.x * mouse_sensitivity
 		_tilt_input = -event.relative.y * mouse_sensitivity
+	
+	if event.is_action("camera_left") or event.is_action("camera_right"):
+		_raw_rotation_input = Input.get_axis("camera_right", "camera_left")
+	elif event.is_action("camera_up") or event.is_action("camera_down"):
+		_raw_tilt_input = Input.get_axis("camera_down", "camera_up")
 
 
 func _process(delta: float) -> void:
 	if not _anchor:
 		return
 
-	_rotation_input += Input.get_action_raw_strength("camera_left") - Input.get_action_raw_strength("camera_right")
-	_tilt_input += Input.get_action_raw_strength("camera_up") - Input.get_action_raw_strength("camera_down")
+	_rotation_input += _raw_rotation_input
+	_tilt_input += _raw_tilt_input
 
-	if invert_mouse_y:
+	if invert_y_axis:
 		_tilt_input *= -1
 
 	if _camera_raycast.is_colliding():
@@ -51,21 +68,20 @@ func _process(delta: float) -> void:
 		_aim_collider = null
 
 	var target_position := _anchor.global_position + _offset
-	if camera_always_grounded:
+	if stay_grounded:
 		# Set camera controller to current ground level for the character
 		target_position.y = lerp(global_position.y, _anchor._ground_height, 0.1)
 	global_position = target_position
 
 	# Rotates camera using euler rotation
-	var has_joypads: bool = Input.get_connected_joypads().size() > 0
-	if has_joypads:
-		_euler_rotation.x += _tilt_input * joystick_sensitivity * delta
-		_euler_rotation.y += _rotation_input * joystick_sensitivity * delta
-	else:
+	if _using_mouse:
 		# Mouse input events (InputEventMouseMotion) are hardware-driven and already frame-rate
 		# independent, so we should not multiply by delta
 		_euler_rotation.x += _tilt_input
 		_euler_rotation.y += _rotation_input
+	else:
+		_euler_rotation.x += _tilt_input * joystick_sensitivity * delta
+		_euler_rotation.y += _rotation_input * joystick_sensitivity * delta
 	_euler_rotation.x = clamp(_euler_rotation.x, tilt_lower_limit, tilt_upper_limit)
 
 	transform.basis = Basis.from_euler(_euler_rotation)
@@ -75,6 +91,11 @@ func _process(delta: float) -> void:
 
 	_rotation_input = 0.0
 	_tilt_input = 0.0
+	# Joypad input events (InputEventJoypadMotion) are only sent when there is motion on the joystick,
+	# so we should not reset the raw inputs for joypads
+	if _using_mouse:
+		_raw_rotation_input = 0.0
+		_raw_tilt_input = 0.0
 
 
 func setup(anchor: CharacterBody3D) -> void:
@@ -112,5 +133,5 @@ func get_aim_collider() -> Node:
 		return null
 
 
-func reset_rotation() -> void:
-	_euler_rotation = Vector3.ZERO
+func set_euler_rotation_y(new_rot: float) -> void:
+	_euler_rotation.y = new_rot

@@ -68,6 +68,9 @@ func _on_peer_disconnected(peer_id: int) -> void:
 
 
 func _demo_page_root_gui_input(_event: InputEvent) -> void:
+	if not get_window().has_focus():
+		return
+	
 	if demo_page_root.is_visible():
 		demo_page_root.accept_event()
 
@@ -76,12 +79,26 @@ func _input(event: InputEvent) -> void:
 	if not get_window().has_focus():
 		return
 	
-	if event.is_action_pressed("pause") and not event.is_echo():
-		demo_page_root.accept_event()
-		toggle_demo_page()
+	if not event.is_echo():
+		if event.is_action_pressed("ui_cancel"):
+			if demo_page_root.is_visible():
+				demo_page_root.accept_event()
+				toggle_demo_page()
+				return
+		if event.is_action_pressed("pause"):
+			demo_page_root.accept_event()
+			toggle_demo_page()
+			return
+	
+	if demo_page_root.is_visible():
+		if event is InputEventJoypadMotion:
+			demo_page_root.accept_event()
 
 
 func _shortcut_input(event: InputEvent) -> void:
+	if not get_window().has_focus():
+		return
+	
 	if demo_page_root.is_visible():
 		if event is not InputEventMouse:
 			demo_page_root.accept_event()

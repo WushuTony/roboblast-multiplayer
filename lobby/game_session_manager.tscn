@@ -231,6 +231,8 @@ horizontal_alignment = 1
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+focus_neighbor_right = NodePath("../../../../../Split/Resolve/VBox/HBox/JoinCode")
+focus_neighbor_bottom = NodePath("../../../Actions/Refresh")
 wraparound_items = false
 
 [node name="VBox2" type="VBoxContainer" parent="UI/Start/Relay/List/VBox/HBox" unique_id=474193646]
@@ -254,11 +256,16 @@ layout_mode = 2
 [node name="Refresh" type="Button" parent="UI/Start/Relay/List/VBox/Actions" unique_id=1464268174]
 layout_mode = 2
 size_flags_horizontal = 3
+focus_neighbor_top = NodePath("../../HBox/VBox/LobbyList")
+focus_neighbor_right = NodePath("../Join")
 text = "Refresh"
 
 [node name="Join" type="Button" parent="UI/Start/Relay/List/VBox/Actions" unique_id=286205090]
 layout_mode = 2
 size_flags_horizontal = 3
+focus_neighbor_left = NodePath("../Refresh")
+focus_neighbor_top = NodePath("../../HBox/VBox/LobbyList")
+focus_neighbor_right = NodePath("../../../../Split/Host/VBox/Host")
 text = "Join"
 
 [node name="Split" type="VBoxContainer" parent="UI/Start/Relay" unique_id=324211611]
@@ -287,11 +294,16 @@ text = "Join code"
 [node name="JoinCode" type="LineEdit" parent="UI/Start/Relay/Split/Resolve/VBox/HBox" unique_id=56389045]
 layout_mode = 2
 size_flags_horizontal = 3
+focus_neighbor_left = NodePath("../../../../../List/VBox/HBox/VBox/LobbyList")
+focus_neighbor_bottom = NodePath("../../Resolve")
 placeholder_text = "123ABC"
 max_length = 6
 
 [node name="Resolve" type="Button" parent="UI/Start/Relay/Split/Resolve/VBox" unique_id=1213565147]
 layout_mode = 2
+focus_neighbor_left = NodePath("../../../../List/VBox/HBox/VBox/LobbyList")
+focus_neighbor_top = NodePath("../HBox/JoinCode")
+focus_neighbor_bottom = NodePath("../../../Host/VBox/Parameters/Name")
 text = "Resolve"
 
 [node name="Host" type="PanelContainer" parent="UI/Start/Relay/Split" unique_id=2075698316]
@@ -318,6 +330,9 @@ text = "Name"
 [node name="Name" type="LineEdit" parent="UI/Start/Relay/Split/Host/VBox/Parameters" unique_id=1214553615]
 layout_mode = 2
 size_flags_horizontal = 3
+focus_neighbor_left = NodePath("../../../../../List/VBox/HBox/VBox/LobbyList")
+focus_neighbor_top = NodePath("../../../../Resolve/VBox/Resolve")
+focus_neighbor_bottom = NodePath("../MaxPlayers")
 placeholder_text = "My Epic Lobby"
 max_length = 18
 
@@ -328,6 +343,10 @@ text = "Max Players"
 [node name="MaxPlayers" type="SpinBox" parent="UI/Start/Relay/Split/Host/VBox/Parameters" unique_id=207603270]
 layout_mode = 2
 size_flags_horizontal = 3
+focus_neighbor_left = NodePath("../../../../../List/VBox/HBox/VBox/LobbyList")
+focus_neighbor_top = NodePath("../Name")
+focus_neighbor_bottom = NodePath("../Visibility")
+focus_mode = 2
 min_value = 2.0
 max_value = 4.0
 value = 4.0
@@ -338,6 +357,9 @@ text = "Visibility"
 
 [node name="Visibility" type="OptionButton" parent="UI/Start/Relay/Split/Host/VBox/Parameters" unique_id=93402027]
 layout_mode = 2
+focus_neighbor_left = NodePath("../../../../../List/VBox/HBox/VBox/LobbyList")
+focus_neighbor_top = NodePath("../MaxPlayers")
+focus_neighbor_bottom = NodePath("../VoiceChat")
 selected = 0
 item_count = 3
 popup/item_0/text = "Public"
@@ -353,6 +375,9 @@ text = "Voice Chat"
 
 [node name="VoiceChat" type="OptionButton" parent="UI/Start/Relay/Split/Host/VBox/Parameters" unique_id=965976908]
 layout_mode = 2
+focus_neighbor_left = NodePath("../../../../../List/VBox/HBox/VBox/LobbyList")
+focus_neighbor_top = NodePath("../Visibility")
+focus_neighbor_bottom = NodePath("../../Host")
 selected = 0
 item_count = 3
 popup/item_0/text = "Disabled"
@@ -365,6 +390,8 @@ popup/item_2/id = 3
 [node name="Host" type="Button" parent="UI/Start/Relay/Split/Host/VBox" unique_id=89352810]
 layout_mode = 2
 size_flags_horizontal = 3
+focus_neighbor_left = NodePath("../../../../List/VBox/Actions/Join")
+focus_neighbor_top = NodePath("../Parameters/VoiceChat")
 text = "Host"
 
 [node name="WaitingRoom" type="HBoxContainer" parent="UI/Start" unique_id=127365054]
@@ -393,6 +420,8 @@ horizontal_alignment = 1
 [node name="ItemList" type="ItemList" parent="UI/Start/WaitingRoom/VBox/List/VBox" unique_id=463684754]
 layout_mode = 2
 size_flags_vertical = 3
+focus_neighbor_right = NodePath("../../../../Split/Host/VBox/Settings/JoinCode")
+focus_neighbor_bottom = NodePath("../Actions/Leave")
 
 [node name="PlayerActions" type="HBoxContainer" parent="UI/Start/WaitingRoom/VBox/List/VBox" unique_id=1771427914]
 visible = false
@@ -404,17 +433,31 @@ layout_mode = 2
 [node name="Leave" type="Button" parent="UI/Start/WaitingRoom/VBox/List/VBox/Actions" unique_id=616252763]
 layout_mode = 2
 size_flags_horizontal = 3
+focus_neighbor_top = NodePath("../../ItemList")
+focus_neighbor_right = NodePath("../Play")
+focus_neighbor_bottom = NodePath("../../../../Chat/VBox/ItemList")
 text = "Leave"
 
 [node name="Play" type="Button" parent="UI/Start/WaitingRoom/VBox/List/VBox/Actions" unique_id=708282045]
 layout_mode = 2
 size_flags_horizontal = 3
+focus_neighbor_left = NodePath("../Leave")
+focus_neighbor_top = NodePath("../../ItemList")
+focus_neighbor_right = NodePath("../../../../../Split/Host/VBox/Settings/JoinCode")
+focus_neighbor_bottom = NodePath("../../../../Chat/VBox/ItemList")
 disabled = true
 text = "Play"
 
 [node name="Chat" parent="UI/Start/WaitingRoom/VBox" unique_id=1531325999 instance=ExtResource("3_nagtv")]
 layout_mode = 2
 size_flags_vertical = 3
+
+[node name="ItemList" parent="UI/Start/WaitingRoom/VBox/Chat/VBox" parent_id_path=PackedInt32Array(1531325999, 1783223299) index="1" unique_id=2127068155]
+focus_neighbor_top = NodePath("../../../List/VBox/Actions/Leave")
+focus_neighbor_right = NodePath("../../../../Split/Host/VBox/Settings/JoinCode")
+
+[node name="Text" parent="UI/Start/WaitingRoom/VBox/Chat/VBox" parent_id_path=PackedInt32Array(1531325999, 1783223299) index="2" unique_id=1366314549]
+focus_neighbor_right = NodePath("../../../../Split/Host/VBox/Settings/JoinCode")
 
 [node name="Split" type="VBoxContainer" parent="UI/Start/WaitingRoom" unique_id=799258455]
 layout_mode = 2
@@ -444,6 +487,8 @@ text = "Join code"
 [node name="JoinCode" type="LineEdit" parent="UI/Start/WaitingRoom/Split/Host/VBox/Settings" unique_id=226700818]
 layout_mode = 2
 size_flags_horizontal = 3
+focus_neighbor_left = NodePath("../../../../../VBox/List/VBox/ItemList")
+focus_neighbor_bottom = NodePath("../Name")
 placeholder_text = "123ABC"
 max_length = 6
 editable = false
@@ -456,6 +501,9 @@ text = "Name"
 [node name="Name" type="LineEdit" parent="UI/Start/WaitingRoom/Split/Host/VBox/Settings" unique_id=1188636461]
 layout_mode = 2
 size_flags_horizontal = 3
+focus_neighbor_left = NodePath("../../../../../VBox/List/VBox/ItemList")
+focus_neighbor_top = NodePath("../JoinCode")
+focus_neighbor_bottom = NodePath("../MaxPlayers")
 placeholder_text = "My Epic Lobby"
 max_length = 18
 editable = false
@@ -469,6 +517,10 @@ text = "Max Players"
 [node name="MaxPlayers" type="SpinBox" parent="UI/Start/WaitingRoom/Split/Host/VBox/Settings" unique_id=557000965]
 layout_mode = 2
 size_flags_horizontal = 3
+focus_neighbor_left = NodePath("../../../../../VBox/List/VBox/ItemList")
+focus_neighbor_top = NodePath("../Name")
+focus_neighbor_bottom = NodePath("../Visibility")
+focus_mode = 2
 min_value = 2.0
 max_value = 4.0
 value = 4.0
@@ -480,6 +532,9 @@ text = "Visibility"
 
 [node name="Visibility" type="OptionButton" parent="UI/Start/WaitingRoom/Split/Host/VBox/Settings" unique_id=1959202085]
 layout_mode = 2
+focus_neighbor_left = NodePath("../../../../../VBox/List/VBox/ItemList")
+focus_neighbor_top = NodePath("../MaxPlayers")
+focus_neighbor_bottom = NodePath("../VoiceChat")
 disabled = true
 selected = 0
 item_count = 3
@@ -496,6 +551,9 @@ text = "Voice Chat"
 
 [node name="VoiceChat" type="OptionButton" parent="UI/Start/WaitingRoom/Split/Host/VBox/Settings" unique_id=910585148]
 layout_mode = 2
+focus_neighbor_left = NodePath("../../../../../VBox/List/VBox/ItemList")
+focus_neighbor_top = NodePath("../Visibility")
+focus_neighbor_bottom = NodePath("../../../../Custom/VBox/Options/Name")
 disabled = true
 selected = 0
 item_count = 3
@@ -528,6 +586,9 @@ text = "Name:"
 [node name="Name" type="LineEdit" parent="UI/Start/WaitingRoom/Split/Custom/VBox/Options" unique_id=915046367]
 layout_mode = 2
 size_flags_horizontal = 3
+focus_neighbor_left = NodePath("../../../../../VBox/Chat/VBox/Text")
+focus_neighbor_top = NodePath("../../../../Host/VBox/Settings/VoiceChat")
+focus_neighbor_bottom = NodePath("../ColorPicker")
 placeholder_text = "Player Name"
 max_length = 18
 emoji_menu_enabled = false
@@ -540,6 +601,8 @@ text = "Color:"
 custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
 size_flags_vertical = 3
+focus_neighbor_left = NodePath("../../../../../VBox/Chat/VBox/Text")
+focus_neighbor_top = NodePath("../Name")
 color = Color(1, 1, 1, 1)
 edit_alpha = false
 
@@ -558,3 +621,5 @@ edit_alpha = false
 [connection signal="item_activated" from="UI/Start/WaitingRoom/VBox/List/VBox/ItemList" to="UI" method="_on_lobby_player_activated"]
 [connection signal="pressed" from="UI/Start/WaitingRoom/VBox/List/VBox/Actions/Leave" to="UI" method="_on_lobby_leave_pressed"]
 [connection signal="pressed" from="UI/Start/WaitingRoom/VBox/List/VBox/Actions/Play" to="UI" method="_on_lobby_play_pressed"]
+
+[editable path="UI/Start/WaitingRoom/VBox/Chat"]

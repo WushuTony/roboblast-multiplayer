@@ -195,11 +195,13 @@ func create_lobby_async(lobby_name: String, max_players: int = -1, visibility: i
 		printerr("Lobby creation failed")
 		return false
 
-	new_lobby.add_attribute("LOBBYNAME", lobby_name)
+	var username: String = HAuth.display_name if local_username.is_empty() else local_username
+	var new_lobby_name: String = username + "'s Lobby" if lobby_name.is_empty() else lobby_name
 	var join_code: String = _generate_join_code()
+
+	new_lobby.add_attribute("LOBBYNAME", new_lobby_name)
 	new_lobby.add_attribute("JOINCODE", join_code)
 	new_lobby.add_attribute("VOICECHATMODE", voice_chat_mode)
-	var username: String = HAuth.display_name if local_username.is_empty() else local_username
 	new_lobby.add_current_member_attribute("USERNAME", username)
 	if not await new_lobby.update_async():
 		printerr("Failed to add attributes to the created lobby")

@@ -58,7 +58,7 @@ func _ready() -> void:
 		for event in event_list:
 			if has_joypads:
 				if event is InputEventJoypadButton:
-					input_to_press = OS.get_keycode_string(event.key_label)
+					input_to_press = _get_joypad_button_name(event)
 			else:
 				if event is InputEventKey:
 					input_to_press = OS.get_keycode_string(event.key_label)
@@ -74,15 +74,17 @@ func _input(event: InputEvent) -> void:
 	if not is_chat_enabled or not get_window().has_focus():
 		return
 
-	if event.is_action_pressed("pause") and not event.is_echo():
-		if unfocus_on_pause and is_chatting:
-			accept_event()
-			unfocus_chat()
-
-	if event.is_action_pressed("focus_chat") and not event.is_echo():
-		if grab_focus_on_press and not is_chatting:
-			accept_event()
-			focus_chat()
+	if not event.is_echo():
+		if event.is_action_pressed("ui_cancel") or event.is_action_pressed("pause"):
+			if unfocus_on_pause and is_chatting:
+				accept_event()
+				unfocus_chat()
+				return
+		if event.is_action_pressed("focus_chat"):
+			if grab_focus_on_press and not is_chatting:
+				accept_event()
+				focus_chat()
+				return
 
 	if is_chatting and event is InputEventMouseButton:
 		accept_event()
@@ -172,3 +174,12 @@ func _on_chat_message_received(username: String, message: String) -> void:
 		var item_indexes: Array[int] = _item_list.add_wrapped_items(username + ": " + message, null, false)
 		for idx in item_indexes:
 			_item_list.set_item_tooltip_enabled(idx, false)
+
+static func _get_joypad_button_name(event: InputEventJoypadButton) -> String:
+	match event.button_index:
+		7:
+			return "L3"
+		8:
+			return "R3"
+		_:
+			return ""

@@ -136,7 +136,6 @@ shape = SubResource("CapsuleShape3D_8x2xm")
 [node name="CameraController" type="Node3D" parent="." unique_id=456957049]
 top_level = true
 script = ExtResource("3_qrkly")
-invert_mouse_y = true
 tilt_upper_limit = 0.48
 tilt_lower_limit = -0.8
 

@@ -49,12 +49,14 @@ theme_override_constants/separation = 120
 [node name="Online" type="Button" parent="CanvasLayer/Session" unique_id=392213520]
 unique_name_in_owner = true
 layout_mode = 2
+focus_neighbor_bottom = NodePath("../Offline")
 theme_override_font_sizes/font_size = 24
 text = "Online"
 
 [node name="Offline" type="Button" parent="CanvasLayer/Session" unique_id=1344553844]
 unique_name_in_owner = true
 layout_mode = 2
+focus_neighbor_top = NodePath("../Online")
 theme_override_font_sizes/font_size = 24
 text = "Offline"
 

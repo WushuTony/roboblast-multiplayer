@@ -19,6 +19,7 @@ horizontal_alignment = 1
 [node name="ItemList" type="ItemList" parent="VBox" unique_id=2127068155]
 layout_mode = 2
 size_flags_vertical = 3
+focus_neighbor_bottom = NodePath("../Text")
 theme_override_colors/guide_color = Color(0.69803923, 0.69803923, 0.69803923, 0)
 text_overrun_behavior = 0
 scroll_hint_mode = 1
@@ -31,6 +32,7 @@ metadata/_custom_type_script = "uid://74j4oyx4s7s0"
 [node name="Text" type="LineEdit" parent="VBox" unique_id=1366314549]
 layout_mode = 2
 size_flags_horizontal = 3
+focus_neighbor_top = NodePath("../ItemList")
 placeholder_text = "Enter chat here"
 max_length = 128
 keep_editing_on_text_submit = true

@@ -304,10 +304,10 @@ label_settings = SubResource("LabelSettings_f30p8")
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="TextureRect" type="TextureRect" parent="CanvasLayer/DemoPageRoot/Content/Content/GameDescription/MarginContainer/ContentContainer/ControlsDescription/MarginContainer/VBoxContainer/GridContainerKeyboard/HBoxContainer4" unique_id=1295607952]
+[node name="TextureRect" type="TextureRect" parent="CanvasLayer/DemoPageRoot/Content/Content/GameDescription/MarginContainer/ContentContainer/ControlsDescription/MarginContainer/VBoxContainer/GridContainerKeyboard/HBoxContainer4" unique_id=903589122]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
-texture = ExtResource("11_pk6rw")
+texture = ExtResource("12_baaxu")
 stretch_mode = 5
 
 [node name="Label" type="Label" parent="CanvasLayer/DemoPageRoot/Content/Content/GameDescription/MarginContainer/ContentContainer/ControlsDescription/MarginContainer/VBoxContainer/GridContainerKeyboard/HBoxContainer4" unique_id=214517427]
@@ -320,10 +320,10 @@ label_settings = SubResource("LabelSettings_f30p8")
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="TextureRect" type="TextureRect" parent="CanvasLayer/DemoPageRoot/Content/Content/GameDescription/MarginContainer/ContentContainer/ControlsDescription/MarginContainer/VBoxContainer/GridContainerKeyboard/HBoxContainer5" unique_id=903589122]
+[node name="TextureRect" type="TextureRect" parent="CanvasLayer/DemoPageRoot/Content/Content/GameDescription/MarginContainer/ContentContainer/ControlsDescription/MarginContainer/VBoxContainer/GridContainerKeyboard/HBoxContainer5" unique_id=1295607952]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
-texture = ExtResource("12_baaxu")
+texture = ExtResource("11_pk6rw")
 stretch_mode = 5
 
 [node name="Label" type="Label" parent="CanvasLayer/DemoPageRoot/Content/Content/GameDescription/MarginContainer/ContentContainer/ControlsDescription/MarginContainer/VBoxContainer/GridContainerKeyboard/HBoxContainer5" unique_id=295751711]

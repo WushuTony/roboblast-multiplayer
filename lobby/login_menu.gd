@@ -9,6 +9,7 @@ extends Control
 @onready var message_dots_timer: Timer = %MessageDotsTimer
 
 func _ready() -> void:
+	offline_button.grab_focus()
 	_initialise_lobby()
 
 func _initialise_lobby():

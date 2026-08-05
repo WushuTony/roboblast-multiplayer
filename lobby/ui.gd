@@ -40,6 +40,7 @@ func _ready():
 			$Start/ENet.show()
 			$Start/WebSocket.hide()
 			$Start/Relay.hide()
+			_enet_address_line_edit.grab_focus()
 			# Initialise the player customisation
 			_enet_player_name_line_edit.text = _game_session_manager.local_player_name
 			if _game_session_manager.validate_player_color(_game_session_manager.local_player_color):
@@ -53,10 +54,12 @@ func _ready():
 			$Start/ENet.hide()
 			$Start/WebSocket.show()
 			$Start/Relay.hide()
+			$Start/WebSocket/Join/VBox/Options/Url.grab_focus()
 		GameSessionManager.ConnectionMode.RELAY:
 			$Start/ENet.hide()
 			$Start/WebSocket.hide()
 			$Start/Relay.show()
+			$Start/Relay/List/VBox/Actions/Refresh.grab_focus()
 			# Initialise the player customisation
 			_lobby_player_name_line_edit.text = _game_session_manager.local_player_name
 			if _game_session_manager.validate_player_color(_game_session_manager.local_player_color):
@@ -166,8 +169,6 @@ func _on_relay_resolve_pressed() -> void:
 func _on_relay_host_pressed() -> void:
 	# Get parameters
 	var lobby_name: String = $Start/Relay/Split/Host/VBox/Parameters/Name.text
-	if lobby_name.is_empty():
-		return
 	var max_players: int = $Start/Relay/Split/Host/VBox/Parameters/MaxPlayers.value
 	var visibility_idx: int = $Start/Relay/Split/Host/VBox/Parameters/Visibility.get_selected_id()
 	var voice_chat_mode: int = $Start/Relay/Split/Host/VBox/Parameters/VoiceChat.get_selected_id()
@@ -214,6 +215,10 @@ func _init_waiting_room(auto_show: bool = true) -> void:
 	
 	if auto_show:
 		$Start/WaitingRoom.show()
+		if $Start/WaitingRoom/VBox/List/VBox/Actions/Play.disabled:
+			$Start/WaitingRoom/VBox/List/VBox/Actions/Leave.grab_focus()
+		else:
+			$Start/WaitingRoom/VBox/List/VBox/Actions/Play.grab_focus()
 
 func _update_waiting_room_players() -> void:
 	_lobby_player_item_list.clear()
@@ -247,6 +252,7 @@ func _on_lobby_left() -> void:
 		_lobby_text_chat.clear()
 		_lobby_text_chat.disable()
 	$Start/Relay.show()
+	$Start/Relay/List/VBox/Actions/Refresh.grab_focus()
 
 func _on_lobby_updated() -> void:
 	print_verbose("Lobby updated")
@@ -316,6 +322,7 @@ func _on_lobby_player_activated(index: int) -> void:
 	_mute_button.text = "Unmute" if cur_player.is_muted() else "Mute"
 	_mute_button.pressed.connect(_on_lobby_player_mute_pressed)
 
+	var kick_button: Button = null
 	if (RoboLobbyManager.local_lobby != null and
 		RoboLobbyManager.local_lobby.is_valid() and
 		RoboLobbyManager.local_lobby.is_owner()):
@@ -324,13 +331,25 @@ func _on_lobby_player_activated(index: int) -> void:
 			_hard_mute_button.text = "Un Hard-mute" if cur_player.is_hard_muted() else "Hard-mute"
 			_hard_mute_button.pressed.connect(_on_lobby_player_hard_mute_pressed)
 
-			var kick_button: Button = _current_dialog.add_button("Kick")
+			kick_button = _current_dialog.add_button("Kick")
 			kick_button.pressed.connect(_on_lobby_player_kick_pressed)
 
 	add_child(_current_dialog)
+	
+	_mute_button.focus_neighbor_top = _volume_slider.get_path()
+	_volume_slider.focus_neighbor_bottom = _mute_button.get_path()
+	if _hard_mute_button != null:
+		_mute_button.focus_neighbor_left = _hard_mute_button.get_path()
+		_hard_mute_button.focus_neighbor_right = _mute_button.get_path()
+		if kick_button != null:
+			_hard_mute_button.focus_neighbor_left = kick_button.get_path()
+			kick_button.focus_neighbor_right = _hard_mute_button.get_path()
+	
 	_current_dialog.popup_centered(Vector2i(300, 100))
 	_current_dialog.unresizable = true
 	_current_dialog.show()
+	
+	_mute_button.grab_focus()
 
 func _on_lobby_player_volume_slider_drag_ended(value_changed: bool) -> void:
 	if not value_changed:
