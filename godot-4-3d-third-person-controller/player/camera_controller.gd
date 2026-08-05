@@ -3,10 +3,10 @@ class_name CameraController extends Node3D
 enum CAMERA_PIVOT { OVER_SHOULDER, THIRD_PERSON }
 
 @export var invert_mouse_y := false
-@export_range(0.0, 1.0) var mouse_sensitivity := 0.25
-@export_range(0.0, 8.0) var joystick_sensitivity := 2.0
-@export var tilt_upper_limit := deg_to_rad(-60.0)
-@export var tilt_lower_limit := deg_to_rad(60.0)
+@export_range(0.0, 1.0) var mouse_sensitivity: float = 0.004
+@export_range(0.0, 8.0) var joystick_sensitivity: float = 2.0
+@export var tilt_upper_limit: float = deg_to_rad(-60.0)
+@export var tilt_lower_limit: float = deg_to_rad(60.0)
 @export var camera_always_grounded: bool = false
 
 @onready var camera: Camera3D = $PlayerCamera
@@ -15,21 +15,20 @@ enum CAMERA_PIVOT { OVER_SHOULDER, THIRD_PERSON }
 @onready var _third_person_pivot: Node3D = $CameraSpringArm/CameraThirdPersonPivot
 @onready var _camera_raycast: RayCast3D = $PlayerCamera/CameraRayCast
 
-var _aim_target: Vector3
-var _aim_collider: Node
-var _pivot: Node3D
+var _aim_target: Vector3 = Vector3.ZERO
+var _aim_collider: Node = null
+var _pivot: Node3D = null
 var _current_pivot_type: CAMERA_PIVOT
-var _rotation_input: float
-var _tilt_input: float
-var _mouse_input := false
-var _offset: Vector3
-var _anchor: CharacterBody3D
-var _euler_rotation: Vector3
+var _rotation_input: float = 0.0
+var _tilt_input: float = 0.0
+var _offset: Vector3 = Vector3.ZERO
+var _anchor: CharacterBody3D = null
+var _euler_rotation: Vector3 = Vector3.ZERO
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	_mouse_input = event is InputEventMouseMotion and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED
-	if _mouse_input:
+	var mouse_input: bool = event is InputEventMouseMotion and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED
+	if mouse_input:
 		_rotation_input = -event.relative.x * mouse_sensitivity
 		_tilt_input = -event.relative.y * mouse_sensitivity
 
@@ -58,9 +57,16 @@ func _process(delta: float) -> void:
 	global_position = target_position
 
 	# Rotates camera using euler rotation
-	_euler_rotation.x += _tilt_input * delta
+	var has_joypads: bool = Input.get_connected_joypads().size() > 0
+	if has_joypads:
+		_euler_rotation.x += _tilt_input * joystick_sensitivity * delta
+		_euler_rotation.y += _rotation_input * joystick_sensitivity * delta
+	else:
+		# Mouse input events (InputEventMouseMotion) are hardware-driven and already frame-rate
+		# independent, so we should not multiply by delta
+		_euler_rotation.x += _tilt_input
+		_euler_rotation.y += _rotation_input
 	_euler_rotation.x = clamp(_euler_rotation.x, tilt_lower_limit, tilt_upper_limit)
-	_euler_rotation.y += _rotation_input * delta
 
 	transform.basis = Basis.from_euler(_euler_rotation)
 
