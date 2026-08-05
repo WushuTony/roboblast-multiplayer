@@ -7,6 +7,7 @@ enum CAMERA_PIVOT { OVER_SHOULDER, THIRD_PERSON }
 @export_range(0.0, 8.0) var joystick_sensitivity := 2.0
 @export var tilt_upper_limit := deg_to_rad(-60.0)
 @export var tilt_lower_limit := deg_to_rad(60.0)
+@export var camera_always_grounded: bool = false
 
 @onready var camera: Camera3D = $PlayerCamera
 @onready var _over_shoulder_pivot: Node3D = $CameraOverShoulderPivot
@@ -50,9 +51,10 @@ func _process(delta: float) -> void:
 		_aim_target = _camera_raycast.global_transform * _camera_raycast.target_position
 		_aim_collider = null
 
-	# Set camera controller to current ground level for the character
 	var target_position := _anchor.global_position + _offset
-	target_position.y = lerp(global_position.y, _anchor._ground_height, 0.1)
+	if camera_always_grounded:
+		# Set camera controller to current ground level for the character
+		target_position.y = lerp(global_position.y, _anchor._ground_height, 0.1)
 	global_position = target_position
 
 	# Rotates camera using euler rotation
@@ -102,3 +104,7 @@ func get_aim_collider() -> Node:
 		return _aim_collider
 	else:
 		return null
+
+
+func reset_rotation() -> void:
+	_euler_rotation = Vector3.ZERO
