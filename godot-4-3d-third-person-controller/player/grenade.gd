@@ -25,9 +25,11 @@ var _bounces: int = 0
 var _thrown_timer: float = 0.0
 var _velocity: Vector3 = Vector3.ZERO
 
+@onready var _collision_shape: CollisionShape3D = $CollisionShape3d
 @onready var _explosion_area: Area3D = $ExplosionArea
 @onready var _explosion_sound: AudioStreamPlayer3D = $ExplosionSound
 @onready var _explosion_start_timer: Timer = $ExplosionStartTimer
+@onready var _grenade_visuals: Node3D = $grenade
 
 
 func _ready() -> void:
@@ -119,18 +121,31 @@ func _apply_damage(path: String, impact_point: Vector3, force: Vector3) -> void:
 
 @rpc("authority", "call_local", "reliable")
 func _play_explosion_effect() -> void:
+	_grenade_visuals.hide()
 	set_physics_process(false)
+	_collision_shape.set_deferred("disabled", true)
 
-	_explosion_sound.pitch_scale = randfn(2.0, 0.1)
-	_explosion_sound.play()
+	_play_explosion_sound()
 
 	var explosion: Node3D = EXPLOSION_SCENE.instantiate()
+	explosion.transform.origin = position
 	get_parent().add_child(explosion)
-	explosion.global_position = global_position
-
-	hide()
-	await _explosion_sound.finished
 
 	if is_multiplayer_authority():
 		await get_tree().create_timer(0.5).timeout
 		queue_free()
+
+
+func _play_explosion_sound() -> void:
+	if not is_instance_valid(_explosion_sound) or _explosion_sound.is_playing():
+		return
+
+	# Add it to the dynamic objects so it survives after the grenade is destroyed
+	Level.reparent_target_to_dynamic_objects(_explosion_sound)
+
+	_explosion_sound.global_position = global_position
+	_explosion_sound.pitch_scale = randfn(2.0, 0.1)
+	_explosion_sound.play()
+
+	# Tell the sound to delete itself when it is done playing
+	_explosion_sound.finished.connect(_explosion_sound.queue_free)
