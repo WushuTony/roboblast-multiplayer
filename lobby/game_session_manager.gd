@@ -156,6 +156,9 @@ func _on_connection_failed() -> void:
 	pass
 
 func _on_server_disconnected() -> void:
+	# If we have a lobby, let the lobby handle the multiplayer_peer
+	if (connection_mode == ConnectionMode.RELAY): return
+	
 	multiplayer.multiplayer_peer.close()
 	multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
 	

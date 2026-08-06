@@ -207,6 +207,13 @@ func create_lobby_async(lobby_name: String, max_players: int = -1, visibility: i
 		printerr("Failed to add attributes to the created lobby")
 		return false
 
+	if not _on_lobby_created(new_lobby):
+		return false
+
+	print("Lobby created with join code: " + join_code)
+	return true
+
+func _on_lobby_created(lobby: HLobby) -> bool:
 	var peer: EOSGMultiplayerPeer = multiplayer.multiplayer_peer if (multiplayer.multiplayer_peer is EOSGMultiplayerPeer) else EOSGMultiplayerPeer.new()
 	if not peer.peer_connected.is_connected(_on_peer_connected):
 		peer.peer_connected.connect(_on_peer_connected)
@@ -220,10 +227,11 @@ func create_lobby_async(lobby_name: String, max_players: int = -1, visibility: i
 		return false
 
 	multiplayer.multiplayer_peer = peer
-	local_lobby = new_lobby
-	local_lobby.kicked_from_lobby.connect(_on_kicked_from_lobby)
-	local_lobby.rtc_data_received.connect(_on_rtc_data_received)
-	print("Lobby created with join code: " + join_code)
+	local_lobby = lobby
+	if not local_lobby.kicked_from_lobby.is_connected(_on_kicked_from_lobby):
+		local_lobby.kicked_from_lobby.connect(_on_kicked_from_lobby)
+	if not local_lobby.rtc_data_received.is_connected(_on_rtc_data_received):
+		local_lobby.rtc_data_received.connect(_on_rtc_data_received)
 	return true
 
 #LOBBY JOIN CODE
@@ -287,8 +295,12 @@ func _on_lobby_joined(lobby: HLobby) -> bool:
 
 	multiplayer.multiplayer_peer = peer
 	local_lobby = lobby
-	local_lobby.kicked_from_lobby.connect(_on_kicked_from_lobby)
-	local_lobby.rtc_data_received.connect(_on_rtc_data_received)
+	if not local_lobby.kicked_from_lobby.is_connected(_on_kicked_from_lobby):
+		local_lobby.kicked_from_lobby.connect(_on_kicked_from_lobby)
+	if not local_lobby.lobby_owner_changed.is_connected(_on_lobby_owner_changed):
+		local_lobby.lobby_owner_changed.connect(_on_lobby_owner_changed)
+	if not local_lobby.rtc_data_received.is_connected(_on_rtc_data_received):
+		local_lobby.rtc_data_received.connect(_on_rtc_data_received)
 	return true
 
 ## Get public lobbies[br]
@@ -335,6 +347,18 @@ func _on_kicked_from_lobby() -> void:
 
 	if _is_shutting_down:
 		_complete_shutdown.call_deferred()
+
+func _on_lobby_owner_changed() -> void:
+	if local_lobby == null or not local_lobby.is_valid():
+		return
+
+	# Shut down the broken multiplayer peer connection completely
+	multiplayer.multiplayer_peer = null
+
+	if local_lobby.is_owner():
+		_on_lobby_created(local_lobby)
+	else:
+		_on_lobby_joined(local_lobby)
 
 #LOBBY MEMBER CODE
 #-----------------------------------#
@@ -384,6 +408,9 @@ func set_volume_member_async(member: HLobbyMember, new_volume: float) -> bool:
 ## Emits [signal chat_message_received][br]
 ## Returns [code]true[/code] if the message was sent successfully
 func send_chat_message(message: String) -> bool:
+	if not message:
+		return false
+
 	# Don't send the message if we're not in a lobby or if we're alone
 	if local_lobby == null or not local_lobby.is_valid() or local_lobby.members.size() < 2:
 		return false

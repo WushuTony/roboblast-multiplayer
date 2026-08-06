@@ -212,6 +212,8 @@ func _init_waiting_room(auto_show: bool = true) -> void:
 		local_lobby.lobby_updated.connect(_on_lobby_updated)
 	if not local_lobby.kicked_from_lobby.is_connected(_on_kicked_from_lobby):
 		local_lobby.kicked_from_lobby.connect(_on_kicked_from_lobby)
+	if not local_lobby.lobby_owner_changed.is_connected(_on_lobby_owner_changed):
+		local_lobby.lobby_owner_changed.connect(_on_lobby_owner_changed)
 	
 	if auto_show:
 		$Start/WaitingRoom.show()
@@ -261,6 +263,11 @@ func _on_lobby_updated() -> void:
 func _on_kicked_from_lobby() -> void:
 	print("Kicked from lobby")
 	_on_lobby_left()
+
+func _on_lobby_owner_changed() -> void:
+	print("Lobby host changed")
+	_update_waiting_room_players()
+	$Start/WaitingRoom/VBox/List/VBox/Actions/Play.disabled = not RoboLobbyManager.local_lobby.is_owner()
 
 func _on_lobby_player_name_changed(new_name: String):
 	# Remember the position of the caret.
