@@ -12,6 +12,9 @@ extends CanvasLayer
 @onready var _lobby_player_name_line_edit: LineEdit = $Start/WaitingRoom/Split/Custom/VBox/Options/Name
 @onready var _lobby_player_color_picker_button: ColorPickerButton = $Start/WaitingRoom/Split/Custom/VBox/Options/ColorPicker
 
+var default_content_scale_mode: Window.ContentScaleMode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
+var is_in_menu: bool = false
+
 # This is different from the regex used for the final validation as we need to allow:
 # - Fewer characters (for when the player starts typing)
 # - A trailing space/dash (as the user might type a word after that)
@@ -27,12 +30,18 @@ var _hard_mute_button: Button = null
 func _init():
 	_player_name_regex = RegEx.create_from_string("([a-zA-Z0-9][ _-]?)*")
 
+func _enter_tree() -> void:
+	default_content_scale_mode = get_tree().root.content_scale_mode
+
 func _ready():
 	if RoboLobbyManager.is_singleplayer:
 		hide()
 		return
 	
+	_on_visibility_changed()
+	
 	multiplayer.server_disconnected.connect(_on_server_disconnected)
+	visibility_changed.connect(_on_visibility_changed)
 	$Start/WaitingRoom.hide()
 	
 	match (_game_session_manager.connection_mode):
@@ -77,6 +86,11 @@ func _ready():
 
 func _on_server_disconnected():
 	show()
+
+func _on_visibility_changed():
+	if visible:
+		get_tree().root.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
+		is_in_menu = true
 
 # ENet
 
@@ -189,9 +203,7 @@ func _init_waiting_room(auto_show: bool = true) -> void:
 	var lobby_name_attribute: Dictionary = RoboLobbyManager.local_lobby.get_attribute("LOBBYNAME")
 	var lobby_name: String = lobby_name_attribute.value if (lobby_name_attribute != null and not lobby_name_attribute.is_empty()) else RoboLobbyManager.local_lobby.lobby_id
 	$Start/WaitingRoom/Split/Host/VBox/Settings/Name.text = lobby_name
-	var join_code_attribute: Dictionary = RoboLobbyManager.local_lobby.get_attribute("JOINCODE")
-	var join_code: String = join_code_attribute.value if (join_code_attribute != null and not join_code_attribute.is_empty()) else "******"
-	$Start/WaitingRoom/Split/Host/VBox/Settings/JoinCode.text = join_code
+	$Start/WaitingRoom/Split/Host/VBox/Settings/JoinCode.text = RoboLobbyManager.local_lobby.lobby_id
 	$Start/WaitingRoom/Split/Host/VBox/Settings/MaxPlayers.value = RoboLobbyManager.local_lobby.max_members
 	$Start/WaitingRoom/Split/Host/VBox/Settings/Visibility.select(RoboLobbyManager.local_lobby.permission_level)
 	var voice_chat_mode_attribute: Dictionary = RoboLobbyManager.local_lobby.get_attribute("VOICECHATMODE")
@@ -240,12 +252,12 @@ func _update_waiting_room_players() -> void:
 		_lobby_player_item_list.set_item_metadata(idx, cur_player)
 		_lobby_player_item_list.set_item_tooltip_enabled(idx, false)
 
-func _on_peer_connection_established(_callback_data: Dictionary) -> void:
-	print("Connection established")
+func _on_peer_connection_established(callback_data: Dictionary) -> void:
+	print_verbose("Connection established: ", callback_data)
 	_update_waiting_room_players()
 
-func _on_peer_connection_closed(_callback_data: Dictionary) -> void:
-	print("Connection closed")
+func _on_peer_connection_closed(callback_data: Dictionary) -> void:
+	print_verbose("Connection closed: ", callback_data)
 	_update_waiting_room_players()
 
 func _on_lobby_left() -> void:
@@ -257,17 +269,17 @@ func _on_lobby_left() -> void:
 	$Start/Relay/List/VBox/Actions/Refresh.grab_focus()
 
 func _on_lobby_updated() -> void:
-	print_verbose("Lobby updated")
 	_update_waiting_room_players()
 
 func _on_kicked_from_lobby() -> void:
-	print("Kicked from lobby")
 	_on_lobby_left()
 
 func _on_lobby_owner_changed() -> void:
-	print("Lobby host changed")
 	_update_waiting_room_players()
 	$Start/WaitingRoom/VBox/List/VBox/Actions/Play.disabled = not RoboLobbyManager.local_lobby.is_owner()
+	# The host disconnecting mid-game currently unloads the level, so making sure the UI is displayed
+	if not is_in_menu:
+		show()
 
 func _on_lobby_player_name_changed(new_name: String):
 	# Remember the position of the caret.
@@ -446,6 +458,8 @@ func _on_lobby_play_pressed() -> void:
 
 func _on_game_started(_level_idx: int) -> void:
 	hide()
+	get_tree().root.content_scale_mode = default_content_scale_mode
+	is_in_menu = false
 
 # Player Customisation
 

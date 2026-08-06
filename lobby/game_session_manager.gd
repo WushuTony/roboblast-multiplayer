@@ -28,8 +28,7 @@ var headless_mode: bool = (DisplayServer.get_name() == "headless")
 
 var level: Level = null
 var level_idx: int = -1
-
-var default_content_scale_mode: Window.ContentScaleMode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
+var has_game_started: bool = false
 
 const PLAYER_CUSTOMISATION_SECTION: String = "Player.Customisation"
 
@@ -49,11 +48,6 @@ var local_player_color: Color = Color.TRANSPARENT:
 func _init() -> void:
 	player_name_regex = RegEx.create_from_string("^(?=.{3,18}$)([a-zA-Z0-9][ _-]?)+[a-zA-Z0-9]$")
 	load_player_customisation()
-
-func _enter_tree() -> void:
-	if (!headless_mode):
-		default_content_scale_mode = get_tree().root.content_scale_mode
-		get_tree().root.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
 
 func _ready() -> void:
 	# In singleplayer, start the game immediately
@@ -128,26 +122,32 @@ func start_websocket_client(url: String) -> void:
 # Network Events
 
 func _on_peer_connected(peer_id: int) -> void:
-	# Handle player spawn if hosting
-	if (!multiplayer.is_server()): return
-	# If we have a lobby, don't load a level immediately
-	if (connection_mode == ConnectionMode.RELAY): return
+	# Handle player spawn if hosting and the game has started
+	if not is_multiplayer_authority() or\
+		not has_game_started:
+		return
 	
 	# Load the first level if needed
-	if (level == null):
+	if level == null:
 		load_level(0)
 	
 	spawn_player(peer_id)
+	
+	# If a late joiner arrived after the game was started, let them know
+	late_join_game_started.rpc_id(peer_id, level_idx)
 
 func _on_peer_disconnected(peer_id: int) -> void:
-	# Handle player removal if hosting
-	if (!multiplayer.is_server()): return
-	
-	# Unload the level if this is the last player
-	if (get_player_count() == 1):
-		unload_level()
+	# Handle player removal if hosting and the game has started
+	if not is_multiplayer_authority() or\
+		not has_game_started:
+		return
 	
 	remove_player(peer_id)
+	
+	# Unload the level if this is the last player
+	if get_player_count() == 0:
+		unload_level()
+		has_game_started = false
 
 func _on_connected_to_server() -> void:
 	pass
@@ -161,22 +161,26 @@ func _on_server_disconnected() -> void:
 	
 	multiplayer.multiplayer_peer.close()
 	multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
-	
-	default_content_scale_mode = get_tree().root.content_scale_mode
-	get_tree().root.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
 
 # Game Management
 
+@rpc("authority", "call_remote", "reliable")
+func late_join_game_started(cur_level_idx: int) -> void:
+	if connection_mode == ConnectionMode.RELAY:
+		RoboLobbyManager.game_started.emit(cur_level_idx)
+	else:
+		_on_game_started(cur_level_idx)
+
 func _on_game_started(new_level_idx: int = 0) -> void:
-	get_tree().root.content_scale_mode = default_content_scale_mode
 	save_player_customisation()
 	if is_multiplayer_authority():
 		load_level(new_level_idx)
 		# Only spawn a player for the host if not in headless mode
-		if !headless_mode and multiplayer.is_server():
+		if not headless_mode and multiplayer.is_server():
 			spawn_player(multiplayer.get_unique_id())
 		for peer_id in multiplayer.get_peers():
 			spawn_player(peer_id)
+	has_game_started = true
 
 # Level Management
 

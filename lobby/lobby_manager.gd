@@ -168,6 +168,8 @@ static func _generate_join_code(length: int = 6) -> String:
 func create_lobby_async(lobby_name: String, max_players: int = -1, visibility: int = 0, voice_chat_mode: int = 0) -> bool:
 	var create_opts: EOS.Lobby.CreateLobbyOptions = EOS.Lobby.CreateLobbyOptions.new()
 	create_opts.bucket_id = BUCKET_ID
+	var join_code: String = _generate_join_code()
+	create_opts.lobby_id = join_code
 	create_opts.max_lobby_members = max_lobby_members if (max_players < 2) else min(max_players, max_lobby_members)
 	create_opts.permission_level = clamp(visibility, 0, 2)
 
@@ -197,10 +199,8 @@ func create_lobby_async(lobby_name: String, max_players: int = -1, visibility: i
 
 	var username: String = HAuth.display_name if local_username.is_empty() else local_username
 	var new_lobby_name: String = username + "'s Lobby" if lobby_name.is_empty() else lobby_name
-	var join_code: String = _generate_join_code()
 
 	new_lobby.add_attribute("LOBBYNAME", new_lobby_name)
-	new_lobby.add_attribute("JOINCODE", join_code)
 	new_lobby.add_attribute("VOICECHATMODE", voice_chat_mode)
 	new_lobby.add_current_member_attribute("USERNAME", username)
 	if not await new_lobby.update_async():
@@ -271,8 +271,7 @@ func join_lobby_async(lobby: HLobby) -> bool:
 ## Find and join a lobby from its join code[br]
 ## Returns [code]true[/code] if the join was successful
 func resolve_lobby_async(join_code: String) -> bool:
-	var join_code_attribute: Dictionary = HLobby.make_attribute("JOINCODE", join_code.to_upper())
-	var search_result: Variant = await HLobbies.search_by_attribute_async(join_code_attribute)
+	var search_result: Variant = await HLobbies.search_by_lobby_id_async(join_code.to_upper())
 	if (search_result == null or
 		not search_result is Array[HLobby] or
 		search_result.is_empty()):
@@ -351,6 +350,8 @@ func _on_kicked_from_lobby() -> void:
 func _on_lobby_owner_changed() -> void:
 	if local_lobby == null or not local_lobby.is_valid():
 		return
+
+	print("Lobby owner changed to Player ", local_lobby.owner_product_user_id)
 
 	# Shut down the broken multiplayer peer connection completely
 	multiplayer.multiplayer_peer = null
@@ -435,26 +436,26 @@ func send_chat_message(message: String) -> bool:
 ## Notify all the players in the [member local_lobby] to start the game[br]
 ## Emits [signal game_started][br]
 ## [b]Note:[/b] Only the host can start the game (see [method HLobby.is_owner])
-func start_game() -> void:
+func start_game(level_idx: int = 0) -> void:
 	if local_lobby == null or not local_lobby.is_owner():
 		return
 
-	# Make lobby invite-only (hide from searches)
-	local_lobby.permission_level = EOS.Lobby.LobbyPermissionLevel.InviteOnly
+	# Make lobby protected (hide from public searches)
+	local_lobby.permission_level = EOS.Lobby.LobbyPermissionLevel.JoinViaPresence
 	if not await local_lobby.update_async():
-		push_warning("Failed to make the lobby invite-only")
+		push_warning("Failed to change the lobby permission level")
 
 	# Notify all players via RTC data channel
 	var data: Variant = {
 		"type": "start_game",
-		"level_idx": 0
+		"level_idx": level_idx
 	}
 	var success: bool = local_lobby.rtc_send_data(data)
 	if not success:
 		push_error("Failed to send %s message" % data.type)
 		return
 
-	game_started.emit(data.level_idx)
+	game_started.emit(level_idx)
 
 func _on_rtc_data_received(raw_data: PackedByteArray):
 	var data: Variant = bytes_to_var(raw_data)
@@ -494,5 +495,13 @@ func _on_connected_to_server(id: int):
 		print("My peer ID: ", multiplayer.multiplayer_peer.get_unique_id())
 
 func _on_disconnected_from_server(data: Dictionary):
-	print("Disconnected from server")
-	print("Reason: ", data["reason"])
+	print("Disconnected from server!")
+	print("Reason: ", connection_closed_reason_str(data))
+
+## Returns a string representation of the [enum ConnectionClosedReason] code.[br]
+## [code]p_reason[/code] is a [enum ConnectionClosedReason] or a [Dictionary] with a [code]reason[/code] key
+static func connection_closed_reason_str(p_reason: Variant) -> String:
+	if typeof(p_reason) == TYPE_DICTIONARY:
+		p_reason = p_reason["reason"]
+	var idx: int = EOS.P2P.ConnectionClosedReason.values().find(p_reason)
+	return EOS.P2P.ConnectionClosedReason.keys()[idx]
