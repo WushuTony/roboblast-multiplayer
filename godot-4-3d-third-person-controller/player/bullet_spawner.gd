@@ -10,12 +10,14 @@ class_name BulletSpawner
 @export var friendly_fire: bool = false
 
 func _init() -> void:
+	super._init()
 	if Engine.is_editor_hint():
 		container_name = "Bullets"
 		prefix_owner_name = true
 		use_custom_spawn = true
 
 func _enter_tree() -> void:
+	super._enter_tree()
 	if Engine.is_editor_hint():
 		return
 	
@@ -35,7 +37,7 @@ func shoot(position: Vector3, target_position: Vector3) -> Node:
 
 func _custom_bullet_spawn(data: Variant) -> Node:
 	var bullet_index: int = data.get("index", -1)
-	var bullet_scene: PackedScene = get_bullet_scene(bullet_index)
+	var bullet_scene: PackedScene = _get_spawnable_packed_scene(bullet_index)
 	if bullet_scene == null:
 		return null
 	var bullet: Bullet = bullet_scene.instantiate()
@@ -69,11 +71,3 @@ func get_spawnable_bullet_index() -> int:
 	# We have multiple bullet variants, so let's pick a random one.
 	var rand_bullet_id: int = randi_range(0, get_spawnable_scene_count() - 1)
 	return rand_bullet_id
-
-func get_bullet_scene(index: int) -> PackedScene:
-	if index < 0 || index >= get_spawnable_scene_count():
-		push_error("get_bullet_scene called but index ", index, " is outside the spawnable range [0,", get_spawnable_scene_count() - 1, "]")
-		return null
-	var bullet_scene_path: String = get_spawnable_scene(index)
-	var bullet_scene: PackedScene = load(bullet_scene_path)
-	return bullet_scene

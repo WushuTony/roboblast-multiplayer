@@ -8,12 +8,14 @@ class_name GrenadeSpawner
 @onready var _grenade_launcher: GrenadeLauncher = owner
 
 func _init() -> void:
+	super._init()
 	if Engine.is_editor_hint():
 		container_name = "Grenades"
 		prefix_owner_name = true
 		use_custom_spawn = true
 
 func _enter_tree() -> void:
+	super._enter_tree()
 	if Engine.is_editor_hint():
 		return
 	
@@ -37,7 +39,7 @@ func throw(position: Vector3, velocity: Vector3) -> Node:
 
 func _custom_grenade_spawn(data: Variant) -> Node:
 	var grenade_index: int = data.get("index", -1)
-	var grenade_scene: PackedScene = get_grenade_scene(grenade_index)
+	var grenade_scene: PackedScene = _get_spawnable_packed_scene(grenade_index)
 	if grenade_scene == null:
 		return null
 	var grenade: Grenade = grenade_scene.instantiate()
@@ -72,11 +74,3 @@ func get_spawnable_grenade_index() -> int:
 	# We have multiple grenade variants, so let's pick a random one.
 	var rand_grenade_id: int = randi_range(0, get_spawnable_scene_count() - 1)
 	return rand_grenade_id
-
-func get_grenade_scene(index: int) -> PackedScene:
-	if index < 0 || index >= get_spawnable_scene_count():
-		push_error("get_grenade_scene called but index ", index, " is outside the spawnable range [0,", get_spawnable_scene_count() - 1, "]")
-		return null
-	var grenade_scene_path: String = get_spawnable_scene(index)
-	var grenade_scene: PackedScene = load(grenade_scene_path)
-	return grenade_scene

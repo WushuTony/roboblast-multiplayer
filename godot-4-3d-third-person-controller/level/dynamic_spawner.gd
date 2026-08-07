@@ -20,6 +20,11 @@ class_name DynamicSpawner
 @export var prefix_owner_name: bool = false
 ## Use the custom spawn method that takes the first spawnable scene and sets the initial position.
 @export var use_custom_spawn: bool = true
+## Loads the [member MultiplayerSpawner.AutoSpawnList] on startup using threads.[br]
+## This reduces potential lag spikes when first spawning those scenes.
+@export var auto_load_spawnable_scenes: bool = true
+
+var _cached_packed_scenes: Array[PackedScene] = []
 
 func _get_configuration_warnings() -> PackedStringArray:
 	var warnings: PackedStringArray = []
@@ -28,6 +33,16 @@ func _get_configuration_warnings() -> PackedStringArray:
 		warnings.append("A valid String must be set in the \"Container Name\" property in order for DynamicSpawner to be able to name the container holding the spawned Nodes.")
 	
 	return warnings
+
+func _init() -> void:
+	if Engine.is_editor_hint():
+		return
+	
+	_cached_packed_scenes.resize(get_spawnable_scene_count())
+	if auto_load_spawnable_scenes:
+		for i in get_spawnable_scene_count():
+			var scene_path: String = get_spawnable_scene(i)
+			ResourceLoader.load_threaded_request(scene_path)
 
 func _enter_tree() -> void:
 	if Engine.is_editor_hint():
@@ -56,12 +71,25 @@ func _generate_container_name() -> StringName:
 	var new_container_name: StringName = (owner.name + container_name) if (prefix_owner_name) else container_name
 	return new_container_name
 
+func _get_spawnable_packed_scene(index: int) -> PackedScene:
+	if index < 0 || index >= get_spawnable_scene_count():
+		push_error("_get_spawnable_packed_scene called but index ", index, " is outside the spawnable range [0,", get_spawnable_scene_count() - 1, "]")
+		return null
+	var scene: PackedScene = _cached_packed_scenes[index]
+	if scene == null:
+		var scene_path: String = get_spawnable_scene(index)
+		if auto_load_spawnable_scenes:
+			scene = ResourceLoader.load_threaded_get(scene_path)
+		else:
+			scene = load(scene_path)
+		_cached_packed_scenes[index] = scene
+	return scene
+
 func _custom_spawn(data: Variant) -> Node:
 	var spawn_container: Node = get_node(get_spawn_path())
 	if spawn_container == null:
 		return null
-	var scene_path: String = get_spawnable_scene(0)
-	var scene: PackedScene = load(scene_path)
+	var scene: PackedScene = _get_spawnable_packed_scene(0)
 	if scene == null:
 		return null
 	var spawned_node: Node3D = scene.instantiate()

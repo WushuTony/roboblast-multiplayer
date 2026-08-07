@@ -1,7 +1,7 @@
 extends Control
 
-@export var online_scene: PackedScene = preload("res://lobby/game_session_manager.tscn")
-@export var offline_scene: PackedScene = preload("res://lobby/game_session_manager.tscn")
+const ONLINE_SCENE: PackedScene = preload("res://lobby/game_session_manager.tscn")
+const OFFLINE_SCENE: PackedScene = preload("res://lobby/game_session_manager.tscn")
 
 @onready var message_label: Label = %MessageDisplay
 @onready var online_button: Button = %Online
@@ -37,11 +37,11 @@ func _on_message_dots_timer_timeout() -> void:
 		message_label.text += "."
 
 func _on_online_pressed() -> void:
-	_change_scene_to_packed(online_scene, "Failed to load the online scene")
+	_change_scene_to_packed(ONLINE_SCENE, "Failed to load the online scene")
 
 func _on_offline_pressed() -> void:
 	RoboLobbyManager.is_singleplayer = true
-	if not _change_scene_to_packed(offline_scene, "Failed to load the offline scene"):
+	if not _change_scene_to_packed(OFFLINE_SCENE, "Failed to load the offline scene"):
 		RoboLobbyManager.is_singleplayer = false
 
 func _change_scene_to_packed(packed_scene: PackedScene, error_message: String) -> bool:
