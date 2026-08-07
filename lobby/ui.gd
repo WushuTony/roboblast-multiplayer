@@ -460,6 +460,10 @@ func _on_game_started(_level_idx: int) -> void:
 	hide()
 	get_tree().root.content_scale_mode = default_content_scale_mode
 	is_in_menu = false
+	
+	# Making sure the lobby username is up-to-date, even if the player didn't submit it
+	if RoboLobbyManager.local_username != _lobby_player_name_line_edit.text:
+		_on_lobby_player_name_submitted(_lobby_player_name_line_edit.text)
 
 # Player Customisation
 
