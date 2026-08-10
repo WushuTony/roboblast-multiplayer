@@ -10,6 +10,8 @@ extends Node
 signal chat_message_received(username: String, message: String)
 ## Emitted for all users when the host of the local lobby starts the game.
 signal game_started(level_idx: int)
+## Emitted for all users when the host of the local lobby ends the game.
+signal game_ended
 
 const BUCKET_ID: String = "quickplay" # For matchmaking
 const SOCKET_ID: String = "RoboBlastMP"
@@ -40,6 +42,7 @@ var _is_shutting_down: bool = false
 var lobby_list: Array[HLobby] = []
 var local_lobby: HLobby = null
 
+var has_game_started: bool = false
 var is_singleplayer: bool = false
 
 func _enter_tree() -> void:
@@ -361,6 +364,11 @@ func _on_lobby_owner_changed() -> void:
 	else:
 		_on_lobby_joined(local_lobby)
 
+	# The host disconnecting mid-game currently unloads all the players, so we need to end the game
+	if has_game_started:
+		game_ended.emit()
+		has_game_started = false
+
 #LOBBY MEMBER CODE
 #-----------------------------------#
 ## Update the username of the current player in the lobby[br]
@@ -468,6 +476,8 @@ func _on_rtc_data_received(raw_data: PackedByteArray):
 			push_warning("RTC data received but type ", data.type, " is not implemented")
 
 func _on_game_started(_level_idx: int) -> void:
+	has_game_started = true
+
 	if local_lobby == null or not local_lobby.is_valid():
 		return
 

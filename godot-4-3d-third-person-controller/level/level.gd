@@ -10,6 +10,9 @@ class_name Level
 @onready var _spawn_points: Node = %SpawnPoints
 @onready var _game_session_manager: GameSessionManager = get_node("/root/GameSessionManager")
 
+const DYNAMIC_OBJECTS_PARENT_PATH: NodePath = "."
+const DYNAMIC_OBJECTS_PATH: NodePath = "DynamicObjects"
+
 var spawn_points: Array[Node3D]
 
 static var _instance: Level = null
@@ -30,7 +33,7 @@ func _ready() -> void:
 		push_error(_spawn_points.name + " is missing " + str(missing_spawn_count) + " child" + ("ren" if (missing_spawn_count > 1) else "") + " Node3D")
 
 func _exit_tree() -> void:
-	var dynamic_objects: Node = get_node_or_null("/root/DynamicObjects")
+	var dynamic_objects: Node = get_node_or_null(DYNAMIC_OBJECTS_PATH)
 	if dynamic_objects != null:
 		dynamic_objects.queue_free()
 	if _instance == self:
@@ -54,11 +57,11 @@ func _get_dynamic_objects_node() -> Node:
 	if not is_inside_tree():
 		push_error("_get_dynamic_objects_node called but level \"" + name + "\" is not in the scene tree")
 		return null
-	var dynamic_objects: Node = get_node_or_null("/root/DynamicObjects")
+	var dynamic_objects: Node = get_node_or_null(DYNAMIC_OBJECTS_PATH)
 	if dynamic_objects == null:
 		dynamic_objects = Node.new()
 		dynamic_objects.set_name("DynamicObjects")
-		get_tree().get_root().add_child(dynamic_objects)
+		get_node(DYNAMIC_OBJECTS_PARENT_PATH).add_child(dynamic_objects)
 	return dynamic_objects
 
 ## This function is meant to reparent objects that shouldn't move with their spawner

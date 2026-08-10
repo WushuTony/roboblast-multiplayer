@@ -11,7 +11,8 @@ enum INSTRUCTION_TYPES {KEYBOARD, JOYPAD}
 @onready var grid_container_keyboard: GridContainer = %GridContainerKeyboard
 @onready var grid_container_joypad: GridContainer = %GridContainerJoypad
 
-var game_paused: bool = true:
+## If [code]true[/code] by default, the game starts paused until all players resumed the demo.
+var game_paused: bool = false:
 	set(value):
 		game_paused = value
 		if is_inside_tree():

@@ -97,6 +97,8 @@ var is_swapping_weapons: bool = false
 var is_using_jumping_pad: bool = false
 var is_bouncing: bool = false
 
+var is_frozen: bool = false
+
 func _enter_tree() -> void:
 	# Set node authority
 	peer_id = int(name)
@@ -121,6 +123,13 @@ func _ready() -> void:
 
 	_melee_attack_area.attacker = self
 	_melee_attack_area.friendly_fire = friendly_fire
+
+	# If the level isn't loaded yet, freeze the player until it is
+	if local and\
+		_game_session_manager != null and\
+		_game_session_manager.level == null:
+		freeze()
+		_game_session_manager.level_loaded.connect(_on_level_loaded)
 
 	# When copying this character to a new project, the project may lack required input actions.
 	# In that case, we register input actions for the user at runtime.
@@ -174,6 +183,19 @@ func set_multiplayer_data():
 			_game_session_manager != null and\
 			_game_session_manager.connection_mode == GameSessionManager.ConnectionMode.RELAY:
 			_ui_text_chat.enable()
+
+func _on_level_loaded(_level_idx: int) -> void:
+	unfreeze()
+	_game_session_manager.level_loaded.disconnect(_on_level_loaded)
+
+func freeze() -> void:
+	is_frozen = true
+	velocity = Vector3.ZERO
+	set_physics_process(false)
+
+func unfreeze() -> void:
+	is_frozen = false
+	set_physics_process(local)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not get_window().has_focus():

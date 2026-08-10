@@ -34,15 +34,24 @@ func _enter_tree() -> void:
 	default_content_scale_mode = get_tree().root.content_scale_mode
 
 func _ready():
-	if RoboLobbyManager.is_singleplayer:
-		hide()
-		return
+	_game_session_manager.level_loaded.connect(_on_level_loaded)
+	_game_session_manager.level_load_failed.connect(_on_level_load_failed)
+	RoboLobbyManager.game_started.connect(_on_game_started)
+	RoboLobbyManager.game_ended.connect(_on_game_ended)
 	
+	visibility_changed.connect(_on_visibility_changed)
 	_on_visibility_changed()
 	
-	multiplayer.server_disconnected.connect(_on_server_disconnected)
-	visibility_changed.connect(_on_visibility_changed)
 	$Start/WaitingRoom.hide()
+	hide_loading_screen(false)
+	
+	if RoboLobbyManager.is_singleplayer:
+		$Start/ENet.hide()
+		$Start/WebSocket.hide()
+		$Start/Relay.hide()
+		return
+	
+	multiplayer.server_disconnected.connect(_on_server_disconnected)
 	
 	match (_game_session_manager.connection_mode):
 		GameSessionManager.ConnectionMode.ENET:
@@ -79,10 +88,11 @@ func _ready():
 			_lobby_player_color_picker_button.color_changed.connect(_on_player_color_changed)
 			_lobby_player_color_picker_button.picker_created.connect(_on_lobby_player_color_picker_created, CONNECT_ONE_SHOT)
 			_lobby_player_color_picker_button.popup_closed.connect(_on_player_color_picker_closed)
-			# Listen to the lobby manager's signals
-			RoboLobbyManager.game_started.connect(_on_game_started)
 			# Prepare lobby list
 			_load_lobby_list()
+
+func _process(_delta: float) -> void:
+	$Start/Loading/Progress.value = _game_session_manager.level_load_progress
 
 func _on_server_disconnected():
 	show()
@@ -277,9 +287,6 @@ func _on_kicked_from_lobby() -> void:
 func _on_lobby_owner_changed() -> void:
 	_update_waiting_room_players()
 	$Start/WaitingRoom/VBox/List/VBox/Actions/Play.disabled = not RoboLobbyManager.local_lobby.is_owner()
-	# The host disconnecting mid-game currently unloads the level, so making sure the UI is displayed
-	if not is_in_menu:
-		show()
 
 func _on_lobby_player_name_changed(new_name: String):
 	# Remember the position of the caret.
@@ -457,13 +464,51 @@ func _on_lobby_play_pressed() -> void:
 	RoboLobbyManager.start_game()
 
 func _on_game_started(_level_idx: int) -> void:
+	match (_game_session_manager.connection_mode):
+		GameSessionManager.ConnectionMode.ENET:
+			$Start/ENet.hide()
+		GameSessionManager.ConnectionMode.WEBSOCKET:
+			$Start/WebSocket.hide()
+		GameSessionManager.ConnectionMode.RELAY:
+			$Start/Relay.hide()
+			$Start/WaitingRoom.hide()
+			# Making sure the lobby username is up-to-date, even if the player didn't submit it
+			if RoboLobbyManager.local_username != _lobby_player_name_line_edit.text:
+				_on_lobby_player_name_submitted(_lobby_player_name_line_edit.text)
+	show_loading_screen(_game_session_manager.level_load_progress)
+
+func _on_game_ended() -> void:
+	hide_loading_screen(true)
+	show()
+
+func _on_level_loaded(_level_idx: int) -> void:
+	hide_loading_screen(false)
 	hide()
 	get_tree().root.content_scale_mode = default_content_scale_mode
 	is_in_menu = false
-	
-	# Making sure the lobby username is up-to-date, even if the player didn't submit it
-	if RoboLobbyManager.local_username != _lobby_player_name_line_edit.text:
-		_on_lobby_player_name_submitted(_lobby_player_name_line_edit.text)
+
+func _on_level_load_failed(_p_level_idx: int) -> void:
+	hide_loading_screen(true)
+
+func show_loading_screen(progress: float = 0.0) -> void:
+	$Start/Loading/Progress.value = progress
+	$Start/Loading.show()
+	set_process(true)
+
+func hide_loading_screen(restore_menu: bool) -> void:
+	set_process(false)
+	$Start/Loading.hide()
+	if restore_menu:
+		match (_game_session_manager.connection_mode):
+			GameSessionManager.ConnectionMode.ENET:
+				$Start/ENet.show()
+			GameSessionManager.ConnectionMode.WEBSOCKET:
+				$Start/WebSocket.show()
+			GameSessionManager.ConnectionMode.RELAY:
+				if RoboLobbyManager.local_lobby != null and RoboLobbyManager.local_lobby.is_valid():
+					$Start/WaitingRoom.show()
+				else:
+					$Start/Relay.show()
 
 # Player Customisation
 
