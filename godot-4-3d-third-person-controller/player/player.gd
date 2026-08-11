@@ -58,8 +58,6 @@ enum WEAPON_TYPE { DEFAULT, GRENADE }
 @onready var _game_session_manager: GameSessionManager = get_node("/root/GameSessionManager")
 
 @onready var _start_position: Vector3 = global_transform.origin
-@onready var _shoot_cooldown_tick := shoot_cooldown
-@onready var _grenade_cooldown_tick := grenade_cooldown
 
 var _equipped_weapon: WEAPON_TYPE = WEAPON_TYPE.DEFAULT
 var _move_direction: Vector3 = Vector3.ZERO
@@ -68,6 +66,8 @@ var _gravity: float = -30.0
 var _ground_height: float = 0.0
 var _coins: int = 0
 var _is_on_floor_buffer: bool = false
+var _shoot_timer: float = 0.0
+var _grenade_timer: float = 0.0
 
 var peer_id: int = 1 # The peer that controls this player
 var local: bool = true # If this instance is controlled by the local peer
@@ -153,10 +153,9 @@ func set_multiplayer_data():
 	# Give authority to this client
 	const recursive: bool = false
 	set_multiplayer_authority(peer_id, recursive)
-	if !recursive:
+	if not recursive:
 		_client_synchronizer.set_multiplayer_authority(peer_id, false)
-		_bullet_spawner.set_multiplayer_authority(peer_id, false)
-		_grenade_aim_controller._grenade_spawner.set_multiplayer_authority(peer_id, false)
+		_grenade_aim_controller.set_multiplayer_authority(peer_id, false)
 	
 	if local and _game_session_manager != null:
 		display_name = _game_session_manager.local_player_name
@@ -282,21 +281,21 @@ func _physics_process(delta: float) -> void:
 
 	# Update attack state and position
 
-	_shoot_cooldown_tick += delta
-	_grenade_cooldown_tick += delta
+	_shoot_timer = max(_shoot_timer - delta, 0.0)
+	_grenade_timer = max(_grenade_timer - delta, 0.0)
 
 	if is_attacking:
 		match _equipped_weapon:
 			WEAPON_TYPE.DEFAULT:
 				if is_aiming and (can_shoot_midair or is_on_floor()):
-					if _shoot_cooldown_tick > shoot_cooldown:
-						_shoot_cooldown_tick = 0.0
+					if _shoot_timer <= 0.0:
+						_shoot_timer = shoot_cooldown
 						shoot()
 				elif is_just_attacking:
 					attack.rpc()
 			WEAPON_TYPE.GRENADE:
-				if _grenade_cooldown_tick > grenade_cooldown:
-					_grenade_cooldown_tick = 0.0
+				if _grenade_timer <= 0.0:
+					_grenade_timer = grenade_cooldown
 					_grenade_aim_controller.throw_grenade()
 
 	velocity.y += _gravity * delta
@@ -378,9 +377,15 @@ func attack() -> void:
 func shoot() -> void:
 	if not local:
 		return
-	var origin := global_position + Vector3.UP
-	var aim_target := _camera_controller.get_aim_target()
-	var _bullet: Bullet = _bullet_spawner.shoot(origin, aim_target)
+	var origin: Vector3 = global_position + Vector3.UP
+	var aim_target: Vector3 = _camera_controller.get_aim_target()
+	_spawn_bullet.rpc_id(1, origin, aim_target)
+
+
+@rpc("authority", "call_local", "reliable")
+func _spawn_bullet(origin: Vector3, aim_target: Vector3) -> void:
+	if _bullet_spawner.is_multiplayer_authority():
+		var _bullet: Bullet = _bullet_spawner.shoot(origin, aim_target, peer_id)
 
 
 @rpc("authority", "call_local", "reliable")

@@ -168,7 +168,9 @@ func _on_peer_connected(peer_id: int) -> void:
 		spawn_player(peer_id)
 	
 	# If a late joiner arrived after the game was started, let them know
-	late_join_game_started.rpc_id(peer_id, level_idx)
+	if is_multiplayer_authority():
+		var new_level_idx: int = level_load_idx if level_load_idx >= 0 else level_idx
+		late_join_game_started.rpc_id(peer_id, new_level_idx)
 
 func _on_peer_disconnected(peer_id: int) -> void:
 	if not has_game_started:
@@ -244,6 +246,7 @@ func _on_level_scene_loaded(scene: PackedScene) -> void:
 	# Load new level
 	level = scene.instantiate()
 	level_idx = level_load_idx
+	level_load_idx = -1
 	level_node.add_child(level, true)
 	
 	level_loaded.emit(level_idx)
@@ -259,6 +262,7 @@ func _on_level_loaded(_p_level_idx: int) -> void:
 		spawn_player(peer_id)
 
 func _on_level_load_failed(_p_level_idx: int) -> void:
+	level_load_idx = -1
 	level_load_progress = 0.0
 	set_process(false)
 

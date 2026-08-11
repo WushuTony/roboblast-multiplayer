@@ -1,16 +1,42 @@
 extends CanvasLayer
 
 @onready var _game_session_manager: GameSessionManager = get_parent()
+
+@onready var _enet_menu: VBoxContainer = $Start/ENet
 @onready var _enet_address_line_edit: LineEdit = $Start/ENet/Panel/VBox/Options/Address
 @onready var _enet_port_spin_box: SpinBox = $Start/ENet/Panel/VBox/Options/Port
 @onready var _enet_player_name_line_edit: LineEdit = $Start/ENet/Custom/VBox/Options/Name
 @onready var _enet_player_color_picker_button: ColorPickerButton = $Start/ENet/Custom/VBox/Options/ColorPicker
+
+@onready var _websocket_menu: VBoxContainer = $Start/WebSocket
+@onready var _websocket_address_line_edit: LineEdit = $Start/WebSocket/Join/VBox/Options/Url
+@onready var _websocket_port_spin_box: SpinBox = $Start/WebSocket/Host/VBox/Options/Port
+
+@onready var _lobby_search_menu: HBoxContainer = $Start/Relay
 @onready var _lobby_item_list: ItemList = $Start/Relay/List/VBox/HBox/VBox/LobbyList
 @onready var _lobby_players_count_item_list: ItemList = $Start/Relay/List/VBox/HBox/VBox2/PlayersList
+@onready var _lobby_refresh_button: Button = $Start/Relay/List/VBox/Actions/Refresh
+@onready var _lobby_search_join_code_line_edit: LineEdit = $Start/Relay/Split/Resolve/VBox/HBox/JoinCode
+@onready var _lobby_host_name_line_edit: LineEdit = $Start/Relay/Split/Host/VBox/Parameters/Name
+@onready var _lobby_host_max_players_box: SpinBox = $Start/Relay/Split/Host/VBox/Parameters/MaxPlayers
+@onready var _lobby_host_visibility_button: OptionButton = $Start/Relay/Split/Host/VBox/Parameters/Visibility
+@onready var _lobby_host_voice_chat_button: OptionButton = $Start/Relay/Split/Host/VBox/Parameters/VoiceChat
+
+@onready var _lobby_menu: HBoxContainer = $Start/WaitingRoom
 @onready var _lobby_player_item_list: ItemList = $Start/WaitingRoom/VBox/List/VBox/ItemList
+@onready var _lobby_play_button: Button = $Start/WaitingRoom/VBox/List/VBox/Actions/Play
+@onready var _lobby_leave_button: Button = $Start/WaitingRoom/VBox/List/VBox/Actions/Leave
 @onready var _lobby_text_chat: RoboChat = $Start/WaitingRoom/VBox/Chat
+@onready var _lobby_join_code_line_edit: LineEdit = $Start/WaitingRoom/Split/Host/VBox/Settings/JoinCode
+@onready var _lobby_name_line_edit: LineEdit = $Start/WaitingRoom/Split/Host/VBox/Settings/Name
+@onready var _lobby_max_players_box: SpinBox = $Start/WaitingRoom/Split/Host/VBox/Settings/MaxPlayers
+@onready var _lobby_visibility_button: OptionButton = $Start/WaitingRoom/Split/Host/VBox/Settings/Visibility
+@onready var _lobby_voice_chat_button: OptionButton = $Start/WaitingRoom/Split/Host/VBox/Settings/VoiceChat
 @onready var _lobby_player_name_line_edit: LineEdit = $Start/WaitingRoom/Split/Custom/VBox/Options/Name
 @onready var _lobby_player_color_picker_button: ColorPickerButton = $Start/WaitingRoom/Split/Custom/VBox/Options/ColorPicker
+
+@onready var _loading_menu: VBoxContainer = $Start/Loading
+@onready var _loading_progress: ProgressBar = $Start/Loading/Progress
 
 var default_content_scale_mode: Window.ContentScaleMode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
 var is_in_menu: bool = false
@@ -42,22 +68,22 @@ func _ready():
 	visibility_changed.connect(_on_visibility_changed)
 	_on_visibility_changed()
 	
-	$Start/WaitingRoom.hide()
+	_lobby_menu.hide()
 	hide_loading_screen(false)
 	
 	if RoboLobbyManager.is_singleplayer:
-		$Start/ENet.hide()
-		$Start/WebSocket.hide()
-		$Start/Relay.hide()
+		_enet_menu.hide()
+		_websocket_menu.hide()
+		_lobby_search_menu.hide()
 		return
 	
 	multiplayer.server_disconnected.connect(_on_server_disconnected)
 	
 	match (_game_session_manager.connection_mode):
 		GameSessionManager.ConnectionMode.ENET:
-			$Start/ENet.show()
-			$Start/WebSocket.hide()
-			$Start/Relay.hide()
+			_enet_menu.show()
+			_websocket_menu.hide()
+			_lobby_search_menu.hide()
 			_enet_address_line_edit.grab_focus()
 			# Initialise the player customisation
 			_enet_player_name_line_edit.text = _game_session_manager.local_player_name
@@ -69,15 +95,15 @@ func _ready():
 			_enet_player_color_picker_button.picker_created.connect(_on_enet_player_color_picker_created, CONNECT_ONE_SHOT)
 			_enet_player_color_picker_button.popup_closed.connect(_on_player_color_picker_closed)
 		GameSessionManager.ConnectionMode.WEBSOCKET:
-			$Start/ENet.hide()
-			$Start/WebSocket.show()
-			$Start/Relay.hide()
-			$Start/WebSocket/Join/VBox/Options/Url.grab_focus()
+			_enet_menu.hide()
+			_websocket_menu.show()
+			_lobby_search_menu.hide()
+			_websocket_address_line_edit.grab_focus()
 		GameSessionManager.ConnectionMode.RELAY:
-			$Start/ENet.hide()
-			$Start/WebSocket.hide()
-			$Start/Relay.show()
-			$Start/Relay/List/VBox/Actions/Refresh.grab_focus()
+			_enet_menu.hide()
+			_websocket_menu.hide()
+			_lobby_search_menu.show()
+			_lobby_refresh_button.grab_focus()
 			# Initialise the player customisation
 			_lobby_player_name_line_edit.text = _game_session_manager.local_player_name
 			if _game_session_manager.validate_player_color(_game_session_manager.local_player_color):
@@ -92,7 +118,7 @@ func _ready():
 			_load_lobby_list()
 
 func _process(_delta: float) -> void:
-	$Start/Loading/Progress.value = _game_session_manager.level_load_progress
+	_loading_progress.value = _game_session_manager.level_load_progress
 
 func _on_server_disconnected():
 	show()
@@ -121,12 +147,12 @@ func _on_enet_player_color_picker_created():
 # WebSocket
 
 func _on_websocket_join_pressed():
-	var url: String = $Start/WebSocket/Join/VBox/Options/Url.text
+	var url: String = _websocket_address_line_edit.text
 	_game_session_manager.start_websocket_client(url)
 	hide()
 
 func _on_websocket_host_pressed():
-	var port: int = $Start/WebSocket/Host/VBox/Options/Port.value
+	var port: int = int(_websocket_port_spin_box.value)
 	_game_session_manager.start_websocket_server(port)
 	hide()
 
@@ -157,9 +183,9 @@ func _load_lobby_list(_page: int = 1) -> void:
 func _on_relay_refresh_pressed() -> void:
 	_load_lobby_list()
 	# Disable for 3 sec to avoid spamming refresh queries
-	$Start/Relay/List/VBox/Actions/Refresh.disabled = true
+	_lobby_refresh_button.disabled = true
 	await get_tree().create_timer(3.0).timeout
-	$Start/Relay/List/VBox/Actions/Refresh.disabled = false
+	_lobby_refresh_button.disabled = false
 
 func _on_relay_join_pressed() -> void:
 	# Determine the selected lobby
@@ -171,55 +197,55 @@ func _on_relay_join_pressed() -> void:
 		return
 	
 	# Try to connect
-	$Start/Relay.hide()
+	_lobby_search_menu.hide()
 	if await RoboLobbyManager.join_lobby_async(selected_lobby):
 		_init_waiting_room()
 	else:
-		$Start/Relay.show()
+		_lobby_search_menu.show()
 
 func _on_relay_resolve_pressed() -> void:
 	# Get the player input
-	var join_code: String = $Start/Relay/Split/Resolve/VBox/HBox/JoinCode.text
+	var join_code: String = _lobby_search_join_code_line_edit.text
 	if join_code.is_empty():
 		return
 	
 	# Try to resolve and connect
-	$Start/Relay.hide()
+	_lobby_search_menu.hide()
 	if await RoboLobbyManager.resolve_lobby_async(join_code):
 		_init_waiting_room()
 	else:
-		$Start/Relay.show()
+		_lobby_search_menu.show()
 
 func _on_relay_host_pressed() -> void:
 	# Get parameters
-	var lobby_name: String = $Start/Relay/Split/Host/VBox/Parameters/Name.text
-	var max_players: int = $Start/Relay/Split/Host/VBox/Parameters/MaxPlayers.value
-	var visibility_idx: int = $Start/Relay/Split/Host/VBox/Parameters/Visibility.get_selected_id()
-	var voice_chat_mode: int = $Start/Relay/Split/Host/VBox/Parameters/VoiceChat.get_selected_id()
+	var lobby_name: String = _lobby_host_name_line_edit.text
+	var max_players: int = int(_lobby_host_max_players_box.value)
+	var visibility_idx: int = _lobby_host_visibility_button.get_selected_id()
+	var voice_chat_mode: int = _lobby_host_voice_chat_button.get_selected_id()
 	
 	# Start a new lobby
-	$Start/Relay.hide()
+	_lobby_search_menu.hide()
 	if await RoboLobbyManager.create_lobby_async(lobby_name, max_players, visibility_idx, voice_chat_mode):
 		_init_waiting_room()
 	else:
-		$Start/Relay.show()
+		_lobby_search_menu.show()
 
 func _init_waiting_room(auto_show: bool = true) -> void:
 	if RoboLobbyManager.local_lobby == null:
 		return
 	
-	$Start/WaitingRoom/VBox/List/VBox/Actions/Play.disabled = not RoboLobbyManager.local_lobby.is_owner()
+	_lobby_play_button.disabled = not RoboLobbyManager.local_lobby.is_owner()
 	
 	var lobby_name_attribute: Dictionary = RoboLobbyManager.local_lobby.get_attribute("LOBBYNAME")
 	var lobby_name: String = lobby_name_attribute.value if (lobby_name_attribute != null and not lobby_name_attribute.is_empty()) else RoboLobbyManager.local_lobby.lobby_id
-	$Start/WaitingRoom/Split/Host/VBox/Settings/Name.text = lobby_name
-	$Start/WaitingRoom/Split/Host/VBox/Settings/JoinCode.text = RoboLobbyManager.local_lobby.lobby_id
-	$Start/WaitingRoom/Split/Host/VBox/Settings/MaxPlayers.value = RoboLobbyManager.local_lobby.max_members
-	$Start/WaitingRoom/Split/Host/VBox/Settings/Visibility.select(RoboLobbyManager.local_lobby.permission_level)
+	_lobby_name_line_edit.text = lobby_name
+	_lobby_join_code_line_edit.text = RoboLobbyManager.local_lobby.lobby_id
+	_lobby_max_players_box.value = RoboLobbyManager.local_lobby.max_members
+	_lobby_visibility_button.select(RoboLobbyManager.local_lobby.permission_level)
 	var voice_chat_mode_attribute: Dictionary = RoboLobbyManager.local_lobby.get_attribute("VOICECHATMODE")
 	var voice_chat_mode: int = voice_chat_mode_attribute.value if (voice_chat_mode_attribute != null) else 0
-	var vc_idx: int = $Start/WaitingRoom/Split/Host/VBox/Settings/VoiceChat.get_item_index(voice_chat_mode)
-	$Start/WaitingRoom/Split/Host/VBox/Settings/VoiceChat.select(vc_idx)
+	var vc_idx: int = _lobby_voice_chat_button.get_item_index(voice_chat_mode)
+	_lobby_voice_chat_button.select(vc_idx)
 	
 	if _lobby_text_chat != null:
 		_lobby_text_chat.enable()
@@ -238,11 +264,11 @@ func _init_waiting_room(auto_show: bool = true) -> void:
 		local_lobby.lobby_owner_changed.connect(_on_lobby_owner_changed)
 	
 	if auto_show:
-		$Start/WaitingRoom.show()
-		if $Start/WaitingRoom/VBox/List/VBox/Actions/Play.disabled:
-			$Start/WaitingRoom/VBox/List/VBox/Actions/Leave.grab_focus()
+		_lobby_menu.show()
+		if _lobby_play_button.disabled:
+			_lobby_leave_button.grab_focus()
 		else:
-			$Start/WaitingRoom/VBox/List/VBox/Actions/Play.grab_focus()
+			_lobby_play_button.grab_focus()
 
 func _update_waiting_room_players() -> void:
 	_lobby_player_item_list.clear()
@@ -271,12 +297,12 @@ func _on_peer_connection_closed(callback_data: Dictionary) -> void:
 	_update_waiting_room_players()
 
 func _on_lobby_left() -> void:
-	$Start/WaitingRoom.hide()
+	_lobby_menu.hide()
 	if _lobby_text_chat != null:
 		_lobby_text_chat.clear()
 		_lobby_text_chat.disable()
-	$Start/Relay.show()
-	$Start/Relay/List/VBox/Actions/Refresh.grab_focus()
+	_lobby_search_menu.show()
+	_lobby_refresh_button.grab_focus()
 
 func _on_lobby_updated() -> void:
 	_update_waiting_room_players()
@@ -286,7 +312,7 @@ func _on_kicked_from_lobby() -> void:
 
 func _on_lobby_owner_changed() -> void:
 	_update_waiting_room_players()
-	$Start/WaitingRoom/VBox/List/VBox/Actions/Play.disabled = not RoboLobbyManager.local_lobby.is_owner()
+	_lobby_play_button.disabled = not RoboLobbyManager.local_lobby.is_owner()
 
 func _on_lobby_player_name_changed(new_name: String):
 	# Remember the position of the caret.
@@ -466,12 +492,12 @@ func _on_lobby_play_pressed() -> void:
 func _on_game_started(_level_idx: int) -> void:
 	match (_game_session_manager.connection_mode):
 		GameSessionManager.ConnectionMode.ENET:
-			$Start/ENet.hide()
+			_enet_menu.hide()
 		GameSessionManager.ConnectionMode.WEBSOCKET:
-			$Start/WebSocket.hide()
+			_websocket_menu.hide()
 		GameSessionManager.ConnectionMode.RELAY:
-			$Start/Relay.hide()
-			$Start/WaitingRoom.hide()
+			_lobby_search_menu.hide()
+			_lobby_menu.hide()
 			# Making sure the lobby username is up-to-date, even if the player didn't submit it
 			if RoboLobbyManager.local_username != _lobby_player_name_line_edit.text:
 				_on_lobby_player_name_submitted(_lobby_player_name_line_edit.text)
@@ -491,24 +517,24 @@ func _on_level_load_failed(_p_level_idx: int) -> void:
 	hide_loading_screen(true)
 
 func show_loading_screen(progress: float = 0.0) -> void:
-	$Start/Loading/Progress.value = progress
-	$Start/Loading.show()
+	_loading_progress.value = progress
+	_loading_menu.show()
 	set_process(true)
 
 func hide_loading_screen(restore_menu: bool) -> void:
 	set_process(false)
-	$Start/Loading.hide()
+	_loading_menu.hide()
 	if restore_menu:
 		match (_game_session_manager.connection_mode):
 			GameSessionManager.ConnectionMode.ENET:
-				$Start/ENet.show()
+				_enet_menu.show()
 			GameSessionManager.ConnectionMode.WEBSOCKET:
-				$Start/WebSocket.show()
+				_websocket_menu.show()
 			GameSessionManager.ConnectionMode.RELAY:
 				if RoboLobbyManager.local_lobby != null and RoboLobbyManager.local_lobby.is_valid():
-					$Start/WaitingRoom.show()
+					_lobby_menu.show()
 				else:
-					$Start/Relay.show()
+					_lobby_search_menu.show()
 
 # Player Customisation
 

@@ -66,6 +66,9 @@ func _setup_container() -> void:
 		container.set_name(new_container_name)
 		dynamic_objects.add_child(container)
 		set_spawn_path(container.get_path())
+	else:
+		await get_tree().create_timer(1.0).timeout
+		_setup_container.call_deferred()
 
 func _generate_container_name() -> StringName:
 	var new_container_name: StringName = (owner.name + container_name) if (prefix_owner_name) else container_name

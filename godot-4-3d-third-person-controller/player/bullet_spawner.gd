@@ -24,14 +24,15 @@ func _enter_tree() -> void:
 	if use_custom_spawn:
 		spawn_function = _custom_bullet_spawn
 
-func shoot(position: Vector3, target_position: Vector3) -> Node:
+func shoot(position: Vector3, target_position: Vector3, peer_id: int = 1) -> Node:
 	var bullet_index: int = get_spawnable_bullet_index()
 	if bullet_index < 0:
 		return null
 	var spawn_data: Variant = {
 		"index": bullet_index,
 		"position": position,
-		"target_position": target_position
+		"target_position": target_position,
+		"peer_id": peer_id
 	}
 	return spawn(spawn_data)
 
@@ -45,10 +46,11 @@ func _custom_bullet_spawn(data: Variant) -> Node:
 		return null
 	var position: Vector3 = data.get("position", Vector3.ZERO)
 	var target_position: Vector3 = data.get("target_position", Vector3.ZERO)
-	_initialise_bullet(bullet, position, target_position)
+	var peer_id: int = data.get("peer_id", 1)
+	_initialise_bullet(bullet, position, target_position, peer_id)
 	return bullet
 
-func _initialise_bullet(bullet: Bullet, position: Vector3, target_position: Vector3) -> void:
+func _initialise_bullet(bullet: Bullet, position: Vector3, target_position: Vector3, peer_id: int) -> void:
 	if bullet == null:
 		push_error("_initialise_bullet called but there is no bullet")
 		return
@@ -58,7 +60,7 @@ func _initialise_bullet(bullet: Bullet, position: Vector3, target_position: Vect
 	var aim_direction: Vector3 = (target_position - position).normalized()
 	bullet.velocity = aim_direction * bullet_speed
 	bullet.friendly_fire = friendly_fire
-	bullet.set_multiplayer_authority(get_multiplayer_authority())
+	bullet.set_multiplayer_authority(peer_id)
 
 func get_spawnable_bullet_index() -> int:
 	if get_spawnable_scene_count() < 1:

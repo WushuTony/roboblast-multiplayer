@@ -9,9 +9,9 @@ class_name Level
 @onready var _coin_spawner: DynamicSpawner = %CoinSpawner
 @onready var _spawn_points: Node = %SpawnPoints
 @onready var _game_session_manager: GameSessionManager = get_node("/root/GameSessionManager")
+@onready var _dynamic_objects_parent: Node = get_tree().root
 
-const DYNAMIC_OBJECTS_PARENT_PATH: NodePath = "."
-const DYNAMIC_OBJECTS_PATH: NodePath = "DynamicObjects"
+const DYNAMIC_OBJECTS_PATH: NodePath = "/root/DynamicObjects"
 
 var spawn_points: Array[Node3D]
 
@@ -61,7 +61,7 @@ func _get_dynamic_objects_node() -> Node:
 	if dynamic_objects == null:
 		dynamic_objects = Node.new()
 		dynamic_objects.set_name("DynamicObjects")
-		get_node(DYNAMIC_OBJECTS_PARENT_PATH).add_child(dynamic_objects)
+		_dynamic_objects_parent.add_child(dynamic_objects)
 	return dynamic_objects
 
 ## This function is meant to reparent objects that shouldn't move with their spawner

@@ -33,12 +33,17 @@ func _on_visibility_changed() -> void:
 	set_process(visible)
 
 
-func throw_grenade() -> bool:
-	if not visible or not _grenade_spawner.is_multiplayer_authority():
-		return false
+func throw_grenade() -> void:
+	if not visible:
+		return
+	_spawn_throw_grenade.rpc_id(1, _launch_point.global_position, _throw_velocity)
 
-	var grenade: Grenade = _grenade_spawner.throw(_launch_point.global_position, _throw_velocity)
-	return grenade != null
+
+@rpc("authority", "call_local", "reliable")
+func _spawn_throw_grenade(p_position: Vector3, p_velocity: Vector3) -> void:
+	if _grenade_spawner.is_multiplayer_authority():
+		var peer_id: int = multiplayer.get_remote_sender_id() if (multiplayer.get_remote_sender_id() != 0) else multiplayer.get_unique_id()
+		var _grenade: Grenade = _grenade_spawner.throw(p_position, p_velocity, peer_id)
 
 
 ## Update the velocity to throw grenades and calculate their trajectory[br]

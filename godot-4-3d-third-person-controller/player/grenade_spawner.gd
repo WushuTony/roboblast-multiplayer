@@ -26,14 +26,15 @@ func _generate_container_name() -> StringName:
 	var new_container_name: StringName = (_grenade_launcher.get_owner().name + container_name) if (prefix_owner_name) else container_name
 	return new_container_name
 
-func throw(position: Vector3, velocity: Vector3) -> Node:
+func throw(position: Vector3, velocity: Vector3, peer_id: int = 1) -> Node:
 	var grenade_index: int = get_spawnable_grenade_index()
 	if grenade_index < 0:
 		return null
 	var spawn_data: Variant = {
 		"index": grenade_index,
 		"position": position,
-		"velocity": velocity
+		"velocity": velocity,
+		"peer_id": peer_id
 	}
 	return spawn(spawn_data)
 
@@ -47,10 +48,11 @@ func _custom_grenade_spawn(data: Variant) -> Node:
 		return null
 	var position: Vector3 = data.get("position", Vector3.ZERO)
 	var velocity: Vector3 = data.get("velocity", Vector3.ZERO)
-	_initialise_grenade(grenade, position, velocity)
+	var peer_id: int = data.get("peer_id", 1)
+	_initialise_grenade(grenade, position, velocity, peer_id)
 	return grenade
 
-func _initialise_grenade(grenade: Grenade, position: Vector3, velocity: Vector3) -> void:
+func _initialise_grenade(grenade: Grenade, position: Vector3, velocity: Vector3, peer_id: int) -> void:
 	if grenade == null:
 		push_error("_initialise_grenade called but there is no grenade")
 		return
@@ -61,7 +63,7 @@ func _initialise_grenade(grenade: Grenade, position: Vector3, velocity: Vector3)
 	grenade._velocity = velocity
 	grenade.gravity = _grenade_launcher.gravity
 	grenade.friendly_fire = friendly_fire
-	grenade.set_multiplayer_authority(get_multiplayer_authority())
+	grenade.set_multiplayer_authority(peer_id)
 
 func get_spawnable_grenade_index() -> int:
 	if get_spawnable_scene_count() < 1:
