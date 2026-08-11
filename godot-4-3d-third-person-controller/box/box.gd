@@ -30,24 +30,10 @@ func _receive_damage():
 	if multiplayer.is_server():
 		Level.spawn_broken_box_with_coins(global_position, coins_count)
 
-	play_destroy_sound()
+	Level.play_sound(_destroy_sound, global_position, randfn(1.0, 0.1))
 
 	prepare_destroy()
 
-
-func play_destroy_sound() -> void:
-	if not is_instance_valid(_destroy_sound) or _destroy_sound.is_playing():
-		return
-
-	# Add it to the dynamic objects so it survives after the box is destroyed
-	Level.reparent_target_to_dynamic_objects(_destroy_sound)
-
-	_destroy_sound.global_position = global_position
-	_destroy_sound.pitch_scale = randfn(1.0, 0.1)
-	_destroy_sound.play()
-
-	# Tell the sound to delete itself when it is done playing
-	_destroy_sound.finished.connect(_destroy_sound.queue_free)
 
 func _exit_tree() -> void:
 	on_destroyed.emit(self)

@@ -99,8 +99,9 @@ func _custom_spawn(data: Variant) -> Node:
 	if spawned_node == null:
 		return null
 	var position: Vector3 = data.get("position", Vector3.ZERO)
+	var peer_id: int = data.get("peer_id", 1)
 	spawned_node.transform.origin = position
-	spawned_node.set_multiplayer_authority(get_multiplayer_authority())
+	spawned_node.set_multiplayer_authority(peer_id)
 	return spawned_node
 
 func _exit_tree() -> void:

@@ -125,7 +125,7 @@ func _play_explosion_effect() -> void:
 	set_physics_process(false)
 	_collision_shape.set_deferred("disabled", true)
 
-	_play_explosion_sound()
+	Level.play_sound(_explosion_sound, global_position, randfn(2.0, 0.1))
 
 	var explosion: Node3D = EXPLOSION_SCENE.instantiate()
 	explosion.transform.origin = position
@@ -134,18 +134,3 @@ func _play_explosion_effect() -> void:
 	if is_multiplayer_authority():
 		await get_tree().create_timer(0.5).timeout
 		queue_free()
-
-
-func _play_explosion_sound() -> void:
-	if not is_instance_valid(_explosion_sound) or _explosion_sound.is_playing():
-		return
-
-	# Add it to the dynamic objects so it survives after the grenade is destroyed
-	Level.reparent_target_to_dynamic_objects(_explosion_sound)
-
-	_explosion_sound.global_position = global_position
-	_explosion_sound.pitch_scale = randfn(2.0, 0.1)
-	_explosion_sound.play()
-
-	# Tell the sound to delete itself when it is done playing
-	_explosion_sound.finished.connect(_explosion_sound.queue_free)

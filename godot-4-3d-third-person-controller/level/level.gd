@@ -113,3 +113,20 @@ func _spawn_coins(target_position: Vector3, count: int = 1, collect_delay = 0.5)
 		var coin: Coin = _coin_spawner.spawn(spawn_data)
 		if coin != null:
 			coin.call_deferred("spawn", collect_delay)
+
+## Play a oneshot sound at the given [param target_position] in the world and destroy the [param audio_source].[br]
+## [b]Note:[/b] The [param audio_source] is reparented to the dynamic objects container so it survives its
+## original parent being destroyed prematurely.
+static func play_sound(audio_source: AudioStreamPlayer3D, target_position: Vector3, pitch_scale: float = 1.0) -> void:
+	if not is_instance_valid(audio_source) or audio_source.is_playing():
+		return
+
+	# Add it to the dynamic objects so it survives after the parent is destroyed
+	reparent_target_to_dynamic_objects(audio_source)
+
+	audio_source.global_position = target_position
+	audio_source.pitch_scale = pitch_scale
+	audio_source.play()
+
+	# Tell the audio source to delete itself when it is done playing
+	audio_source.finished.connect(audio_source.queue_free)

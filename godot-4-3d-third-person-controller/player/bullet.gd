@@ -21,7 +21,7 @@ func _ready() -> void:
 	_area.body_entered.connect(_on_body_entered)
 	look_at(global_position + velocity)
 	_alive_limit = distance_limit / velocity.length()
-	_play_projectile_sound()
+	Level.play_sound(_projectile_sound, global_position, randfn(1.0, 0.1))
 
 
 func _process(delta: float) -> void:
@@ -51,21 +51,6 @@ func _on_body_entered(body: Node3D) -> void:
 			var impact_point := global_position - body.global_position
 			body.damage(impact_point, velocity)
 	_destroy_bullet()
-
-
-func _play_projectile_sound() -> void:
-	if not is_instance_valid(_projectile_sound) or _projectile_sound.is_playing():
-		return
-
-	# Add it to the dynamic objects so it survives after the bullet is destroyed
-	Level.reparent_target_to_dynamic_objects(_projectile_sound)
-
-	_projectile_sound.global_position = global_position
-	_projectile_sound.pitch_scale = randfn(1.0, 0.1)
-	_projectile_sound.play()
-
-	# Tell the sound to delete itself when it is done playing
-	_projectile_sound.finished.connect(_projectile_sound.queue_free)
 
 
 func _destroy_bullet():
