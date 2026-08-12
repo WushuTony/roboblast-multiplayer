@@ -336,14 +336,16 @@ func _physics_process(delta: float) -> void:
 			collision.get_normal().dot(up_direction) >= 0.5):
 			var collider: Object = collision.get_collider()
 			var bounce_direction: Vector3 = Vector3.ZERO
-			if collider.is_in_group("players"):
-				# Bounce forward
-				bounce_direction = (_last_strong_direction + up_direction).normalized()
-			elif collider.is_in_group("enemies"):
-				# Bounce away
-				bounce_direction = (up_direction - _last_strong_direction).normalized()
-				# and lose coins
-				lose_coins()
+			if not collider.has_method("is_alive") or\
+				collider.is_alive():
+				if collider.is_in_group("players"):
+					# Bounce forward
+					bounce_direction = (_last_strong_direction + up_direction).normalized()
+				elif collider.is_in_group("enemies"):
+					# Bounce away
+					bounce_direction = (up_direction - _last_strong_direction).normalized()
+					# and lose coins
+					lose_coins()
 
 			if bounce_direction != Vector3.ZERO:
 				is_bouncing = true
@@ -446,6 +448,11 @@ func _get_camera_oriented_input() -> Vector3:
 func play_foot_step_sound() -> void:
 	_step_sound.pitch_scale = randfn(1.2, 0.2)
 	_step_sound.play()
+
+
+func is_alive() -> bool:
+	# Currently, the player doesn't have a death state
+	return true
 
 
 func damage(_impact_point: Vector3, force: Vector3) -> void:

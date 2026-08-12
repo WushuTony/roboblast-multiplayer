@@ -32,14 +32,16 @@ func _process(delta: float) -> void:
 	
 	_bullet_visuals.scale = Vector3.ONE * scale_decay.sample(_time_alive/_alive_limit)
 	
-	if _time_alive > _alive_limit:
+	if _time_alive > _alive_limit or\
+		not is_instance_valid(shooter) or\
+		(shooter.has_method("is_alive") and\
+		not shooter.is_alive()):
 		_destroy_bullet()
 
 
 func _on_body_entered(body: Node3D) -> void:
 	if body == shooter:
 		return
-	# TODO: Check that the shooter is still alive
 	if body.is_multiplayer_authority() and body.is_in_group("damageables"):
 		var can_damage: bool = true
 		if not friendly_fire and shooter != null:

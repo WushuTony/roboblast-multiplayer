@@ -58,6 +58,10 @@ func _reset_target_index() -> void:
 	_lost_target.rpc()
 
 
+func is_alive() -> bool:
+	return _alive
+
+
 func damage(impact_point: Vector3, force: Vector3) -> void:
 	if not is_multiplayer_authority():
 		return
