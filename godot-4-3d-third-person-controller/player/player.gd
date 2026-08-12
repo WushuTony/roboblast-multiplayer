@@ -373,7 +373,10 @@ func _physics_process(delta: float) -> void:
 func attack() -> void:
 	_attack_animation_player.play("Attack")
 	_character_skin.punch()
+	# We separate out the y velocity to not override the gravity
+	var y_velocity: float = velocity.y
 	velocity = _rotation_root.transform.basis * Vector3.BACK * attack_impulse
+	velocity.y = y_velocity
 
 
 func shoot() -> void:
