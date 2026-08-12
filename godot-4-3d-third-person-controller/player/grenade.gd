@@ -14,9 +14,14 @@ const EXPLOSION_SCENE := preload("explosion_visuals/explosion_scene.tscn")
 @export var bounce_on_other_damageables: bool = true
 ## Always explode after that delay (to prevent a grenade never triggering)
 @export var explode_after_delay: float = 2.5
+## Forward impulse after an explosion inflicts damage.
+@export var damage_impulse: float = 30.0
+## Override the upward force of the damage impulse.
+@export var upward_impulse: float = 5.0
 
 var shooter: Node = null
 var friendly_fire: bool = false
+var damage_self: bool = false
 
 # Custom gravity value that matches the trajectory predicted by the grenade launcher
 var gravity: float = 0.0
@@ -86,7 +91,7 @@ func _explode() -> void:
 
 	var bodies: = _explosion_area.get_overlapping_bodies()
 	for body in bodies:
-		if body == shooter:
+		if not damage_self and body == shooter:
 			continue
 
 		if not body.is_in_group("damageables"):
@@ -99,24 +104,30 @@ func _explode() -> void:
 			elif body.is_in_group("enemies"):
 				can_damage = !shooter.is_in_group("enemies")
 
-		if can_damage:
-			# Add some variance to the impact point
-			var impact_point := (global_position - body.global_position).normalized()
-			impact_point = (impact_point + Vector3.DOWN).normalized() * 0.5
-			var force := -impact_point * 10.0
-			if body.is_multiplayer_authority():
-				body.damage(impact_point, force)
-			else:
-				_apply_damage.rpc_id(body.get_multiplayer_authority(), body.get_path(), impact_point, force)
+		# Add some variance to the impact point
+		var impact_point: Vector3 = (global_position - body.global_position).normalized()
+		impact_point = (impact_point + Vector3.DOWN).normalized() * 0.5
+		var force: Vector3 = -impact_point.normalized() * damage_impulse
+		force.y = upward_impulse
+
+		var damage_data: Variant = {
+			"impact_point": impact_point,
+			"force": force,
+			"can_damage": can_damage
+		}
+		if body.is_multiplayer_authority():
+			body.damage(damage_data)
+		else:
+			_apply_damage.rpc_id(body.get_multiplayer_authority(), body.get_path(), damage_data)
 
 	_play_explosion_effect.rpc()
 
 
 @rpc("authority", "call_local", "reliable")
-func _apply_damage(path: String, impact_point: Vector3, force: Vector3) -> void:
+func _apply_damage(path: String, data: Variant) -> void:
 	var target: Node = get_node(path)
 	if target != null and target.is_multiplayer_authority():
-		target.damage(impact_point, force)
+		target.damage(data)
 
 
 @rpc("authority", "call_local", "reliable")

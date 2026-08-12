@@ -21,7 +21,7 @@ func prepare_destroy(delay: float = 0.5):
 	queue_free()
 
 
-func damage(_impact_point: Vector3, _force: Vector3):
+func damage(_data: Variant):
 	_receive_damage.rpc()
 
 

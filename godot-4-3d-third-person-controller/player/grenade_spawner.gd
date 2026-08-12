@@ -4,6 +4,8 @@ class_name GrenadeSpawner
 
 ## If grenades can damage other players/enemies.
 @export var friendly_fire: bool = false
+## If grenades can damage the player/enemy that spawned it.
+@export var damage_self: bool = false
 
 @onready var _grenade_launcher: GrenadeLauncher = owner
 
@@ -63,6 +65,7 @@ func _initialise_grenade(grenade: Grenade, position: Vector3, velocity: Vector3,
 	grenade._velocity = velocity
 	grenade.gravity = _grenade_launcher.gravity
 	grenade.friendly_fire = friendly_fire
+	grenade.damage_self = damage_self
 	grenade.set_multiplayer_authority(peer_id)
 
 func get_spawnable_grenade_index() -> int:

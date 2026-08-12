@@ -458,13 +458,16 @@ func is_alive() -> bool:
 	return true
 
 
-func damage(_impact_point: Vector3, force: Vector3) -> void:
+func damage(data: Variant) -> void:
 	if not is_multiplayer_authority():
 		return
 	# Always throws character up
+	var force: Vector3 = data.get("force", Vector3.ZERO)
 	force.y = abs(force.y)
 	velocity = force.limit_length(max_throwback_force)
-	lose_coins()
+	var can_damage: bool = data.get("can_damage", true)
+	if can_damage:
+		lose_coins()
 
 
 func _orient_character_to_direction(direction: Vector3, delta: float) -> void:

@@ -62,10 +62,14 @@ func is_alive() -> bool:
 	return _alive
 
 
-func damage(impact_point: Vector3, force: Vector3) -> void:
+func damage(data: Variant) -> void:
 	if not is_multiplayer_authority():
 		return
-	_receive_damage.rpc(impact_point, force)
+	var can_damage: bool = data.get("can_damage", true)
+	if can_damage:
+		var impact_point: Vector3 = data.get("impact_point", Vector3.ZERO)
+		var force: Vector3 = data.get("force", Vector3.ZERO)
+		_receive_damage.rpc(impact_point, force)
 
 
 @rpc("authority", "call_local", "reliable")

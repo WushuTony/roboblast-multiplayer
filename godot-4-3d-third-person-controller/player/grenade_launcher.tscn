@@ -19,6 +19,7 @@ unique_name_in_owner = true
 _spawnable_scenes = PackedStringArray("uid://bq562nfq7puh")
 spawn_path = NodePath(".")
 script = ExtResource("2_0bagw")
+damage_self = true
 container_name = "Grenades"
 prefix_owner_name = true
 metadata/_custom_type_script = "uid://2xxl5qxsxstd"

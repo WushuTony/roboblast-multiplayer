@@ -49,9 +49,13 @@ func _on_body_entered(body: Node3D) -> void:
 				can_damage = !shooter.is_in_group("players")
 			elif body.is_in_group("enemies"):
 				can_damage = !shooter.is_in_group("enemies")
-		if can_damage:
-			var impact_point := global_position - body.global_position
-			body.damage(impact_point, velocity)
+		var impact_point := global_position - body.global_position
+		var damage_data: Variant = {
+			"impact_point": impact_point,
+			"force": velocity,
+			"can_damage": can_damage
+		}
+		body.damage(damage_data)
 	_destroy_bullet()
 
 
