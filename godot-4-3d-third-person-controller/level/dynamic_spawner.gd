@@ -66,6 +66,8 @@ func _setup_container() -> void:
 		container.set_name(new_container_name)
 		dynamic_objects.add_child(container)
 		set_spawn_path(container.get_path())
+		
+		_enable_synchronizers_visibility.rpc_id(1)
 	else:
 		await get_tree().create_timer(1.0).timeout
 		_setup_container.call_deferred()
@@ -73,6 +75,20 @@ func _setup_container() -> void:
 func _generate_container_name() -> StringName:
 	var new_container_name: StringName = (owner.name + container_name) if (prefix_owner_name) else container_name
 	return new_container_name
+
+@rpc("any_peer", "call_local", "reliable")
+func _enable_synchronizers_visibility() -> void:
+	var spawn_container: Node = get_node(get_spawn_path())
+	if spawn_container == null:
+		return
+	var peer_id: int = multiplayer.get_remote_sender_id() if (multiplayer.get_remote_sender_id() != 0) else multiplayer.get_unique_id()
+	for child: Node in spawn_container.get_children():
+		if child == null:
+			continue
+		var sync: MultiplayerSynchronizer = child.find_child("ClientSynchronizer", false)
+		if sync != null:
+			print_verbose("[Player %d]: Enabling %s visibility for Player %d" % [multiplayer.get_unique_id(), sync.get_path(), peer_id])
+			sync.set_visibility_for(peer_id, true)
 
 func _get_spawnable_packed_scene(index: int) -> PackedScene:
 	if index < 0 || index >= get_spawnable_scene_count():

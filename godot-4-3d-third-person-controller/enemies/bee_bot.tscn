@@ -189,6 +189,7 @@ script = ExtResource("1_eehkx")
 
 [node name="ClientSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1345791973]
 replication_config = SubResource("SceneReplicationConfig_t27cg")
+public_visibility = false
 
 [node name="BulletSpawner" type="MultiplayerSpawner" parent="." unique_id=952112473]
 _spawnable_scenes = PackedStringArray("uid://bguebyvtegnv8")

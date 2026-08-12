@@ -10,6 +10,7 @@ class_name Level
 @onready var _spawn_points: Node = %SpawnPoints
 @onready var _game_session_manager: GameSessionManager = get_node("/root/GameSessionManager")
 @onready var _dynamic_objects_parent: Node = get_tree().root
+@onready var _client_synchronizers: Array[Node] = find_children("ClientSynchronizer", "MultiplayerSynchronizer")
 
 const DYNAMIC_OBJECTS_PATH: NodePath = "/root/DynamicObjects"
 
@@ -32,12 +33,22 @@ func _ready() -> void:
 		var missing_spawn_count: int = _game_session_manager.get_max_players() - spawn_points.size()
 		push_error(_spawn_points.name + " is missing " + str(missing_spawn_count) + " child" + ("ren" if (missing_spawn_count > 1) else "") + " Node3D")
 
+	_enable_synchronizers_visibility.rpc_id(1)
+
 func _exit_tree() -> void:
 	var dynamic_objects: Node = get_node_or_null(DYNAMIC_OBJECTS_PATH)
 	if dynamic_objects != null:
 		dynamic_objects.queue_free()
 	if _instance == self:
 		_instance = null
+
+@rpc("any_peer", "call_local", "reliable")
+func _enable_synchronizers_visibility() -> void:
+	var peer_id: int = multiplayer.get_remote_sender_id() if (multiplayer.get_remote_sender_id() != 0) else multiplayer.get_unique_id()
+	for sync: Node in _client_synchronizers:
+		if sync != null and sync is MultiplayerSynchronizer:
+			print_verbose("[Player %d]: Enabling %s visibility for Player %d" % [multiplayer.get_unique_id(), sync.get_path(), peer_id])
+			sync.set_visibility_for(peer_id, true)
 
 func get_spawn_location(index: int) -> Vector3:
 	return spawn_points[index].position

@@ -30,6 +30,7 @@ collision_mask = 31
 [node name="ClientSynchronizer" type="MultiplayerSynchronizer" parent="Platform" unique_id=293957538]
 root_path = NodePath("../..")
 replication_config = SubResource("SceneReplicationConfig_k2a31")
+public_visibility = false
 
 [node name="moving_platform" parent="Platform" unique_id=1321292080 instance=ExtResource("1_k2a31")]
 

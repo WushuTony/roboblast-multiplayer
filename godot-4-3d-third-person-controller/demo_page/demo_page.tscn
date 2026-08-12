@@ -62,6 +62,7 @@ script = ExtResource("1_4brsx")
 
 [node name="ClientSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=456491164]
 replication_config = SubResource("SceneReplicationConfig_4268h")
+public_visibility = false
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1782828390]
 layer = 128

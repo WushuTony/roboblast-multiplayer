@@ -125,6 +125,7 @@ script = ExtResource("1_mefon")
 
 [node name="ClientSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1732642700]
 replication_config = SubResource("SceneReplicationConfig_2ywuq")
+public_visibility = false
 
 [node name="ReactionLabel" type="Label3D" parent="." unique_id=209592691]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8034, 0)
