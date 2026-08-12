@@ -25,6 +25,7 @@ class_name DynamicSpawner
 @export var auto_load_spawnable_scenes: bool = true
 
 var _cached_packed_scenes: Array[PackedScene] = []
+var _server_visible_peer_ids: Array[int] = []
 
 func _get_configuration_warnings() -> PackedStringArray:
 	var warnings: PackedStringArray = []
@@ -56,7 +57,13 @@ func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
 	
+	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
+	
 	_setup_container.call_deferred()
+
+func _on_peer_disconnected(peer_id: int) -> void:
+	if multiplayer.is_server():
+		_server_visible_peer_ids.erase(peer_id)
 
 func _setup_container() -> void:
 	var dynamic_objects: Node = Level.get_dynamic_objects_node()
@@ -89,6 +96,7 @@ func _enable_synchronizers_visibility() -> void:
 		if sync != null:
 			print_verbose("[Player %d]: Enabling %s visibility for Player %d" % [multiplayer.get_unique_id(), sync.get_path(), peer_id])
 			sync.set_visibility_for(peer_id, true)
+	_server_visible_peer_ids.append(peer_id)
 
 func _get_spawnable_packed_scene(index: int) -> PackedScene:
 	if index < 0 || index >= get_spawnable_scene_count():
@@ -117,6 +125,11 @@ func _custom_spawn(data: Variant) -> Node:
 	var position: Vector3 = data.get("position", Vector3.ZERO)
 	var peer_id: int = data.get("peer_id", 1)
 	spawned_node.transform.origin = position
+	if multiplayer.is_server():
+		var sync: MultiplayerSynchronizer = spawned_node.get_node("ClientSynchronizer")
+		if sync != null:
+			for id in _server_visible_peer_ids:
+				sync.set_visibility_for(id, true)
 	spawned_node.set_multiplayer_authority(peer_id)
 	return spawned_node
 
