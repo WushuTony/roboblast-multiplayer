@@ -6,9 +6,9 @@ class_name BeetleBot
 ## Cooldown between two attacks on a player
 @export var attack_cooldown: float = 0.5
 ## Forward impulse after an attack inflicts damage.
-@export var damage_impulse: float = 10.0
+@export var damage_impulse: float = 15.0
 ## Override the upward force of the damage impulse.
-@export var upward_impulse: float = 0.5
+@export var upward_impulse: float = 5.0
 ## Cooldown between target switch if multiple players are in range but the target becomes unreachable
 @export var navigation_switch_cooldown: float = 1.0
 
@@ -113,7 +113,7 @@ func move(motion: Vector3) -> void:
 		var collider := collision.get_collider()
 		if collider is Player:
 			var impact_point: Vector3 = global_position - collider.global_position
-			var force: Vector3 = impact_point.normalized() * damage_impulse
+			var force: Vector3 = -impact_point.normalized() * damage_impulse
 			force.y = upward_impulse
 			_attack_player.rpc(collider.get_path(), impact_point, force)
 
