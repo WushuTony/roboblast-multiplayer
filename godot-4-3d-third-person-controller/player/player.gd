@@ -49,7 +49,6 @@ enum WEAPON_TYPE { DEFAULT, GRENADE }
 @onready var _character_skin: CharacterSkin = $CharacterRotationRoot/CharacterSkin
 @onready var _username: Label3D = $Username
 @onready var _ui_HUD: Control = %HUD
-@onready var _ui_aim_reticle: ColorRect = %AimReticle
 @onready var _ui_coins_container: HBoxContainer = %CoinsContainer
 @onready var _ui_text_chat: RoboChat = %Chat
 @onready var _ui_weapon: WeaponUI = %WeaponUI
@@ -92,6 +91,7 @@ var is_jump_held: bool = false
 var is_just_jumping: bool = false
 var is_aim_held: bool = false
 var is_just_aiming: bool = false
+var is_aiming: bool = false
 var is_swapping_weapons: bool = false
 
 var is_using_jumping_pad: bool = false
@@ -239,7 +239,7 @@ func _physics_process(delta: float) -> void:
 	# Get movement state from input
 	var is_attacking: bool = is_attack_held and not _attack_animation_player.is_playing()
 	is_just_jumping = is_just_jumping and is_on_floor()
-	var is_aiming = is_aim_held and (can_shoot_midair or is_on_floor())
+	is_aiming = is_aim_held and (can_shoot_midair or is_on_floor())
 	var is_air_boosting = is_jump_held and not is_on_floor() and velocity.y > 0.0
 	var is_just_on_floor: bool = is_on_floor() and not _is_on_floor_buffer
 	is_using_jumping_pad = is_using_jumping_pad and velocity.y > 0.0
@@ -251,7 +251,6 @@ func _physics_process(delta: float) -> void:
 	# this also ensures a good normalized value for the rotation basis.
 	if _move_direction.length() > 0.2:
 		_last_strong_direction = _move_direction.normalized()
-	_camera_controller.stay_grounded = not is_aiming
 	if is_aiming:
 		if is_just_aiming and not aim_in_camera_direction:
 			_camera_controller.set_euler_rotation_y(_rotation_root.global_rotation.y)
@@ -267,17 +266,15 @@ func _physics_process(delta: float) -> void:
 		velocity = Vector3.ZERO
 	velocity.y = y_velocity
 
-	# Set aiming camera and UI
+	# Set aiming camera and grenade launcher
 	if is_aiming:
 		_camera_controller.set_pivot(_camera_controller.CAMERA_PIVOT.OVER_SHOULDER)
 		_grenade_aim_controller.throw_direction = _camera_controller.camera.quaternion * Vector3.FORWARD
 		_grenade_aim_controller.from_look_position = _camera_controller.camera.global_position
-		_ui_aim_reticle.visible = true
 	else:
 		_camera_controller.set_pivot(_camera_controller.CAMERA_PIVOT.THIRD_PERSON)
 		_grenade_aim_controller.throw_direction = _last_strong_direction
 		_grenade_aim_controller.from_look_position = global_position
-		_ui_aim_reticle.visible = false
 
 	# Update attack state and position
 

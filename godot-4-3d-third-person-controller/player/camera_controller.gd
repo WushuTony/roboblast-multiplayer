@@ -7,14 +7,15 @@ enum CAMERA_PIVOT { OVER_SHOULDER, THIRD_PERSON }
 @export_range(0.0, 8.0) var joystick_sensitivity: float = 2.0
 @export var tilt_upper_limit: float = deg_to_rad(-60.0)
 @export var tilt_lower_limit: float = deg_to_rad(60.0)
+@export var aim_target_player_color: Color = Color(0.0, 0.725, 1.0)
+@export var aim_target_enemy_color: Color = Color(1.0, 0.0, 0.0)
 
 @onready var camera: Camera3D = $PlayerCamera
 @onready var _over_shoulder_pivot: Node3D = $CameraOverShoulderPivot
 @onready var _camera_spring_arm: SpringArm3D = $CameraSpringArm
 @onready var _third_person_pivot: Node3D = $CameraSpringArm/CameraThirdPersonPivot
 @onready var _camera_raycast: RayCast3D = $PlayerCamera/CameraRayCast
-
-var stay_grounded: bool = true
+@onready var _ui_aim_reticle: TextureRect = %AimReticle
 
 var _aim_target: Vector3 = Vector3.ZERO
 var _aim_collider: Node = null
@@ -25,7 +26,7 @@ var _tilt_input: float = 0.0
 var _raw_rotation_input: float = 0.0
 var _raw_tilt_input: float = 0.0
 var _offset: Vector3 = Vector3.ZERO
-var _anchor: CharacterBody3D = null
+var _anchor: Player = null
 var _euler_rotation: Vector3 = Vector3.ZERO
 var _using_mouse: bool = true
 
@@ -60,15 +61,33 @@ func _process(delta: float) -> void:
 	if invert_y_axis:
 		_tilt_input *= -1
 
-	if _camera_raycast.is_colliding():
-		_aim_target = _camera_raycast.get_collision_point()
+	_aim_collider = null
+	if _anchor.is_aiming and _camera_raycast.is_colliding():
 		_aim_collider = _camera_raycast.get_collider()
+		if not _aim_collider.is_in_group("targeteables"):
+			_aim_collider = null
+
+	if _aim_collider != null:
+		_aim_target = _camera_raycast.get_collision_point()
 	else:
 		_aim_target = _camera_raycast.global_transform * _camera_raycast.target_position
-		_aim_collider = null
+
+	if _ui_aim_reticle != null:
+		var draw_aim_circle: bool = _aim_collider != null and _anchor._equipped_weapon == Player.WEAPON_TYPE.DEFAULT
+		if draw_aim_circle:
+			if _aim_collider.is_in_group("players"):
+				_ui_aim_reticle.material.set("shader_parameter/circle_color_main", aim_target_player_color)
+			elif _aim_collider.is_in_group("enemies"):
+				_ui_aim_reticle.material.set("shader_parameter/circle_color_main", aim_target_enemy_color)
+			else:
+				draw_aim_circle = false
+		_ui_aim_reticle.material.set("shader_parameter/circle_visible", draw_aim_circle)
+		var draw_aim_cross: bool = _anchor._equipped_weapon == Player.WEAPON_TYPE.DEFAULT
+		_ui_aim_reticle.material.set("shader_parameter/cross_visible", draw_aim_cross)
+		_ui_aim_reticle.visible = _anchor.is_aiming
 
 	var target_position := _anchor.global_position + _offset
-	if stay_grounded:
+	if not _anchor.is_aiming:
 		# Set camera controller to current ground level for the character
 		target_position.y = lerp(global_position.y, _anchor._ground_height, 0.1)
 	global_position = target_position
@@ -98,7 +117,7 @@ func _process(delta: float) -> void:
 		_raw_tilt_input = 0.0
 
 
-func setup(anchor: CharacterBody3D) -> void:
+func setup(anchor: Player) -> void:
 	_anchor = anchor
 	global_transform = _anchor.global_transform
 	_offset = global_transform.origin - anchor.global_transform.origin

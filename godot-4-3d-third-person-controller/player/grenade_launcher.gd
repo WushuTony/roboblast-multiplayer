@@ -21,6 +21,9 @@ var _throw_path_mesh: ImmediateMesh = null
 
 func _ready() -> void:
 	_throw_path_mesh = ImmediateMesh.new()
+	var parent: CollisionObject3D = get_parent() as CollisionObject3D
+	if parent != null:
+		_raycast.add_exception_rid(parent.get_rid())
 	visibility_changed.connect(_on_visibility_changed)
 
 
@@ -67,11 +70,19 @@ func _update_throw_velocity() -> bool:
 	var to_target := _raycast.target_position
 
 	if _raycast.get_collision_count() != 0:
-		var collider := _raycast.get_collider(0)
-		var has_target: bool = collider and collider.is_in_group("targeteables")
+		var collider: Object = _raycast.get_collider(0)
+		var has_target: bool = collider != null and collider.is_in_group("targeteables")
 		_snap_mesh.visible = has_target
 		if has_target:
-			to_target = collider.global_position - _launch_point.global_position
+			var collision_offset: Vector3 = Vector3.ZERO
+			# If the collision shape is offset compared to the collision object,
+			# we need to apply that same offset to target them.
+			if collider is CollisionObject3D:
+				var owner_id: int = collider.shape_find_owner(0)
+				var shape_owner: Object = collider.shape_owner_get_owner(owner_id)
+				if shape_owner is Node3D:
+					collision_offset = shape_owner.position
+			to_target = collider.global_position - _launch_point.global_position + collision_offset
 			_snap_mesh.global_position = _launch_point.global_position + to_target
 			_snap_mesh.look_at(_launch_point.global_position)
 	else:

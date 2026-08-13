@@ -7,6 +7,7 @@
 [ext_resource type="Script" uid="uid://0nwful4fsrh8" path="res://godot-4-3d-third-person-controller/player/melee_attack_area.gd" id="3_v1vve"]
 [ext_resource type="PackedScene" uid="uid://c0mo8tek77du4" path="res://godot-4-3d-third-person-controller/player/character_skin.tscn" id="4_ign62"]
 [ext_resource type="Script" uid="uid://dtf17612eybdg" path="res://godot-4-3d-third-person-controller/player/coins_container.gd" id="7_8eehq"]
+[ext_resource type="Shader" uid="uid://dsdrqd1gg3s0q" path="res://godot-4-3d-third-person-controller/player/aim_reticle.gdshader" id="7_bwrjn"]
 [ext_resource type="PackedScene" uid="uid://cqw64w6kb0fyg" path="res://godot-4-3d-third-person-controller/player/coin/coin_visuals/coin_model.tscn" id="8_6qxxt"]
 [ext_resource type="PackedScene" uid="uid://pevb5ntcp8hc" path="res://godot-4-3d-third-person-controller/chat/chat.tscn" id="9_um1wy"]
 [ext_resource type="PackedScene" uid="uid://mb58xbunfaep" path="res://godot-4-3d-third-person-controller/icons/weapon_ui.tscn" id="9_upq7c"]
@@ -103,7 +104,39 @@ _data = {
 radius = 0.721485
 height = 2.65424
 
-[node name="Player" type="CharacterBody3D" unique_id=126940387 groups=["damageables", "players"]]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_r35f8"]
+resource_local_to_scene = true
+shader = ExtResource("7_bwrjn")
+shader_parameter/circle_visible = false
+shader_parameter/circle_radius = 0.25
+shader_parameter/circle_thickness = 0.01
+shader_parameter/circle_gap_size = 0.05
+shader_parameter/circle_color_main = Color(0, 0.7254902, 1, 1)
+shader_parameter/circle_color_outline = Color(0, 0, 0, 1)
+shader_parameter/circle_outline_width = 0.006000000285
+shader_parameter/circle_outline_flat = true
+shader_parameter/circle_rotation_speed = -0.9999995725000002
+shader_parameter/circle_base_angle = 0.0
+shader_parameter/dot_visible = true
+shader_parameter/dot_radius = 0.015
+shader_parameter/dot_color = Color(1, 1, 1, 1)
+shader_parameter/dot_outline_width = 0.05
+shader_parameter/dot_outline_color = Color(0, 0, 0, 1)
+shader_parameter/dot_outline_flat = true
+shader_parameter/cross_visible = true
+shader_parameter/cross_bar_width = 0.15
+shader_parameter/cross_thickness = 0.02
+shader_parameter/cross_gap_size = 0.05
+shader_parameter/cross_color_main = Color(1, 1, 1, 1)
+shader_parameter/cross_color_outline = Color(0, 0, 0, 1)
+shader_parameter/cross_outline_width = 0.005
+shader_parameter/cross_outline_flat = true
+shader_parameter/cross_rotation_speed = 0.0
+shader_parameter/cross_base_angle = 0.0
+
+[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_bwrjn"]
+
+[node name="Player" type="CharacterBody3D" unique_id=126940387 groups=["damageables", "players", "targeteables"]]
 collision_layer = 8
 collision_mask = 27
 axis_lock_angular_x = true
@@ -162,7 +195,7 @@ fov = 50.0
 [node name="CameraRayCast" type="RayCast3D" parent="CameraController/PlayerCamera" unique_id=1063302130]
 transform = Transform3D(1, 0, -7.10543e-15, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 target_position = Vector3(0, 0, -100)
-collision_mask = 17
+collision_mask = 25
 debug_shape_custom_color = Color(0, 0, 0, 0)
 
 [node name="GrenadeLauncher" parent="." unique_id=1056604266 instance=ExtResource("3_54qc4")]
@@ -213,21 +246,23 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="AimReticle" type="ColorRect" parent="HUD" unique_id=1261313606]
+[node name="AimReticle" type="TextureRect" parent="HUD" unique_id=1824217020]
 unique_name_in_owner = true
-layout_mode = 0
+material = SubResource("ShaderMaterial_r35f8")
+layout_mode = 1
+anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -3.5
-offset_top = -3.5
-offset_right = 3.5
-offset_bottom = 3.5
+offset_left = -100.0
+offset_top = -100.0
+offset_right = 100.0
+offset_bottom = 100.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0, 0, 0, 0.290196)
+texture = SubResource("PlaceholderTexture2D_bwrjn")
 
 [node name="CoinsContainer" type="HBoxContainer" parent="HUD" unique_id=1774114733]
 unique_name_in_owner = true
