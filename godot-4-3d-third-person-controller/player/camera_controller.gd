@@ -141,7 +141,9 @@ func set_pivot(pivot_type: CAMERA_PIVOT) -> void:
 	_current_pivot_type = pivot_type
 
 
-func get_aim_target() -> Vector3:
+func get_aim_target(distance_limit: float = -1.0) -> Vector3:
+	if distance_limit > 0.0 and not is_instance_valid(_aim_collider):
+		return _camera_raycast.global_transform * _camera_raycast.target_position.limit_length(distance_limit)
 	return _aim_target
 
 
