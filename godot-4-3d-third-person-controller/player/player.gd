@@ -107,11 +107,11 @@ func _enter_tree() -> void:
 
 func _exit_tree() -> void:
 	if local:
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		MouseHandler.release_mouse_mode(self)
 
 func _ready() -> void:
-	if local and !get_tree().paused:
-		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	if local:
+		MouseHandler.request_mouse_mode(self, Input.MOUSE_MODE_CAPTURED, 0)
 	_camera_controller.setup(self)
 
 	if _ui_HUD != null:

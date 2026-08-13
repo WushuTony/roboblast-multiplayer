@@ -11,6 +11,8 @@ enum INSTRUCTION_TYPES {KEYBOARD, JOYPAD}
 @onready var grid_container_keyboard: GridContainer = %GridContainerKeyboard
 @onready var grid_container_joypad: GridContainer = %GridContainerJoypad
 
+const MOUSE_PRIORITY: int = -99
+
 ## If [code]true[/code] by default, the game starts paused until all players resumed the demo.
 var game_paused: bool = false:
 	set(value):
@@ -36,8 +38,6 @@ func _ready() -> void:
 	if headless_mode:
 		return
 	
-	resume_button.grab_focus.call_deferred()
-	
 	demo_page_root.gui_input.connect(_demo_page_root_gui_input)
 	resume_button.pressed.connect(_on_resume_button_pressed)
 	exit_button.pressed.connect(_on_exit_button_pressed)
@@ -48,6 +48,10 @@ func _ready() -> void:
 		change_instruction(INSTRUCTION_TYPES.JOYPAD)
 	else:
 		change_instruction(INSTRUCTION_TYPES.KEYBOARD)
+	
+	if demo_page_root.is_visible_in_tree():
+		resume_button.grab_focus.call_deferred()
+		MouseHandler.request_mouse_mode(self, Input.MOUSE_MODE_VISIBLE, MOUSE_PRIORITY)
 
 
 func _on_peer_connected(peer_id: int) -> void:
@@ -181,7 +185,7 @@ func show_demo_page() -> void:
 	var tween := create_tween()
 	tween.tween_property(demo_page_root, "modulate", Color.WHITE, 0.3)
 	tween.tween_callback(resume_button.grab_focus)
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	MouseHandler.request_mouse_mode(self, Input.MOUSE_MODE_VISIBLE, MOUSE_PRIORITY)
 
 
 func hide_demo_page() -> void:
@@ -190,4 +194,4 @@ func hide_demo_page() -> void:
 	var tween := create_tween()
 	tween.tween_property(demo_page_root, "modulate", Color.TRANSPARENT, 0.3)
 	tween.tween_callback(demo_page_root.hide)
-	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	MouseHandler.release_mouse_mode(self)

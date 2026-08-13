@@ -23,7 +23,6 @@ class_name RoboChat
 
 var is_chat_enabled: bool = false
 var is_chatting: bool = false
-var prev_mouse_mode: Input.MouseMode = Input.MOUSE_MODE_VISIBLE
 
 ## Enable the text chat
 func enable() -> void:
@@ -117,8 +116,7 @@ func clear() -> void:
 func focus_chat() -> void:
 	if is_chatting:
 		return
-	prev_mouse_mode = Input.mouse_mode
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	MouseHandler.request_mouse_mode(self, Input.MOUSE_MODE_VISIBLE, -1)
 	_set_focus_modulate(focused_color)
 	_line_edit.grab_focus()
 	is_chatting = true
@@ -129,7 +127,7 @@ func unfocus_chat() -> void:
 	_set_focus_modulate(unfocused_color)
 	_line_edit.clear()
 	_line_edit.release_focus()
-	Input.mouse_mode = prev_mouse_mode
+	MouseHandler.release_mouse_mode(self)
 	is_chatting = false
 
 func _set_focus_modulate(new_color: Color):
