@@ -20,8 +20,8 @@ enum WEAPON_TYPE { DEFAULT, GRENADE }
 ## Minimum horizontal speed on the ground. This controls when the character's animation tree changes
 ## between the idle and running states.
 @export var stopping_speed := 1.0
-## Max throwback force after player takes a hit
-@export var max_throwback_force := 15.0
+## Max throwback force after player takes a hit from any source (e.g. melee, bullet, grenade)
+@export var max_throwback_force := 50.0
 ## Force to bounce off when landing on another player's head or on top of an enemy
 @export var bounce_off_force: Vector3 = Vector3(20.0, 10.0, 20.0)
 ## Add an offset to the spawn location of the coins the player loses
