@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://dpauvndyn1v0f"]
 
 [ext_resource type="Script" uid="uid://dd68ons6qrff6" path="res://lobby/game_session_manager.gd" id="1_b1fqd"]
+[ext_resource type="Script" uid="uid://tdv2j7atcgb5" path="res://godot-4-3d-third-person-controller/player/player_spawner.gd" id="2_05h5e"]
 [ext_resource type="Script" uid="uid://cyrxpaol63y2b" path="res://lobby/ui.gd" id="2_nagtv"]
 [ext_resource type="PackedScene" uid="uid://pevb5ntcp8hc" path="res://godot-4-3d-third-person-controller/chat/chat.tscn" id="3_nagtv"]
 
@@ -27,11 +28,14 @@ VBoxContainer/constants/separation = 8
 script = ExtResource("1_b1fqd")
 level_spawn_list = Array[String](["uid://vmbppkwmx2xk"])
 
-[node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=1589905524]
+[node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=464003034]
 unique_name_in_owner = true
 _spawnable_scenes = PackedStringArray("uid://ciqrpd5675boy")
 spawn_path = NodePath("../Players")
-spawn_limit = 4
+script = ExtResource("2_05h5e")
+use_dynamic_peer_visibility = false
+auto_confirm_peer_visibility = false
+metadata/_custom_type_script = "uid://tdv2j7atcgb5"
 
 [node name="UI" type="CanvasLayer" parent="." unique_id=665468560]
 script = ExtResource("2_nagtv")

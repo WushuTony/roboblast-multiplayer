@@ -4,11 +4,14 @@ class_name GrenadeLauncher
 @export var min_throw_distance: float = 7.0
 @export var max_throw_distance: float = 16.0
 @export var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
+## If grenades can damage other players/enemies.
+@export var friendly_fire: bool = false
+## If grenades can damage the player/enemy that spawned it.
+@export var damage_self: bool = false
 
 var from_look_position: Vector3 = Vector3.ZERO
 var throw_direction: Vector3 = Vector3.ZERO
 
-@onready var _grenade_spawner: DynamicSpawner = %GrenadeSpawner
 @onready var _snap_mesh: Node3D = %SnapMesh
 @onready var _raycast: ShapeCast3D = %ShapeCast3D
 @onready var _launch_point: Marker3D = %LaunchPoint
@@ -44,9 +47,11 @@ func throw_grenade() -> void:
 
 @rpc("authority", "call_local", "reliable")
 func _spawn_throw_grenade(p_position: Vector3, p_velocity: Vector3) -> void:
-	if _grenade_spawner.is_multiplayer_authority():
-		var peer_id: int = multiplayer.get_remote_sender_id() if (multiplayer.get_remote_sender_id() != 0) else multiplayer.get_unique_id()
-		var _grenade: Grenade = _grenade_spawner.throw(p_position, p_velocity, peer_id)
+	var data: Variant = {
+		"position": p_position,
+		"velocity": p_velocity,
+	}
+	Level.spawn_grenade(self, data)
 
 
 ## Update the velocity to throw grenades and calculate their trajectory[br]

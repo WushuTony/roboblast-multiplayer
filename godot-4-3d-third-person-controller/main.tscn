@@ -2,7 +2,9 @@
 
 [ext_resource type="Script" uid="uid://ryebhisgiwvk" path="res://godot-4-3d-third-person-controller/level/level.gd" id="1_xswyf"]
 [ext_resource type="Sky" uid="uid://jonn5eom7asv" path="res://godot-4-3d-third-person-controller/environment/sky/blue_sky.tres" id="2_4bjxn"]
+[ext_resource type="Script" uid="uid://k16jhrw5hsil" path="res://godot-4-3d-third-person-controller/player/bullet_spawner.gd" id="3_cxhwh"]
 [ext_resource type="PackedScene" uid="uid://7j15r0ej4fwx" path="res://godot-4-3d-third-person-controller/jumping_pad/jumping_pad.tscn" id="3_w2mh2"]
+[ext_resource type="Script" uid="uid://2xxl5qxsxstd" path="res://godot-4-3d-third-person-controller/player/grenade_spawner.gd" id="4_p0afh"]
 [ext_resource type="PackedScene" uid="uid://b602ttibxesgm" path="res://godot-4-3d-third-person-controller/level/terrain.glb" id="4_vprlf"]
 [ext_resource type="NavigationMesh" uid="uid://d1ombvi6qufpk" path="res://godot-4-3d-third-person-controller/level/main_navmesh.res" id="5_n4asa"]
 [ext_resource type="Material" uid="uid://con3572kpt8a3" path="res://godot-4-3d-third-person-controller/environment/large_tree_trunk/large_tree_trunk_mat.tres" id="6_q3y6j"]
@@ -103,7 +105,7 @@ fractal_octaves = 1
 noise = SubResource("FastNoiseLite_4kwk8")
 seamless = true
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_7a44n"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_p0afh"]
 resource_local_to_scene = true
 render_priority = 0
 shader = ExtResource("23_seu75")
@@ -136,7 +138,7 @@ fractal_octaves = 2
 noise = SubResource("FastNoiseLite_wnnmc")
 seamless = true
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_cxhwh"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ypgwf"]
 resource_local_to_scene = true
 render_priority = 0
 shader = ExtResource("24_htxhm")
@@ -156,7 +158,7 @@ fractal_octaves = 1
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_a2w6x"]
 noise = SubResource("FastNoiseLite_sxisx")
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_p0afh"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_8i3ef"]
 resource_local_to_scene = true
 render_priority = 10
 shader = ExtResource("27_0rl1p")
@@ -176,7 +178,7 @@ fractal_octaves = 1
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_s56rg"]
 noise = SubResource("FastNoiseLite_6jv1k")
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_ypgwf"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_av8bi"]
 resource_local_to_scene = true
 render_priority = 10
 shader = ExtResource("28_ok6jj")
@@ -199,15 +201,27 @@ unique_name_in_owner = true
 _spawnable_scenes = PackedStringArray("uid://j4nc13akhgva")
 spawn_path = NodePath(".")
 script = ExtResource("10_10hq7")
-container_name = "BrokenBoxes"
 
 [node name="CoinSpawner" type="MultiplayerSpawner" parent="." unique_id=1047773127]
 unique_name_in_owner = true
 _spawnable_scenes = PackedStringArray("uid://c54mpt43fs4wc")
 spawn_path = NodePath(".")
 script = ExtResource("10_10hq7")
-container_name = "Coins"
 metadata/_custom_type_script = "uid://df51mfiv3a7th"
+
+[node name="BulletSpawner" type="MultiplayerSpawner" parent="." unique_id=1926011266]
+unique_name_in_owner = true
+_spawnable_scenes = PackedStringArray("uid://bguebyvtegnv8")
+spawn_path = NodePath(".")
+script = ExtResource("3_cxhwh")
+metadata/_custom_type_script = "uid://k16jhrw5hsil"
+
+[node name="GrenadeSpawner" type="MultiplayerSpawner" parent="." unique_id=2097456391]
+unique_name_in_owner = true
+_spawnable_scenes = PackedStringArray("uid://bq562nfq7puh")
+spawn_path = NodePath(".")
+script = ExtResource("4_p0afh")
+metadata/_custom_type_script = "uid://2xxl5qxsxstd"
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=750593425]
 environment = SubResource("Environment_allox")
@@ -1764,10 +1778,10 @@ script = null
 visible = false
 
 [node name="Shell" parent="StutterFixes/Explosion" index="0" unique_id=674671704]
-material_override = SubResource("ShaderMaterial_7a44n")
+material_override = SubResource("ShaderMaterial_p0afh")
 
 [node name="Blast" parent="StutterFixes/Explosion" index="1" unique_id=601050963]
-material_override = SubResource("ShaderMaterial_cxhwh")
+material_override = SubResource("ShaderMaterial_ypgwf")
 
 [node name="Coin" parent="StutterFixes" unique_id=1505589733 instance=ExtResource("25_jq2sk")]
 visible = false
@@ -1778,25 +1792,25 @@ visible = false
 script = null
 
 [node name="Cube" parent="StutterFixes/smoke_puff/smoke_ball" parent_id_path=PackedInt32Array(1464888597, 1652704592) index="0" unique_id=1623868212]
-material_override = SubResource("ShaderMaterial_p0afh")
+material_override = SubResource("ShaderMaterial_8i3ef")
 
 [node name="Cube" parent="StutterFixes/smoke_puff/smoke_ball2" parent_id_path=PackedInt32Array(1464888597, 1778003220) index="0" unique_id=1623868212]
-material_override = SubResource("ShaderMaterial_ypgwf")
+material_override = SubResource("ShaderMaterial_av8bi")
 
 [node name="SpawnPoints" type="Node" parent="." unique_id=233337308]
 unique_name_in_owner = true
 
-[node name="SpawnPoint" type="Node3D" parent="SpawnPoints" unique_id=689024123]
-transform = Transform3D(0.9659258, 0, -0.25881904, 0, 1, 0, 0.25881904, 0, 0.9659258, 0, 0.5, -15)
+[node name="SpawnPoint" type="Node3D" parent="SpawnPoints" unique_id=913156325]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.75, 0.5, -15.25)
 
-[node name="SpawnPoint2" type="Node3D" parent="SpawnPoints" unique_id=446784594]
-transform = Transform3D(0.9659258, 0, -0.25881904, 0, 1, 0, 0.25881904, 0, 0.9659258, 3.5, 0.5, -14)
+[node name="SpawnPoint2" type="Node3D" parent="SpawnPoints" unique_id=2098665837]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.25, 0.5, -15.25)
 
-[node name="SpawnPoint3" type="Node3D" parent="SpawnPoints" unique_id=913156325]
-transform = Transform3D(0.9659258, 0, -0.25881904, 0, 1, 0, 0.25881904, 0, 0.9659258, 0, 0.5, -11.5)
+[node name="SpawnPoint3" type="Node3D" parent="SpawnPoints" unique_id=446784594]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.5, 0.5, -17)
 
-[node name="SpawnPoint4" type="Node3D" parent="SpawnPoints" unique_id=2098665837]
-transform = Transform3D(0.9659258, 0, -0.25881904, 0, 1, 0, 0.25881904, 0, 0.9659258, 3.5, 0.5, -10.5)
+[node name="SpawnPoint4" type="Node3D" parent="SpawnPoints" unique_id=689024123]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -17)
 
 [editable path="MovingPlatform"]
 [editable path="NavigationRegion3D/terrain"]

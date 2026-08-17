@@ -7,16 +7,19 @@ class_name Level
 
 @onready var _broken_box_spawner: DynamicSpawner = %BrokenBoxSpawner
 @onready var _coin_spawner: DynamicSpawner = %CoinSpawner
+@onready var _bullet_spawner: BulletSpawner = %BulletSpawner
+@onready var _grenade_spawner: GrenadeSpawner = %GrenadeSpawner
 @onready var _spawn_points: Node = %SpawnPoints
 @onready var _game_session_manager: GameSessionManager = get_node("/root/GameSessionManager")
 @onready var _dynamic_objects_parent: Node = get_tree().root
-@onready var _client_synchronizers: Array[Node] = find_children("ClientSynchronizer", "MultiplayerSynchronizer")
 
 const DYNAMIC_OBJECTS_PATH: NodePath = "/root/DynamicObjects"
 
-var spawn_points: Array[Node3D]
+var spawn_points: Array[Node3D] = []
 
 static var _instance: Level = null
+
+var _client_synchronizers: Array[Node] = []
 
 func _enter_tree() -> void:
 	if _instance != null:
@@ -33,6 +36,8 @@ func _ready() -> void:
 		var missing_spawn_count: int = _game_session_manager.get_max_players() - spawn_points.size()
 		push_error(_spawn_points.name + " is missing " + str(missing_spawn_count) + " child" + ("ren" if (missing_spawn_count > 1) else "") + " Node3D")
 
+	if multiplayer.is_server():
+		_client_synchronizers = find_children("ClientSynchronizer", "MultiplayerSynchronizer")
 	_enable_synchronizers_visibility.rpc_id(1)
 
 func _exit_tree() -> void:
@@ -124,6 +129,50 @@ func _spawn_coins(target_position: Vector3, count: int = 1, collect_delay = 0.5)
 		var coin: Coin = _coin_spawner.spawn(spawn_data)
 		if coin != null:
 			coin.call_deferred("spawn", collect_delay)
+
+## [b]Spawn a bullet[/b][br][br]
+##
+## [param data] should contain "position", "target_position", and any extra parameter needed by the [BulletSpawner]
+static func spawn_bullet(shooter: Node, data: Variant, peer_id: int = 1) -> void:
+	if _instance == null or not _instance.is_inside_tree():
+		push_error("spawn_bullet called but there is no level in the scene tree")
+	_instance._spawn_bullet(shooter, data, peer_id)
+
+func _spawn_bullet(shooter: Node, data: Variant, peer_id: int = 1) -> void:
+	if not _bullet_spawner.is_multiplayer_authority():
+		return
+	if shooter == null or not shooter.is_in_group("shooters"):
+		push_error("_spawn_bullet called but the shooter is invalid or not part of the \"shooters\" group")
+		return
+	var spawn_data: Variant = {
+		"index": _bullet_spawner.get_spawnable_bullet_index(),
+		"peer_id": peer_id,
+		"shooter": shooter.get_path()
+	}
+	spawn_data.merge(data, true)
+	_bullet_spawner.spawn(spawn_data)
+
+## [b]Spawn a grenade[/b][br][br]
+##
+## [param data] should contain "position", "velocity", and any extra parameter needed by the [GrenadeSpawner]
+static func spawn_grenade(grenade_launcher: GrenadeLauncher, data: Variant, peer_id: int = 1) -> void:
+	if _instance == null or not _instance.is_inside_tree():
+		push_error("spawn_grenade called but there is no level in the scene tree")
+	_instance._spawn_grenade(grenade_launcher, data, peer_id)
+
+func _spawn_grenade(grenade_launcher: GrenadeLauncher, data: Variant, peer_id: int = 1) -> void:
+	if not _grenade_spawner.is_multiplayer_authority():
+		return
+	if grenade_launcher == null:
+		push_error("_spawn_grenade called but the grenade_launcher is invalid")
+		return
+	var spawn_data: Variant = {
+		"index": _grenade_spawner.get_spawnable_grenade_index(),
+		"peer_id": peer_id,
+		"grenade_launcher": grenade_launcher.get_path()
+	}
+	spawn_data.merge(data, true)
+	_grenade_spawner.spawn(spawn_data)
 
 ## Play a oneshot sound at the given [param target_position] in the world and destroy the [param audio_source].[br]
 ## [b]Note:[/b] The [param audio_source] is reparented to the dynamic objects container so it survives its

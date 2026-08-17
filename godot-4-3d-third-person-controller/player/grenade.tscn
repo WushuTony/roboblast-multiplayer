@@ -22,6 +22,7 @@ script = ExtResource("1_ak024")
 
 [node name="ClientSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1488299886]
 replication_config = SubResource("SceneReplicationConfig_87y71")
+public_visibility = false
 
 [node name="ExplosionArea" type="Area3D" parent="." unique_id=403393285]
 collision_layer = 0

@@ -1,7 +1,6 @@
 [gd_scene format=3 uid="uid://b2ew46dlu7u7x"]
 
 [ext_resource type="Script" uid="uid://di8d4fxee0obj" path="res://godot-4-3d-third-person-controller/player/grenade_launcher.gd" id="1_n50mh"]
-[ext_resource type="Script" uid="uid://2xxl5qxsxstd" path="res://godot-4-3d-third-person-controller/player/grenade_spawner.gd" id="2_0bagw"]
 [ext_resource type="Material" uid="uid://dus6jtbfyqwj8" path="res://godot-4-3d-third-person-controller/player/grenade_visuals/aim_material.tres" id="2_qr0pg"]
 [ext_resource type="Material" uid="uid://b6h7p7jogt6ep" path="res://godot-4-3d-third-person-controller/player/grenade_visuals/trajectory_material.tres" id="3_s7dm5"]
 
@@ -13,16 +12,6 @@ radius = 0.25
 [node name="GrenadeLauncher" type="Node3D" unique_id=2016596305]
 script = ExtResource("1_n50mh")
 gravity = 16.0
-
-[node name="GrenadeSpawner" type="MultiplayerSpawner" parent="." unique_id=1822019196]
-unique_name_in_owner = true
-_spawnable_scenes = PackedStringArray("uid://bq562nfq7puh")
-spawn_path = NodePath(".")
-script = ExtResource("2_0bagw")
-damage_self = true
-container_name = "Grenades"
-prefix_owner_name = true
-metadata/_custom_type_script = "uid://2xxl5qxsxstd"
 
 [node name="SnapMesh" type="Node3D" parent="." unique_id=1033533672]
 unique_name_in_owner = true

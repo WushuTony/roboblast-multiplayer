@@ -1,66 +1,33 @@
-@tool
 extends DynamicSpawner
 class_name BulletSpawner
 
-## Speed of shot bullets.
-@export var bullet_speed: float = 10.0
-## Distance limit after which shot bullets despawn.
-@export var distance_limit: float = 14.0
-## If projectiles can damage other players/enemies.
-@export var friendly_fire: bool = false
-
-func _init() -> void:
-	super._init()
-	if Engine.is_editor_hint():
-		container_name = "Bullets"
-		prefix_owner_name = true
-		use_custom_spawn = true
-
-func _enter_tree() -> void:
-	super._enter_tree()
-	if Engine.is_editor_hint():
-		return
-	
-	if use_custom_spawn:
-		spawn_function = _custom_bullet_spawn
-
-func shoot(position: Vector3, target_position: Vector3, peer_id: int = 1) -> Node:
-	var bullet_index: int = get_spawnable_bullet_index()
-	if bullet_index < 0:
-		return null
-	var spawn_data: Variant = {
-		"index": bullet_index,
-		"position": position,
-		"target_position": target_position,
-		"peer_id": peer_id
-	}
-	return spawn(spawn_data)
-
-func _custom_bullet_spawn(data: Variant) -> Node:
-	var bullet_index: int = data.get("index", -1)
-	var bullet_scene: PackedScene = _get_spawnable_packed_scene(bullet_index)
-	if bullet_scene == null:
-		return null
-	var bullet: Bullet = bullet_scene.instantiate()
+func _custom_spawn(data: Variant) -> Node:
+	var bullet: Bullet = super._custom_spawn(data) as Bullet
 	if bullet == null:
+		push_error("Failed to spawn a bullet")
 		return null
-	var position: Vector3 = data.get("position", Vector3.ZERO)
-	var target_position: Vector3 = data.get("target_position", Vector3.ZERO)
-	var peer_id: int = data.get("peer_id", 1)
-	_initialise_bullet(bullet, position, target_position, peer_id)
+	_initialise_bullet(bullet, data)
 	return bullet
 
-func _initialise_bullet(bullet: Bullet, position: Vector3, target_position: Vector3, peer_id: int) -> void:
+func _initialise_bullet(bullet: Bullet, data: Variant) -> void:
 	if bullet == null:
 		push_error("_initialise_bullet called but there is no bullet")
 		return
-	bullet.shooter = owner
-	bullet.transform.origin = position
-	bullet.distance_limit = distance_limit
+
+	var position: Vector3 = data.get("position", Vector3.ZERO)
+	var target_position: Vector3 = data.get("target_position", Vector3.ZERO)
+	var shooter_path: NodePath = data.get("shooter", "")
+
+	var shooter: Node = get_node(shooter_path)
+	bullet.shooter = shooter
 	var aim_direction: Vector3 = (target_position - position).normalized()
-	bullet.velocity = aim_direction * bullet_speed
-	bullet.friendly_fire = friendly_fire
-	bullet.set_multiplayer_authority(peer_id)
+	bullet.velocity = aim_direction
+	if shooter != null and shooter.is_in_group("shooters"):
+		bullet.distance_limit = shooter.distance_limit
+		bullet.velocity *= shooter.bullet_speed
+		bullet.friendly_fire = shooter.friendly_fire
+	else:
+		push_error("_initialise_bullet called but the shooter is invalid or not part of the \"shooters\" group")
 
 func get_spawnable_bullet_index() -> int:
 	if get_spawnable_scene_count() < 1:

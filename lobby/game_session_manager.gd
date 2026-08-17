@@ -29,7 +29,7 @@ enum ConnectionMode
 	RELAY
 }
 
-@onready var _player_spawner: MultiplayerSpawner = %PlayerSpawner
+@onready var _player_spawner: PlayerSpawner = %PlayerSpawner
 
 const DEFAULT_PORT: int = 47218
 
@@ -39,7 +39,6 @@ var level: Level = null
 var level_idx: int = -1
 var level_load_idx: int = -1
 var level_load_progress: float = 0.0
-var _cached_player_scene: PackedScene = null
 var has_game_started: bool = false
 
 const PLAYER_CUSTOMISATION_SECTION: String = "Player.Customisation"
@@ -63,7 +62,6 @@ func _init() -> void:
 
 func _ready() -> void:
 	set_process(false)
-	_load_player_scene_async()
 	
 	level_loaded.connect(_on_level_loaded)
 	level_load_failed.connect(_on_level_load_failed)
@@ -83,9 +81,6 @@ func _ready() -> void:
 	multiplayer.connected_to_server.connect(_on_connected_to_server)
 	multiplayer.connection_failed.connect(_on_connection_failed)
 	multiplayer.server_disconnected.connect(_on_server_disconnected)
-	
-	# Make sure the player spawner can spawn enough players
-	_player_spawner.spawn_limit = max_players
 	
 	# Automatically start listening for connections if headless
 	if (headless_mode):
@@ -291,55 +286,28 @@ func get_max_players() -> int:
 	return max_players
 
 func get_player(peer_id: int) -> Player:
-	var players_node: Node = _get_player_node_container()
-	for child: Node in players_node.get_children():
-		if (child is Player && child.peer_id == peer_id):
-			return child
-	return null
+	return _player_spawner.get_player(peer_id)
 
 func get_players() -> Array[Player]:
-	var players: Array[Player] = []
-	var players_node: Node = _get_player_node_container()
-	for child: Node in players_node.get_children():
-		if (child is Player):
-			players.append(child)
-	return players
+	return _player_spawner.get_players()
 
 func get_player_count() -> int:
-	var count: int = 0
-	var players_node: Node = _get_player_node_container()
-	for child: Node in players_node.get_children():
-		if (child is Player):
-			count += 1
-	return count
+	return _player_spawner.get_player_count()
 
 func spawn_player(peer_id: int) -> void:
 	if _player_spawner == null or not _player_spawner.is_multiplayer_authority():
 		return
 	
-	# Get player scene
-	if _cached_player_scene == null:
-		var scene_path: String = _player_spawner.get_spawnable_scene(0)
-		_cached_player_scene = ResourceLoader.load_threaded_get(scene_path)
-	if _cached_player_scene == null:
-		push_error("No player scene to spawn")
-		return
-	
-	# Get player node container
-	var players_node: Node = _get_player_node_container()
-	if players_node == null:
-		push_error("No player node container found")
-		return
-	
-	# Prepare new player
-	var player: Player = _cached_player_scene.instantiate()
-	player.name = str(peer_id)
-	
-	# Add player to level and teleport to spawn position
-	var player_index: int = players_node.get_child_count()
+	var player_index: int = _player_spawner.get_player_count()
 	var spawn_location: Vector3 = level.get_spawn_location(player_index)
-	player.transform.origin = spawn_location
-	players_node.add_child(player)
+	var spawn_rotation: Vector3 = level.get_spawn_rotation(player_index)
+	var spawn_data: Variant = {
+		"index": 0,
+		"position": spawn_location,
+		"rotation": spawn_rotation,
+		"peer_id": peer_id,
+	}
+	_player_spawner.spawn(spawn_data)
 
 func remove_player(peer_id: int) -> void:
 	if _player_spawner == null or not _player_spawner.is_multiplayer_authority():
@@ -352,18 +320,6 @@ func remove_player(peer_id: int) -> void:
 	
 	# Free player
 	player.queue_free()
-
-func _get_player_node_container() -> Node:
-	return _player_spawner.get_node(_player_spawner.spawn_path)
-
-func _load_player_scene_async() -> void:
-	if _player_spawner == null or _player_spawner.get_spawnable_scene_count() < 1:
-		push_error("No player scene to spawn")
-		return
-	if _player_spawner.get_spawnable_scene_count() != 1:
-		push_warning(_player_spawner.get_spawnable_scene_count(), " player scenes is not supported, the first one will be picked")
-	var scene_path: String = _player_spawner.get_spawnable_scene(0)
-	ResourceLoader.load_threaded_request(scene_path)
 
 # Player Customisation
 

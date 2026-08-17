@@ -5,12 +5,13 @@ signal weapon_switched(weapon_name: String)
 
 enum WEAPON_TYPE { DEFAULT, GRENADE }
 
+@export_group("Movement")
 ## Character maximum run speed on the ground.
 @export var move_speed := 8.0
 ## Forward impulse after a melee attack.
 @export var attack_impulse := 10.0
 ## Movement acceleration (how fast character achieve maximum speed)
-@export var acceleration := 4.0
+@export var acceleration := 6.0
 ## Jump impulse
 @export var jump_initial_impulse := 12.0
 ## Jump impulse when player keeps pressing jump
@@ -20,25 +21,36 @@ enum WEAPON_TYPE { DEFAULT, GRENADE }
 ## Minimum horizontal speed on the ground. This controls when the character's animation tree changes
 ## between the idle and running states.
 @export var stopping_speed := 1.0
+
+@export_group("Taking Hits")
 ## Max throwback force after player takes a hit from any source (e.g. melee, bullet, grenade)
 @export var max_throwback_force := 50.0
 ## Force to bounce off when landing on another player's head or on top of an enemy
 @export var bounce_off_force: Vector3 = Vector3(20.0, 10.0, 20.0)
 ## Add an offset to the spawn location of the coins the player loses
 @export var lost_coins_upward_offset: float = 1.0
-## Projectile cooldown
+
+@export_group("Projectiles")
+## Bullets cooldown
 @export var shoot_cooldown := 0.5
-## Grenade cooldown
+## Speed of shot bullets.
+@export var bullet_speed: float = 14.0
+## Distance limit after which shot bullets despawn.
+@export var distance_limit: float = 14.0
+## Grenade cooldown[br]
+## [b]Note:[/b] For more grenade settings, see [GrenadeLauncher]
 @export var grenade_cooldown := 0.5
 ## Aims in the camera direction, otherwise it aims in the direction the character is facing.
 @export var aim_in_camera_direction: bool = false
 ## If the player can aim and shoot midair, otherwise jumping or falling cancels out the aim.
 @export var can_shoot_midair: bool = true
-## If melee attacks can damage other players
+
+@export_group("")
+## If [code]true[/code], melee attacks and bullets can damage other players.[br]
+## [b]Note:[/b] For grenades, see [GrenadeLauncher]
 @export var friendly_fire: bool = false
 
 @onready var _client_synchronizer: MultiplayerSynchronizer = $ClientSynchronizer
-@onready var _bullet_spawner: BulletSpawner = $BulletSpawner
 @onready var _rotation_root: Node3D = $CharacterRotationRoot
 @onready var _camera_controller: CameraController = $CameraController
 @onready var _camera: Camera3D = $CameraController/PlayerCamera
@@ -60,7 +72,7 @@ enum WEAPON_TYPE { DEFAULT, GRENADE }
 
 var _equipped_weapon: WEAPON_TYPE = WEAPON_TYPE.DEFAULT
 var _move_direction: Vector3 = Vector3.ZERO
-var _last_strong_direction: Vector3 = Vector3.FORWARD
+var _last_strong_direction: Vector3 = Vector3.ZERO
 var _gravity: float = -30.0
 var _ground_height: float = 0.0
 var _coins: int = 0
@@ -104,6 +116,7 @@ func _enter_tree() -> void:
 	peer_id = int(name)
 	local = (peer_id == multiplayer.get_unique_id())
 	set_physics_process(local)
+	_update_authority()
 
 func _exit_tree() -> void:
 	if local:
@@ -112,6 +125,8 @@ func _exit_tree() -> void:
 func _ready() -> void:
 	if local:
 		MouseHandler.request_mouse_mode(self, Input.MOUSE_MODE_CAPTURED, 0)
+		# Init this value so it doesn't override the spawn rotation
+		_last_strong_direction = (_rotation_root.global_transform.basis * Vector3.BACK).normalized()
 	_camera_controller.setup(self)
 
 	if _ui_HUD != null:
@@ -149,14 +164,18 @@ func generate_random_hsv_color(color_seed: int) -> Color:
 		rng.randf_range(0.9, 1.0), # BRIGHTNESS
  	)
 
-func set_multiplayer_data():
+func _update_authority():
 	# Give authority to this client
 	const recursive: bool = false
 	set_multiplayer_authority(peer_id, recursive)
 	if not recursive:
+		if not is_node_ready():
+			_client_synchronizer = $ClientSynchronizer
+			_grenade_aim_controller = $GrenadeLauncher
 		_client_synchronizer.set_multiplayer_authority(peer_id, false)
 		_grenade_aim_controller.set_multiplayer_authority(peer_id, false)
-	
+
+func set_multiplayer_data():
 	if local and _game_session_manager != null:
 		display_name = _game_session_manager.local_player_name
 		custom_color = _game_session_manager.local_player_color
@@ -380,14 +399,17 @@ func shoot() -> void:
 	if not local:
 		return
 	var origin: Vector3 = global_position + Vector3.UP
-	var aim_target: Vector3 = _camera_controller.get_aim_target(_bullet_spawner.distance_limit)
+	var aim_target: Vector3 = _camera_controller.get_aim_target(distance_limit)
 	_spawn_bullet.rpc_id(1, origin, aim_target)
 
 
 @rpc("authority", "call_local", "reliable")
 func _spawn_bullet(origin: Vector3, aim_target: Vector3) -> void:
-	if _bullet_spawner.is_multiplayer_authority():
-		var _bullet: Bullet = _bullet_spawner.shoot(origin, aim_target, peer_id)
+	var data: Variant = {
+		"position": origin,
+		"target_position": aim_target,
+	}
+	Level.spawn_bullet(self, data)
 
 
 @rpc("authority", "call_local", "reliable")
