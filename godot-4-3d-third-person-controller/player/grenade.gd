@@ -1,4 +1,4 @@
-extends CharacterBody3D
+extends RigidBody3D
 class_name Grenade
 
 const EXPLOSION_SCENE := preload("explosion_visuals/explosion_scene.tscn")
@@ -94,15 +94,14 @@ func _explode() -> void:
 		if not damage_self and body == shooter:
 			continue
 
-		if not body.is_in_group("damageables"):
-			continue
-
-		var can_damage: bool = true
-		if not friendly_fire and shooter != null:
-			if body.is_in_group("players"):
-				can_damage = !shooter.is_in_group("players")
-			elif body.is_in_group("enemies"):
-				can_damage = !shooter.is_in_group("enemies")
+		var is_damageable: bool = body.is_in_group("damageables")
+		var can_damage: bool = is_damageable
+		if is_damageable:
+			if not friendly_fire and shooter != null:
+				if body.is_in_group("players"):
+					can_damage = !shooter.is_in_group("players")
+				elif body.is_in_group("enemies"):
+					can_damage = !shooter.is_in_group("enemies")
 
 		# Add some variance to the impact point
 		var impact_point: Vector3 = (global_position - body.global_position).normalized()
@@ -110,15 +109,18 @@ func _explode() -> void:
 		var force: Vector3 = -impact_point.normalized() * damage_impulse
 		force.y = upward_impulse
 
-		var damage_data: Variant = {
-			"impact_point": impact_point,
-			"force": force,
-			"can_damage": can_damage
-		}
-		if body.is_multiplayer_authority():
-			body.damage(damage_data)
-		else:
-			_apply_damage.rpc_id(body.get_multiplayer_authority(), body.get_path(), damage_data)
+		if is_damageable:
+			var damage_data: Variant = {
+				"impact_point": impact_point,
+				"force": force,
+				"can_damage": can_damage
+			}
+			if body.is_multiplayer_authority():
+				body.damage(damage_data)
+			else:
+				_apply_damage.rpc_id(body.get_multiplayer_authority(), body.get_path(), damage_data)
+		elif body is RigidBody3D:
+			body.apply_impulse(force, impact_point)
 
 	_play_explosion_effect.rpc()
 

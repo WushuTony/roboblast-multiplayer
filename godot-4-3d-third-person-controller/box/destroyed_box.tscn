@@ -8,7 +8,7 @@ properties/0/path = NodePath(".:position")
 properties/0/spawn = true
 properties/0/replication_mode = 0
 
-[node name="DestroyedBox" unique_id=1038641985 groups=["damageables", "targeteables"] instance=ExtResource("1_ovk58")]
+[node name="DestroyedBox" unique_id=1038641985 instance=ExtResource("1_ovk58")]
 script = ExtResource("2_cv1nk")
 
 [node name="crate_001" parent="." index="0" unique_id=342582906]

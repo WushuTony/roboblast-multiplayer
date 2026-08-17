@@ -176,6 +176,7 @@ focus_chat={
 3d_physics/layer_4="Players"
 3d_physics/layer_5="Bots"
 3d_physics/layer_6="Pushable Objects"
+3d_physics/layer_7="Projectiles"
 
 [physics]
 

@@ -69,7 +69,8 @@ func _ready():
 	_on_visibility_changed()
 	
 	_lobby_menu.hide()
-	hide_loading_screen(false)
+	set_process(false)
+	_loading_menu.hide()
 	
 	if RoboLobbyManager.is_singleplayer:
 		_enet_menu.hide()

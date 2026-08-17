@@ -16,6 +16,7 @@ func _init() -> void:
 	set_collision_mask_value(4, true) # Players
 	set_collision_mask_value(5, true) # Bots
 	set_collision_mask_value(6, true) # Pushable Objects
+	set_collision_mask_value(7, true) # Projectiles
 
 
 func _ready() -> void:
