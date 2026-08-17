@@ -1,5 +1,14 @@
 extends Node
 
+enum Priority
+{
+	LOADING_SCREEN = -999,
+	PAUSE_MENU = -99,
+	CHAT = -1,
+	UI = 0,
+	GAMEPLAY = 1,
+}
+
 var _cur_mouse_context: int = -1
 var _mouse_contexts: Dictionary[int, Variant] = {}
 

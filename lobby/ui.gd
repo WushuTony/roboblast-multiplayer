@@ -125,6 +125,7 @@ func _on_server_disconnected():
 
 func _on_visibility_changed():
 	if visible:
+		MouseHandler.request_mouse_mode(self, Input.MOUSE_MODE_VISIBLE, MouseHandler.Priority.UI)
 		get_tree().root.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
 		is_in_menu = true
 
@@ -510,6 +511,7 @@ func _on_game_ended() -> void:
 func _on_level_loaded(_level_idx: int) -> void:
 	hide_loading_screen(false)
 	hide()
+	MouseHandler.release_mouse_mode(self)
 	get_tree().root.content_scale_mode = default_content_scale_mode
 	is_in_menu = false
 
@@ -517,24 +519,33 @@ func _on_level_load_failed(_p_level_idx: int) -> void:
 	hide_loading_screen(true)
 
 func show_loading_screen(progress: float = 0.0) -> void:
+	MouseHandler.request_mouse_mode(_loading_menu, Input.MOUSE_MODE_HIDDEN, MouseHandler.Priority.LOADING_SCREEN)
 	_loading_progress.value = progress
 	_loading_menu.show()
 	set_process(true)
 
 func hide_loading_screen(restore_menu: bool) -> void:
+	MouseHandler.release_mouse_mode(_loading_menu)
 	set_process(false)
 	_loading_menu.hide()
 	if restore_menu:
 		match (_game_session_manager.connection_mode):
 			GameSessionManager.ConnectionMode.ENET:
 				_enet_menu.show()
+				_enet_address_line_edit.grab_focus()
 			GameSessionManager.ConnectionMode.WEBSOCKET:
 				_websocket_menu.show()
+				_websocket_address_line_edit.grab_focus()
 			GameSessionManager.ConnectionMode.RELAY:
 				if RoboLobbyManager.local_lobby != null and RoboLobbyManager.local_lobby.is_valid():
 					_lobby_menu.show()
+					if _lobby_play_button.disabled:
+						_lobby_leave_button.grab_focus()
+					else:
+						_lobby_play_button.grab_focus()
 				else:
 					_lobby_search_menu.show()
+					_lobby_refresh_button.grab_focus()
 
 # Player Customisation
 

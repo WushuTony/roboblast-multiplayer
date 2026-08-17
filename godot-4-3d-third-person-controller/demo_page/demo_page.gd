@@ -11,8 +11,6 @@ enum INSTRUCTION_TYPES {KEYBOARD, JOYPAD}
 @onready var grid_container_keyboard: GridContainer = %GridContainerKeyboard
 @onready var grid_container_joypad: GridContainer = %GridContainerJoypad
 
-const MOUSE_PRIORITY: int = -99
-
 ## If [code]true[/code] by default, the game starts paused until all players resumed the demo.
 var game_paused: bool = false:
 	set(value):
@@ -51,7 +49,7 @@ func _ready() -> void:
 	
 	if demo_page_root.is_visible_in_tree():
 		resume_button.grab_focus.call_deferred()
-		MouseHandler.request_mouse_mode(self, Input.MOUSE_MODE_VISIBLE, MOUSE_PRIORITY)
+		MouseHandler.request_mouse_mode(self, Input.MOUSE_MODE_VISIBLE, MouseHandler.Priority.PAUSE_MENU)
 
 
 func _on_peer_connected(peer_id: int) -> void:
@@ -185,7 +183,7 @@ func show_demo_page() -> void:
 	var tween := create_tween()
 	tween.tween_property(demo_page_root, "modulate", Color.WHITE, 0.3)
 	tween.tween_callback(resume_button.grab_focus)
-	MouseHandler.request_mouse_mode(self, Input.MOUSE_MODE_VISIBLE, MOUSE_PRIORITY)
+	MouseHandler.request_mouse_mode(self, Input.MOUSE_MODE_VISIBLE, MouseHandler.Priority.PAUSE_MENU)
 
 
 func hide_demo_page() -> void:

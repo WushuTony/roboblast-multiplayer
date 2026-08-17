@@ -124,7 +124,7 @@ func _exit_tree() -> void:
 
 func _ready() -> void:
 	if local:
-		MouseHandler.request_mouse_mode(self, Input.MOUSE_MODE_CAPTURED, 0)
+		MouseHandler.request_mouse_mode(self, Input.MOUSE_MODE_CAPTURED, MouseHandler.Priority.GAMEPLAY)
 		# Init this value so it doesn't override the spawn rotation
 		_last_strong_direction = (_rotation_root.global_transform.basis * Vector3.BACK).normalized()
 	_camera_controller.setup(self)

@@ -116,7 +116,7 @@ func clear() -> void:
 func focus_chat() -> void:
 	if is_chatting:
 		return
-	MouseHandler.request_mouse_mode(self, Input.MOUSE_MODE_VISIBLE, -1)
+	MouseHandler.request_mouse_mode(self, Input.MOUSE_MODE_VISIBLE, MouseHandler.Priority.CHAT)
 	_set_focus_modulate(focused_color)
 	_line_edit.grab_focus()
 	is_chatting = true

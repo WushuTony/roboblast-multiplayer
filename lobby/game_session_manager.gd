@@ -205,6 +205,10 @@ func _on_game_started(new_level_idx: int = 0) -> void:
 
 func _on_game_ended() -> void:
 	unload_level()
+	if not headless_mode:
+		remove_player(1)
+	for peer_id in multiplayer.get_peers():
+		remove_player(peer_id)
 	has_game_started = false
 
 # Level Management
