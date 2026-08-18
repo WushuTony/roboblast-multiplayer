@@ -10,8 +10,9 @@ extends Node
 signal chat_message_received(username: String, message: String)
 ## Emitted for all users when the host of the local lobby starts the game.
 signal game_started(level_idx: int)
-## Emitted for all users when the host of the local lobby ends the game.
-signal game_ended
+## Emitted for all users when the host of the local lobby ends the game.[br]
+## If [param local_only] is [code]true[/code], the local player left the game alone.
+signal game_ended(local_only: bool)
 
 const BUCKET_ID: String = "quickplay" # For matchmaking
 const SOCKET_ID: String = "RoboBlastMP"
@@ -366,7 +367,7 @@ func _on_lobby_owner_changed() -> void:
 
 	# The host disconnecting mid-game currently unloads all the players, so we need to end the game
 	if has_game_started:
-		game_ended.emit()
+		game_ended.emit(false)
 		has_game_started = false
 
 #LOBBY MEMBER CODE

@@ -508,8 +508,13 @@ func _on_game_started(_level_idx: int) -> void:
 				_on_lobby_player_name_submitted(_lobby_player_name_line_edit.text)
 	show_loading_screen(_game_session_manager.level_load_progress)
 
-func _on_game_ended() -> void:
-	_lobby_game_status.hide()
+func _on_game_ended(local_only: bool) -> void:
+	if local_only:
+		_lobby_game_status.show()
+		_lobby_play_button.disabled = false
+	else:
+		_lobby_game_status.hide()
+		_lobby_play_button.disabled = RoboLobbyManager.local_lobby == null or not RoboLobbyManager.local_lobby.is_owner()
 	hide_loading_screen(true)
 	show()
 

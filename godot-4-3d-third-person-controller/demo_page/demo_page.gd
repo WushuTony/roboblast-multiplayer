@@ -3,8 +3,10 @@ class_name DemoPage
 
 enum INSTRUCTION_TYPES {KEYBOARD, JOYPAD}
 
+@onready var _game_session_manager: GameSessionManager = get_node("/root/GameSessionManager")
 @onready var demo_page_root: Control = %DemoPageRoot
 @onready var resume_button: Button = %ResumeButton
+@onready var lobby_button: Button = %LobbyButton
 @onready var exit_button: Button = %ExitButton
 @onready var keyboard_button: Button = %KeyboardButton
 @onready var joypad_button: Button = %JoypadButton
@@ -38,9 +40,13 @@ func _ready() -> void:
 	
 	demo_page_root.gui_input.connect(_demo_page_root_gui_input)
 	resume_button.pressed.connect(_on_resume_button_pressed)
+	lobby_button.pressed.connect(_on_lobby_button_pressed)
 	exit_button.pressed.connect(_on_exit_button_pressed)
 	keyboard_button.pressed.connect(change_instruction.bind(INSTRUCTION_TYPES.KEYBOARD))
 	joypad_button.pressed.connect(change_instruction.bind(INSTRUCTION_TYPES.JOYPAD))
+	
+	if RoboLobbyManager.local_lobby != null:
+		lobby_button.visible = true
 	
 	if Input.get_connected_joypads().size() > 0:
 		change_instruction(INSTRUCTION_TYPES.JOYPAD)
@@ -136,6 +142,11 @@ func _on_resume_button_pressed() -> void:
 		resume_demo_for_player.rpc_id(1)
 	else:
 		hide_demo_page()
+
+
+func _on_lobby_button_pressed() -> void:
+	if _game_session_manager != null:
+		_game_session_manager.end_game()
 
 
 func _on_exit_button_pressed() -> void:

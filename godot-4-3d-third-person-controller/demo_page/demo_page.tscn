@@ -506,24 +506,37 @@ alignment = 1
 unique_name_in_owner = true
 layout_mode = 2
 focus_neighbor_top = NodePath("../../../Content/GameDescription/MarginContainer/ContentContainer/ControlsDescription/MarginContainer/VBoxContainer/ButtonContainer/KeyboardButton")
+focus_neighbor_right = NodePath("../LobbyButton")
+mouse_default_cursor_shape = 2
+theme_override_fonts/font = ExtResource("6_r37av")
+theme_override_font_sizes/font_size = 26
+action_mode = 0
+text = "  Resume Game  "
+
+[node name="LobbyButton" type="Button" parent="CanvasLayer/DemoPageRoot/Content/MarginContainer/Buttons" unique_id=573813500]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+focus_neighbor_left = NodePath("../ResumeButton")
+focus_neighbor_top = NodePath("../../../Content/GameDescription/MarginContainer/ContentContainer/ControlsDescription/MarginContainer/VBoxContainer/ButtonContainer/KeyboardButton")
 focus_neighbor_right = NodePath("../ExitButton")
 mouse_default_cursor_shape = 2
 theme_override_fonts/font = ExtResource("6_r37av")
 theme_override_font_sizes/font_size = 26
 action_mode = 0
-text = "  Resume demo  "
+text = "  Return To Lobby  "
 
 [node name="ExitButton" type="Button" parent="CanvasLayer/DemoPageRoot/Content/MarginContainer/Buttons" unique_id=423092051]
 unique_name_in_owner = true
 layout_mode = 2
-focus_neighbor_left = NodePath("../ResumeButton")
+focus_neighbor_left = NodePath("../LobbyButton")
 focus_neighbor_top = NodePath("../../../Content/GameDescription/MarginContainer/ContentContainer/ControlsDescription/MarginContainer/VBoxContainer/ButtonContainer/KeyboardButton")
 focus_neighbor_right = NodePath("../../../../HBoxContainer/DiscordButton")
 mouse_default_cursor_shape = 2
 theme_override_fonts/font = ExtResource("6_r37av")
 theme_override_font_sizes/font_size = 26
 action_mode = 0
-text = "  Exit demo  "
+text = "  Exit Game  "
 
 [node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/DemoPageRoot" unique_id=1043956037]
 layout_mode = 0

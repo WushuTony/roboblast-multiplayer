@@ -33,7 +33,6 @@ unique_name_in_owner = true
 _spawnable_scenes = PackedStringArray("uid://ciqrpd5675boy")
 spawn_path = NodePath("../Players")
 script = ExtResource("2_05h5e")
-use_dynamic_peer_visibility = false
 auto_confirm_peer_visibility = false
 metadata/_custom_type_script = "uid://tdv2j7atcgb5"
 

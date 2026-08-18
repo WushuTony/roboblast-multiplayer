@@ -51,10 +51,15 @@ func _on_peer_disconnected(peer_id: int) -> void:
 func enable_synchronizers_visibility() -> void:
 	if not use_dynamic_peer_visibility or not multiplayer.is_server():
 		return
+	var peer_id: int = multiplayer.get_remote_sender_id() if (multiplayer.get_remote_sender_id() != 0) else multiplayer.get_unique_id()
+	server_enable_synchronizers_visibility(peer_id)
+
+func server_enable_synchronizers_visibility(peer_id: int) -> void:
+	if not use_dynamic_peer_visibility or not multiplayer.is_server():
+		return
 	var spawn_container: Node = get_spawn_container()
 	if spawn_container == null:
 		return
-	var peer_id: int = multiplayer.get_remote_sender_id() if (multiplayer.get_remote_sender_id() != 0) else multiplayer.get_unique_id()
 	for child: Node in spawn_container.get_children():
 		if not is_instance_valid(child) or child.is_queued_for_deletion():
 			continue
@@ -63,6 +68,28 @@ func enable_synchronizers_visibility() -> void:
 			print_verbose("[Player %d]: Enabling %s visibility for Player %d" % [multiplayer.get_unique_id(), sync.get_path(), peer_id])
 			sync.set_visibility_for(peer_id, true)
 	_server_visible_peer_ids.append(peer_id)
+
+@rpc("any_peer", "call_local", "reliable")
+func disable_synchronizers_visibility() -> void:
+	if not use_dynamic_peer_visibility or not multiplayer.is_server():
+		return
+	var peer_id: int = multiplayer.get_remote_sender_id() if (multiplayer.get_remote_sender_id() != 0) else multiplayer.get_unique_id()
+	server_disable_synchronizers_visibility(peer_id)
+
+func server_disable_synchronizers_visibility(peer_id: int) -> void:
+	if not use_dynamic_peer_visibility or not multiplayer.is_server():
+		return
+	var spawn_container: Node = get_spawn_container()
+	if spawn_container == null:
+		return
+	for child: Node in spawn_container.get_children():
+		if not is_instance_valid(child) or child.is_queued_for_deletion():
+			continue
+		var sync: MultiplayerSynchronizer = child.get_node("ClientSynchronizer")
+		if sync != null:
+			print_verbose("[Player %d]: Disabling %s visibility for Player %d" % [multiplayer.get_unique_id(), sync.get_path(), peer_id])
+			sync.set_visibility_for(peer_id, false)
+	_server_visible_peer_ids.erase(peer_id)
 
 func _get_spawnable_packed_scene(index: int) -> PackedScene:
 	if index < 0 || index >= get_spawnable_scene_count():

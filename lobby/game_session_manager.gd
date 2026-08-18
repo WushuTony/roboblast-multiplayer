@@ -185,7 +185,7 @@ func _on_peer_disconnected(peer_id: int) -> void:
 	if get_player_count() == 0\
 		or peer_id == multiplayer.get_unique_id()\
 		or peer_id == 1:
-		RoboLobbyManager.game_ended.emit.call_deferred()
+		RoboLobbyManager.game_ended.emit.call_deferred(false)
 
 func _on_connected_to_server() -> void:
 	pass
@@ -205,11 +205,21 @@ func _on_server_disconnected() -> void:
 func start_game(new_level_idx: int = 0) -> void:
 	if RoboLobbyManager.local_lobby != null and RoboLobbyManager.local_lobby.is_owner():
 		RoboLobbyManager.start_game(new_level_idx)
+	elif is_multiplayer_authority():
+		notify_game_started.rpc(new_level_idx)
 	else:
 		RoboLobbyManager.game_started.emit(new_level_idx)
 		# If the local player wants to start the game, make sure the server knows to spawn them.
-		if not late_join_autostart_game:
-			request_spawn_player.rpc_id(1)
+		player_game_started.rpc_id(1)
+
+func end_game() -> void:
+	if is_multiplayer_authority():
+		notify_game_ended.rpc(false)
+	else:
+		var player: Player = get_player(multiplayer.get_unique_id())
+		if player != null:
+			player.freeze()
+		player_game_ended.rpc_id(1)
 
 @rpc("authority", "call_remote", "reliable")
 func late_join_game_started(cur_level_idx: int) -> void:
@@ -220,18 +230,54 @@ func late_join_game_started(cur_level_idx: int) -> void:
 		load_level_async(cur_level_idx)
 		late_join_game_in_progress.emit()
 
+@rpc("authority", "call_local", "reliable")
+func notify_game_started(new_level_idx: int) -> void:
+	RoboLobbyManager.game_started.emit(new_level_idx)
+
+@rpc("authority", "call_local", "reliable")
+func notify_game_ended(local_only: bool) -> void:
+	RoboLobbyManager.game_ended.emit(local_only)
+
+@rpc("any_peer", "call_local", "reliable")
+func player_game_started() -> void:
+	if not multiplayer.is_server():
+		return
+	
+	var peer_id: int = multiplayer.get_remote_sender_id() if (multiplayer.get_remote_sender_id() != 0) else multiplayer.get_unique_id()
+	spawn_player(peer_id)
+	
+	_player_spawner.server_enable_synchronizers_visibility(peer_id)
+
+@rpc("any_peer", "call_local", "reliable")
+func player_game_ended() -> void:
+	if not multiplayer.is_server():
+		return
+	
+	var peer_id: int = multiplayer.get_remote_sender_id() if (multiplayer.get_remote_sender_id() != 0) else multiplayer.get_unique_id()
+	remove_player(peer_id)
+	
+	_player_spawner.server_disable_synchronizers_visibility(peer_id)
+	
+	if level != null:
+		level.server_disable_synchronizers_visibility(peer_id)
+	
+	notify_game_ended.rpc_id(peer_id, true)
+
 func _on_game_started(new_level_idx: int = 0) -> void:
 	save_player_customisation()
 	autostart_new_level = true
 	load_level_async(new_level_idx)
 	has_game_started = true
 
-func _on_game_ended() -> void:
+func _on_game_ended(local_only: bool) -> void:
 	unload_level()
-	if not headless_mode:
-		remove_player(1)
-	for peer_id in multiplayer.get_peers():
-		remove_player(peer_id)
+	if local_only:
+		remove_player(multiplayer.get_unique_id())
+	else:
+		if not headless_mode:
+			remove_player(1)
+		for peer_id in multiplayer.get_peers():
+			remove_player(peer_id)
 	has_game_started = false
 
 # Level Management
@@ -342,17 +388,16 @@ func get_players() -> Array[Player]:
 func get_player_count() -> int:
 	return _player_spawner.get_player_count()
 
-@rpc("any_peer", "call_remote", "reliable")
-func request_spawn_player() -> void:
-	var peer_id: int = multiplayer.get_remote_sender_id() if (multiplayer.get_remote_sender_id() != 0) else multiplayer.get_unique_id()
-	spawn_player(peer_id)
-
 func spawn_player(peer_id: int) -> void:
 	if _player_spawner == null or not _player_spawner.is_multiplayer_authority():
 		return
 	
 	if get_player(peer_id) != null:
 		push_warning("Player %d is already spawned, ignoring spawn_player" % peer_id)
+		return
+	
+	if level == null:
+		push_error("Failed to spawn Player %d, the level is not loaded" % peer_id)
 		return
 	
 	var player_index: int = _player_spawner.get_player_count()

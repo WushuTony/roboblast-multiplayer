@@ -38,7 +38,7 @@ func _ready() -> void:
 
 	if multiplayer.is_server():
 		_client_synchronizers = find_children("ClientSynchronizer", "MultiplayerSynchronizer")
-	_enable_synchronizers_visibility.rpc_id(1)
+	enable_synchronizers_visibility.rpc_id(1)
 
 func _exit_tree() -> void:
 	var dynamic_objects: Node = get_node_or_null(DYNAMIC_OBJECTS_PATH)
@@ -48,12 +48,34 @@ func _exit_tree() -> void:
 		_instance = null
 
 @rpc("any_peer", "call_local", "reliable")
-func _enable_synchronizers_visibility() -> void:
+func enable_synchronizers_visibility() -> void:
+	if not multiplayer.is_server():
+		return
 	var peer_id: int = multiplayer.get_remote_sender_id() if (multiplayer.get_remote_sender_id() != 0) else multiplayer.get_unique_id()
+	server_enable_synchronizers_visibility(peer_id)
+
+func server_enable_synchronizers_visibility(peer_id: int) -> void:
+	if not multiplayer.is_server():
+		return
 	for sync: Node in _client_synchronizers:
 		if sync != null and sync is MultiplayerSynchronizer:
 			print_verbose("[Player %d]: Enabling %s visibility for Player %d" % [multiplayer.get_unique_id(), sync.get_path(), peer_id])
 			sync.set_visibility_for(peer_id, true)
+
+@rpc("any_peer", "call_local", "reliable")
+func disable_synchronizers_visibility() -> void:
+	if not multiplayer.is_server():
+		return
+	var peer_id: int = multiplayer.get_remote_sender_id() if (multiplayer.get_remote_sender_id() != 0) else multiplayer.get_unique_id()
+	server_disable_synchronizers_visibility(peer_id)
+
+func server_disable_synchronizers_visibility(peer_id: int) -> void:
+	if not multiplayer.is_server():
+		return
+	for sync: Node in _client_synchronizers:
+		if sync != null and sync is MultiplayerSynchronizer:
+			print_verbose("[Player %d]: Disabling %s visibility for Player %d" % [multiplayer.get_unique_id(), sync.get_path(), peer_id])
+			sync.set_visibility_for(peer_id, false)
 
 func get_spawn_location(index: int) -> Vector3:
 	return spawn_points[index].position
