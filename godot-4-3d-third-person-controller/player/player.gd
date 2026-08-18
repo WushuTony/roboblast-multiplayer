@@ -201,10 +201,14 @@ func set_multiplayer_data():
 			_game_session_manager != null and\
 			_game_session_manager.connection_mode == GameSessionManager.ConnectionMode.RELAY:
 			_ui_text_chat.enable()
+		
+		if not is_frozen and _game_session_manager != null:
+			_game_session_manager.local_player_ready.emit()
 
 func _on_level_loaded(_level_idx: int) -> void:
 	unfreeze()
 	_game_session_manager.level_loaded.disconnect(_on_level_loaded)
+	_game_session_manager.local_player_ready.emit()
 
 func freeze() -> void:
 	is_frozen = true

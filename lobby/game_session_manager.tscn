@@ -573,6 +573,14 @@ popup/item_1/id = 1
 popup/item_2/text = "Enabled (Lobby + In Game)"
 popup/item_2/id = 3
 
+[node name="GameStatus" type="Label" parent="UI/Start/WaitingRoom/Split/Host/VBox" unique_id=443208343]
+visible = false
+layout_mode = 2
+size_flags_vertical = 6
+theme_override_font_sizes/font_size = 36
+text = "GAME IN PROGRESS"
+horizontal_alignment = 1
+
 [node name="Custom" type="PanelContainer" parent="UI/Start/WaitingRoom/Split" unique_id=400755951]
 layout_mode = 2
 

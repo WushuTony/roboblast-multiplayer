@@ -32,6 +32,7 @@ extends CanvasLayer
 @onready var _lobby_max_players_box: SpinBox = $Start/WaitingRoom/Split/Host/VBox/Settings/MaxPlayers
 @onready var _lobby_visibility_button: OptionButton = $Start/WaitingRoom/Split/Host/VBox/Settings/Visibility
 @onready var _lobby_voice_chat_button: OptionButton = $Start/WaitingRoom/Split/Host/VBox/Settings/VoiceChat
+@onready var _lobby_game_status: Label = $Start/WaitingRoom/Split/Host/VBox/GameStatus
 @onready var _lobby_player_name_line_edit: LineEdit = $Start/WaitingRoom/Split/Custom/VBox/Options/Name
 @onready var _lobby_player_color_picker_button: ColorPickerButton = $Start/WaitingRoom/Split/Custom/VBox/Options/ColorPicker
 
@@ -62,6 +63,8 @@ func _enter_tree() -> void:
 func _ready():
 	_game_session_manager.level_loaded.connect(_on_level_loaded)
 	_game_session_manager.level_load_failed.connect(_on_level_load_failed)
+	_game_session_manager.local_player_ready.connect(_on_local_player_ready)
+	_game_session_manager.late_join_game_in_progress.connect(_on_late_join_game_in_progress)
 	RoboLobbyManager.game_started.connect(_on_game_started)
 	RoboLobbyManager.game_ended.connect(_on_game_ended)
 	
@@ -489,7 +492,7 @@ func _on_lobby_leave_confirmed() -> void:
 		_on_lobby_left()
 
 func _on_lobby_play_pressed() -> void:
-	RoboLobbyManager.start_game()
+	_game_session_manager.start_game()
 
 func _on_game_started(_level_idx: int) -> void:
 	match (_game_session_manager.connection_mode):
@@ -506,18 +509,27 @@ func _on_game_started(_level_idx: int) -> void:
 	show_loading_screen(_game_session_manager.level_load_progress)
 
 func _on_game_ended() -> void:
+	_lobby_game_status.hide()
 	hide_loading_screen(true)
 	show()
 
 func _on_level_loaded(_level_idx: int) -> void:
+	set_process(false)
+	_loading_progress.value = 0.99
+
+func _on_level_load_failed(_p_level_idx: int) -> void:
+	hide_loading_screen(true)
+
+func _on_local_player_ready() -> void:
 	hide_loading_screen(false)
 	hide()
 	MouseHandler.release_mouse_mode(self)
 	get_tree().root.content_scale_mode = default_content_scale_mode
 	is_in_menu = false
 
-func _on_level_load_failed(_p_level_idx: int) -> void:
-	hide_loading_screen(true)
+func _on_late_join_game_in_progress() -> void:
+	_lobby_game_status.show()
+	_lobby_play_button.disabled = false
 
 func show_loading_screen(progress: float = 0.0) -> void:
 	MouseHandler.request_mouse_mode(_loading_menu, Input.MOUSE_MODE_HIDDEN, MouseHandler.Priority.LOADING_SCREEN)

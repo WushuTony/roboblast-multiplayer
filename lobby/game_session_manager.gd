@@ -5,6 +5,10 @@ class_name GameSessionManager
 signal level_loaded(p_level_idx: int)
 ## Emitted for the local player when a level failed to load.
 signal level_load_failed(p_level_idx: int)
+## Emitted for the local player when their character is spawned and ready.
+signal local_player_ready
+## Emitted for the local player when they join a lobby late and the game is already in progress.
+signal late_join_game_in_progress
 
 ## Which connection mode should be used
 @export var connection_mode: ConnectionMode = ConnectionMode.RELAY
@@ -15,6 +19,10 @@ signal level_load_failed(p_level_idx: int)
 @export var level_spawn_path: NodePath = "Level"
 ## The path of the config file holding the player settings
 @export_global_file("*.cfg") var player_settings_config_file_path: String = "user://configs/player_settings.cfg"
+## If [code]true[/code] and a player joins a lobby after the host already started the game, it will
+## start the game automatically for them.[br]
+## Otherwise, let the player start the game later when they are ready.
+@export var late_join_autostart_game: bool = false
 
 enum ConnectionMode
 {
@@ -39,6 +47,7 @@ var level: Level = null
 var level_idx: int = -1
 var level_load_idx: int = -1
 var level_load_progress: float = 0.0
+var autostart_new_level: bool = true
 var has_game_started: bool = false
 
 const PLAYER_CUSTOMISATION_SECTION: String = "Player.Customisation"
@@ -109,8 +118,7 @@ func _process(_delta: float) -> void:
 		ResourceLoader.THREAD_LOAD_IN_PROGRESS:
 			level_load_progress = progress[0]
 		ResourceLoader.THREAD_LOAD_LOADED:
-			var scene = ResourceLoader.load_threaded_get(scene_path)
-			_on_level_scene_loaded(scene)
+			_on_level_scene_loaded(scene_path)
 		ResourceLoader.THREAD_LOAD_FAILED:
 			push_error("Failed to load level %d: %s" % [level_load_idx, scene_path])
 			level_load_failed.emit(level_load_idx)
@@ -159,7 +167,7 @@ func _on_peer_connected(peer_id: int) -> void:
 		return
 	
 	# If the level is already loaded, we can spawn the player
-	if level != null:
+	if level != null and late_join_autostart_game:
 		spawn_player(peer_id)
 	
 	# If a late joiner arrived after the game was started, let them know
@@ -194,12 +202,27 @@ func _on_server_disconnected() -> void:
 
 # Game Management
 
+func start_game(new_level_idx: int = 0) -> void:
+	if RoboLobbyManager.local_lobby != null and RoboLobbyManager.local_lobby.is_owner():
+		RoboLobbyManager.start_game(new_level_idx)
+	else:
+		RoboLobbyManager.game_started.emit(new_level_idx)
+		# If the local player wants to start the game, make sure the server knows to spawn them.
+		if not late_join_autostart_game:
+			request_spawn_player.rpc_id(1)
+
 @rpc("authority", "call_remote", "reliable")
 func late_join_game_started(cur_level_idx: int) -> void:
-	RoboLobbyManager.game_started.emit(cur_level_idx)
+	autostart_new_level = late_join_autostart_game
+	if autostart_new_level:
+		RoboLobbyManager.game_started.emit(cur_level_idx)
+	else:
+		load_level_async(cur_level_idx)
+		late_join_game_in_progress.emit()
 
 func _on_game_started(new_level_idx: int = 0) -> void:
 	save_player_customisation()
+	autostart_new_level = true
 	load_level_async(new_level_idx)
 	has_game_started = true
 
@@ -214,27 +237,48 @@ func _on_game_ended() -> void:
 # Level Management
 
 func load_level_async(new_level_idx: int) -> void:
-	# Get level scene
+	if level_idx == new_level_idx:
+		return
+	
+	# Get the level scene path
 	if (new_level_idx < 0 || new_level_idx >= level_spawn_list.size()):
 		push_error("Level index %d is out of bounds" % new_level_idx)
 		return
+	var scene_path: String = level_spawn_list[new_level_idx]
+	
+	# If the level is being loaded, we don't need to request another async load.
+	if level_load_idx == new_level_idx:
+		# If we want to autostart and the level was already loaded in memory, start immediately.
+		if autostart_new_level and is_equal_approx(level_load_progress, 1.0):
+			var scene: PackedScene = ResourceLoader.load_threaded_get(scene_path)
+			_load_level_scene(scene)
+		return
+	
+	# Request to async load the level scene
 	level_load_idx = new_level_idx
 	level_load_progress = 0.0
-	var scene_path: String = level_spawn_list[new_level_idx]
-	ResourceLoader.load_threaded_request(scene_path)
+	const type_hint: String = ""
+	const use_sub_threads: bool = false
+	const cache_mode: ResourceLoader.CacheMode = ResourceLoader.CACHE_MODE_IGNORE
+	ResourceLoader.load_threaded_request(scene_path, type_hint, use_sub_threads, cache_mode)
 	set_process(true)
 
-## Callback when the level scene is loaded in memory so it can be instantiated
-func _on_level_scene_loaded(scene: PackedScene) -> void:
+## Callback when the level scene is loaded in memory
+func _on_level_scene_loaded(scene_path: String) -> void:
+	level_load_progress = 1.0
+	set_process(false)
+	
+	if autostart_new_level:
+		var scene: PackedScene = ResourceLoader.load_threaded_get(scene_path)
+		_load_level_scene(scene)
+
+func _load_level_scene(scene: PackedScene) -> void:
 	# Get level node container
 	var level_node: Node = _get_level_node_container()
 	if level_node == null:
 		push_error("No level node container found")
 		level_load_failed.emit(level_load_idx)
 		return
-	
-	level_load_progress = 1.0
-	set_process(false)
 	
 	# Free previous level
 	if level != null:
@@ -298,8 +342,17 @@ func get_players() -> Array[Player]:
 func get_player_count() -> int:
 	return _player_spawner.get_player_count()
 
+@rpc("any_peer", "call_remote", "reliable")
+func request_spawn_player() -> void:
+	var peer_id: int = multiplayer.get_remote_sender_id() if (multiplayer.get_remote_sender_id() != 0) else multiplayer.get_unique_id()
+	spawn_player(peer_id)
+
 func spawn_player(peer_id: int) -> void:
 	if _player_spawner == null or not _player_spawner.is_multiplayer_authority():
+		return
+	
+	if get_player(peer_id) != null:
+		push_warning("Player %d is already spawned, ignoring spawn_player" % peer_id)
 		return
 	
 	var player_index: int = _player_spawner.get_player_count()
