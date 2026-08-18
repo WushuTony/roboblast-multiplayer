@@ -404,6 +404,7 @@ func shoot() -> void:
 		return
 	var origin: Vector3 = global_position + Vector3.UP
 	var aim_target: Vector3 = _camera_controller.get_aim_target(distance_limit)
+	_camera_controller.update_aim_reticle_on_shoot()
 	_spawn_bullet.rpc_id(1, origin, aim_target)
 
 

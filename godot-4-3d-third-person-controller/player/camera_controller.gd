@@ -156,3 +156,16 @@ func get_aim_collider() -> Node:
 
 func set_euler_rotation_y(new_rot: float) -> void:
 	_euler_rotation.y = new_rot
+
+
+func update_aim_reticle_on_shoot(duration: float = 0.5) -> void:
+	if _ui_aim_reticle == null:
+		return
+
+	var tween: Tween = create_tween()
+	const gap_expansion_per_shot: float = 0.075
+	const max_gap_size: float = 0.125
+	const min_gap_size: float = 0.05
+	var cur_gap_size: float = _ui_aim_reticle.material.get("shader_parameter/cross_gap_size")
+	var from_val: float = min(cur_gap_size + gap_expansion_per_shot, max_gap_size)
+	tween.tween_property(_ui_aim_reticle.material, "shader_parameter/cross_gap_size", min_gap_size, duration).from(from_val)
