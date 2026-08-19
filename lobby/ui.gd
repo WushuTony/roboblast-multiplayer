@@ -2,6 +2,8 @@ extends CanvasLayer
 
 @onready var _game_session_manager: GameSessionManager = get_parent()
 
+@onready var _ui_root_control: Control = $Start
+
 @onready var _enet_menu: VBoxContainer = $Start/ENet
 @onready var _enet_address_line_edit: LineEdit = $Start/ENet/Panel/VBox/Options/Address
 @onready var _enet_port_spin_box: SpinBox = $Start/ENet/Panel/VBox/Options/Port
@@ -59,6 +61,10 @@ func _init():
 
 func _enter_tree() -> void:
 	default_content_scale_mode = get_tree().root.content_scale_mode
+
+func _exit_tree() -> void:
+	MouseHandler.release_mouse_mode(self)
+	get_tree().root.content_scale_mode = default_content_scale_mode
 
 func _ready():
 	_game_session_manager.level_loaded.connect(_on_level_loaded)
@@ -120,6 +126,17 @@ func _ready():
 			_lobby_player_color_picker_button.popup_closed.connect(_on_player_color_picker_closed)
 			# Prepare lobby list
 			_load_lobby_list()
+
+func _input(event: InputEvent) -> void:
+	if not visible or not get_window().has_focus():
+		return
+	
+	if not event.is_echo():
+		if event.is_action_pressed("ui_cancel"):
+			# If the player is in a lobby, they have to leave the lobby first
+			if not _lobby_menu.is_visible():
+				_ui_root_control.accept_event()
+				get_tree().change_scene_to_file("res://lobby/login_menu.tscn")
 
 func _process(_delta: float) -> void:
 	_loading_progress.value = _game_session_manager.level_load_progress
