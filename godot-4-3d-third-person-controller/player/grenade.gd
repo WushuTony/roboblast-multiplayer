@@ -94,35 +94,60 @@ func _explode() -> void:
 		if not damage_self and body == shooter:
 			continue
 
-		var is_damageable: bool = body.is_in_group("damageables")
-		var can_damage: bool = is_damageable
-		if is_damageable:
-			if not friendly_fire and shooter != null:
-				if body.is_in_group("players"):
-					can_damage = !shooter.is_in_group("players")
-				elif body.is_in_group("enemies"):
-					can_damage = !shooter.is_in_group("enemies")
+		if not body.is_in_group("damageables"):
+			continue
 
-		# Add some variance to the impact point
-		var impact_point: Vector3 = (global_position - body.global_position).normalized()
-		impact_point = (impact_point + Vector3.DOWN).normalized() * 0.5
-		var force: Vector3 = -impact_point.normalized() * damage_impulse
-		force.y = upward_impulse
+		var can_damage: bool = true
+		if not friendly_fire and shooter != null:
+			if body.is_in_group("players"):
+				can_damage = !shooter.is_in_group("players")
+			elif body.is_in_group("enemies"):
+				can_damage = !shooter.is_in_group("enemies")
 
-		if is_damageable:
-			var damage_data: Variant = {
-				"impact_point": impact_point,
-				"force": force,
-				"can_damage": can_damage
-			}
-			if body.is_multiplayer_authority():
-				body.damage(damage_data)
-			else:
-				_apply_damage.rpc_id(body.get_multiplayer_authority(), body.get_path(), damage_data)
-		elif body is RigidBody3D:
-			body.apply_impulse(force, impact_point)
+		var impact_point: Vector3 = _compute_impact_point(body.global_position)
+		var force: Vector3 = _compute_force(impact_point)
+
+		var damage_data: Variant = {
+			"impact_point": impact_point,
+			"force": force,
+			"can_damage": can_damage
+		}
+		if body.is_multiplayer_authority():
+			body.damage(damage_data)
+		else:
+			_apply_damage.rpc_id(body.get_multiplayer_authority(), body.get_path(), damage_data)
 
 	_play_explosion_effect.rpc()
+
+
+func _compute_impact_point(target_position: Vector3) -> Vector3:
+	# Add some variance to the impact point
+	var impact_point: Vector3 = (global_position - target_position).normalized()
+	impact_point = (impact_point + Vector3.DOWN).normalized() * 0.5
+	return impact_point
+
+
+func _compute_force(impact_point: Vector3) -> Vector3:
+	var force: Vector3 = -impact_point.normalized() * damage_impulse
+	force.y = upward_impulse
+	return force
+
+
+func _apply_impulses() -> void:
+	var bodies: = _explosion_area.get_overlapping_bodies()
+	for body in bodies:
+		if not damage_self and body == shooter:
+			continue
+
+		var is_damageable: bool = body.is_in_group("damageables")
+		# Damageables are handled by the multiplayer authority
+		if is_damageable:
+			continue
+
+		if body is RigidBody3D:
+			var impact_point: Vector3 = _compute_impact_point(body.global_position)
+			var force: Vector3 = _compute_force(impact_point)
+			body.apply_impulse(force, impact_point)
 
 
 @rpc("authority", "call_local", "reliable")
@@ -134,6 +159,9 @@ func _apply_damage(path: String, data: Variant) -> void:
 
 @rpc("authority", "call_local", "reliable")
 func _play_explosion_effect() -> void:
+	# Apply impulses to non-replicated bodies (e.g. broken crates)
+	_apply_impulses()
+
 	_grenade_visuals.hide()
 	set_physics_process(false)
 	_collision_shape.set_deferred("disabled", true)
