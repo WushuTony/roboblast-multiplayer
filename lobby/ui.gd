@@ -595,7 +595,7 @@ func _on_player_color_picker_created(color_picker_button: ColorPickerButton):
 	_on_player_color_picker_opened()
 
 func _on_player_color_picker_opened():
-	hide()
+	_ui_root_control.hide()
 
 func _on_player_color_picker_closed():
-	show()
+	_ui_root_control.show()
