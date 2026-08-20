@@ -101,6 +101,9 @@ func _shortcut_input(event: InputEvent) -> void:
 		if event is not InputEventMouse:
 			accept_event()
 
+func _exit_tree() -> void:
+	MouseHandler.release_mouse_mode(self)
+
 func _has_point(point: Vector2) -> bool:
 	var rect: Rect2 = get_rect()
 	if not expand_has_position.is_zero_approx():

@@ -27,6 +27,10 @@ func _enter_tree() -> void:
 	get_tree().paused = game_paused
 
 
+func _exit_tree() -> void:
+	MouseHandler.release_mouse_mode(self)
+
+
 func _ready() -> void:
 	if multiplayer.is_server():
 		multiplayer.peer_connected.connect(_on_peer_connected)
