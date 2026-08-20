@@ -7,7 +7,7 @@ class_name GrenadeLauncher
 ## If grenades can damage other players/enemies.
 @export var friendly_fire: bool = false
 ## If grenades can damage the player/enemy that spawned it.
-@export var damage_self: bool = false
+@export var damage_self: bool = true
 
 var from_look_position: Vector3 = Vector3.ZERO
 var throw_direction: Vector3 = Vector3.ZERO
