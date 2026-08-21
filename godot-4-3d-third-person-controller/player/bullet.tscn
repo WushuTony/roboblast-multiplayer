@@ -17,13 +17,16 @@ properties/0/replication_mode = 1
 radius = 0.1
 
 [node name="Bullet" type="Node3D" unique_id=1169660294]
+top_level = true
 script = ExtResource("1_8b555")
 scale_decay = SubResource("Curve_2sbfy")
 
 [node name="ClientSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1667711892]
 replication_config = SubResource("SceneReplicationConfig_egqqf")
+public_visibility = false
 
 [node name="Area3d" type="Area3D" parent="." unique_id=737084669]
+collision_layer = 64
 collision_mask = 27
 
 [node name="CollisionShape3d" type="CollisionShape3D" parent="Area3d" unique_id=1081360243]

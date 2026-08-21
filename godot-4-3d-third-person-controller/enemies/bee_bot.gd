@@ -5,8 +5,13 @@ class_name BeeBot
 @export var initial_shoot_delay: float = 2.0
 ## Delay between shoots aimed at a player
 @export var shoot_delay: float = 1.5
+## Speed of shot bullets.
+@export var bullet_speed: float = 6.0
+## Distance limit after which shot bullets despawn.
+@export var distance_limit: float = 14.0
+## If projectiles can damage other enemies.
+@export var friendly_fire: bool = false
 
-@onready var _bullet_spawner: BulletSpawner = $BulletSpawner
 @onready var _flying_animation_player: AnimationPlayer = $MeshRoot/AnimationPlayer
 @onready var _bee_root: Node3D = $MeshRoot/bee_root
 
@@ -52,7 +57,11 @@ func _physics_process(delta: float) -> void:
 
 			var origin: Vector3 = global_position
 			var target_position: Vector3 = target.global_position + Vector3.UP
-			var _bullet: Bullet = _bullet_spawner.shoot(origin, target_position)
+			var data: Variant = {
+				"position": origin,
+				"target_position": target_position,
+			}
+			Level.spawn_bullet(self, data)
 
 
 @rpc("authority", "call_local", "reliable")

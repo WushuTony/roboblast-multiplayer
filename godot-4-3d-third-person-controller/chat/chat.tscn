@@ -1,0 +1,38 @@
+[gd_scene format=3 uid="uid://pevb5ntcp8hc"]
+
+[ext_resource type="Script" uid="uid://c8wre5oarjvfh" path="res://godot-4-3d-third-person-controller/chat/chat.gd" id="1_ikh8s"]
+[ext_resource type="Script" uid="uid://74j4oyx4s7s0" path="res://godot-4-3d-third-person-controller/chat/autowrap_item_list.gd" id="1_r26de"]
+
+[node name="Chat" type="PanelContainer" unique_id=1531325999]
+offset_right = 380.0
+offset_bottom = 202.0
+script = ExtResource("1_ikh8s")
+
+[node name="VBox" type="VBoxContainer" parent="." unique_id=1783223299]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="VBox" unique_id=1734396813]
+layout_mode = 2
+text = "TEXT CHAT"
+horizontal_alignment = 1
+
+[node name="ItemList" type="ItemList" parent="VBox" unique_id=2127068155]
+layout_mode = 2
+size_flags_vertical = 3
+focus_neighbor_bottom = NodePath("../Text")
+theme_override_colors/guide_color = Color(0.69803923, 0.69803923, 0.69803923, 0)
+text_overrun_behavior = 0
+scroll_hint_mode = 1
+script = ExtResource("1_r26de")
+autowrap_mode = 3
+autoscroll_bottom = true
+max_item_count = 50
+metadata/_custom_type_script = "uid://74j4oyx4s7s0"
+
+[node name="Text" type="LineEdit" parent="VBox" unique_id=1366314549]
+layout_mode = 2
+size_flags_horizontal = 3
+focus_neighbor_top = NodePath("../ItemList")
+placeholder_text = "Enter chat here"
+max_length = 128
+keep_editing_on_text_submit = true

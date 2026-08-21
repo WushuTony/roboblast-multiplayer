@@ -1,61 +1,601 @@
 extends CanvasLayer
 
-@onready var lobby: Lobby = get_parent()
+@onready var _game_session_manager: GameSessionManager = get_parent()
+
+@onready var _ui_root_control: Control = $Start
+
+@onready var _enet_menu: VBoxContainer = $Start/ENet
 @onready var _enet_address_line_edit: LineEdit = $Start/ENet/Panel/VBox/Options/Address
 @onready var _enet_port_spin_box: SpinBox = $Start/ENet/Panel/VBox/Options/Port
 @onready var _enet_player_name_line_edit: LineEdit = $Start/ENet/Custom/VBox/Options/Name
 @onready var _enet_player_color_picker_button: ColorPickerButton = $Start/ENet/Custom/VBox/Options/ColorPicker
 
+@onready var _websocket_menu: VBoxContainer = $Start/WebSocket
+@onready var _websocket_address_line_edit: LineEdit = $Start/WebSocket/Join/VBox/Options/Url
+@onready var _websocket_port_spin_box: SpinBox = $Start/WebSocket/Host/VBox/Options/Port
+
+@onready var _lobby_search_menu: HBoxContainer = $Start/Relay
+@onready var _lobby_item_list: ItemList = $Start/Relay/List/VBox/HBox/VBox/LobbyList
+@onready var _lobby_players_count_item_list: ItemList = $Start/Relay/List/VBox/HBox/VBox2/PlayersList
+@onready var _lobby_refresh_button: Button = $Start/Relay/List/VBox/Actions/Refresh
+@onready var _lobby_search_join_code_line_edit: LineEdit = $Start/Relay/Split/Resolve/VBox/HBox/JoinCode
+@onready var _lobby_host_name_line_edit: LineEdit = $Start/Relay/Split/Host/VBox/Parameters/Name
+@onready var _lobby_host_max_players_box: SpinBox = $Start/Relay/Split/Host/VBox/Parameters/MaxPlayers
+@onready var _lobby_host_visibility_button: OptionButton = $Start/Relay/Split/Host/VBox/Parameters/Visibility
+@onready var _lobby_host_voice_chat_button: OptionButton = $Start/Relay/Split/Host/VBox/Parameters/VoiceChat
+
+@onready var _lobby_menu: HBoxContainer = $Start/WaitingRoom
+@onready var _lobby_player_item_list: ItemList = $Start/WaitingRoom/VBox/List/VBox/ItemList
+@onready var _lobby_play_button: Button = $Start/WaitingRoom/VBox/List/VBox/Actions/Play
+@onready var _lobby_leave_button: Button = $Start/WaitingRoom/VBox/List/VBox/Actions/Leave
+@onready var _lobby_text_chat: RoboChat = $Start/WaitingRoom/VBox/Chat
+@onready var _lobby_join_code_line_edit: LineEdit = $Start/WaitingRoom/Split/Host/VBox/Settings/JoinCode
+@onready var _lobby_name_line_edit: LineEdit = $Start/WaitingRoom/Split/Host/VBox/Settings/Name
+@onready var _lobby_max_players_box: SpinBox = $Start/WaitingRoom/Split/Host/VBox/Settings/MaxPlayers
+@onready var _lobby_visibility_button: OptionButton = $Start/WaitingRoom/Split/Host/VBox/Settings/Visibility
+@onready var _lobby_voice_chat_button: OptionButton = $Start/WaitingRoom/Split/Host/VBox/Settings/VoiceChat
+@onready var _lobby_game_status: Label = $Start/WaitingRoom/Split/Host/VBox/GameStatus
+@onready var _lobby_player_name_line_edit: LineEdit = $Start/WaitingRoom/Split/Custom/VBox/Options/Name
+@onready var _lobby_player_color_picker_button: ColorPickerButton = $Start/WaitingRoom/Split/Custom/VBox/Options/ColorPicker
+
+@onready var _loading_menu: VBoxContainer = $Start/Loading
+@onready var _loading_progress: ProgressBar = $Start/Loading/Progress
+
+var default_content_scale_mode: Window.ContentScaleMode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
+var is_in_menu: bool = false
+
+# This is different from the regex used for the final validation as we need to allow:
+# - Fewer characters (for when the player starts typing)
+# - A trailing space/dash (as the user might type a word after that)
+# - Editing the text without discarding a valid substr (in case a part failed validation)
+var _player_name_regex: RegEx = null
+
+var _current_dialog: AcceptDialog = null
+var _dialog_lobby_player_product_user_id: String = ""
+var _volume_slider: HSlider = null
+var _mute_button: Button = null
+var _hard_mute_button: Button = null
+
+func _init():
+	_player_name_regex = RegEx.create_from_string("([a-zA-Z0-9][ _-]?)*")
+
+func _enter_tree() -> void:
+	default_content_scale_mode = get_tree().root.content_scale_mode
+
+func _exit_tree() -> void:
+	MouseHandler.release_mouse_mode(self)
+	get_tree().root.content_scale_mode = default_content_scale_mode
+
 func _ready():
+	_game_session_manager.level_loaded.connect(_on_level_loaded)
+	_game_session_manager.level_load_failed.connect(_on_level_load_failed)
+	_game_session_manager.local_player_ready.connect(_on_local_player_ready)
+	_game_session_manager.late_join_game_in_progress.connect(_on_late_join_game_in_progress)
+	RoboLobbyManager.game_started.connect(_on_game_started)
+	RoboLobbyManager.game_ended.connect(_on_game_ended)
+	
+	visibility_changed.connect(_on_visibility_changed)
+	_on_visibility_changed()
+	
+	_lobby_menu.hide()
+	set_process(false)
+	_loading_menu.hide()
+	
+	if RoboLobbyManager.is_singleplayer:
+		_enet_menu.hide()
+		_websocket_menu.hide()
+		_lobby_search_menu.hide()
+		return
+	
 	multiplayer.server_disconnected.connect(_on_server_disconnected)
-	_enet_player_name_line_edit.text_changed.connect(_on_player_name_changed)
-	_enet_player_color_picker_button.color_changed.connect(_on_player_color_changed)
-	_enet_player_color_picker_button.picker_created.connect(_on_player_color_picker_created)
-	_enet_player_color_picker_button.popup_closed.connect(_on_player_color_picker_closed)
+	
+	match (_game_session_manager.connection_mode):
+		GameSessionManager.ConnectionMode.ENET:
+			_enet_menu.show()
+			_websocket_menu.hide()
+			_lobby_search_menu.hide()
+			_enet_address_line_edit.grab_focus()
+			# Initialise the player customisation
+			_enet_player_name_line_edit.text = _game_session_manager.local_player_name
+			if _game_session_manager.validate_player_color(_game_session_manager.local_player_color):
+				_enet_player_color_picker_button.color = _game_session_manager.local_player_color
+			# Listen to the player customisation signals
+			_enet_player_name_line_edit.text_changed.connect(_on_player_name_changed)
+			_enet_player_color_picker_button.color_changed.connect(_on_player_color_changed)
+			_enet_player_color_picker_button.picker_created.connect(_on_enet_player_color_picker_created, CONNECT_ONE_SHOT)
+			_enet_player_color_picker_button.popup_closed.connect(_on_player_color_picker_closed)
+		GameSessionManager.ConnectionMode.WEBSOCKET:
+			_enet_menu.hide()
+			_websocket_menu.show()
+			_lobby_search_menu.hide()
+			_websocket_address_line_edit.grab_focus()
+		GameSessionManager.ConnectionMode.RELAY:
+			_enet_menu.hide()
+			_websocket_menu.hide()
+			_lobby_search_menu.show()
+			_lobby_refresh_button.grab_focus()
+			# Initialise the player customisation
+			_lobby_player_name_line_edit.text = _game_session_manager.local_player_name
+			if _game_session_manager.validate_player_color(_game_session_manager.local_player_color):
+				_lobby_player_color_picker_button.color = _game_session_manager.local_player_color
+			# Listen to the player customisation signals
+			_lobby_player_name_line_edit.text_changed.connect(_on_lobby_player_name_changed)
+			_lobby_player_name_line_edit.text_submitted.connect(_on_lobby_player_name_submitted)
+			_lobby_player_color_picker_button.color_changed.connect(_on_player_color_changed)
+			_lobby_player_color_picker_button.picker_created.connect(_on_lobby_player_color_picker_created, CONNECT_ONE_SHOT)
+			_lobby_player_color_picker_button.popup_closed.connect(_on_player_color_picker_closed)
+			# Prepare lobby list
+			_load_lobby_list()
+
+func _input(event: InputEvent) -> void:
+	if not visible or not get_window().has_focus():
+		return
+	
+	if not event.is_echo():
+		if event.is_action_pressed("ui_cancel"):
+			# If the player is in a lobby, they have to leave the lobby first
+			if not _lobby_menu.is_visible():
+				_ui_root_control.accept_event()
+				get_tree().change_scene_to_file("res://lobby/login_menu.tscn")
+
+func _process(_delta: float) -> void:
+	_loading_progress.value = _game_session_manager.level_load_progress
 
 func _on_server_disconnected():
 	show()
+
+func _on_visibility_changed():
+	if visible:
+		MouseHandler.request_mouse_mode(self, Input.MOUSE_MODE_VISIBLE, MouseHandler.Priority.UI)
+		get_tree().root.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
+		is_in_menu = true
 
 # ENet
 
 func _on_enet_join_pressed():
 	var address: String = _enet_address_line_edit.text
 	var port: int = int(_enet_port_spin_box.value)
-	lobby.start_enet_client(address, port)
+	_game_session_manager.start_enet_client(address, port)
 	hide()
 
 func _on_enet_host_pressed():
 	var port: int = int(_enet_port_spin_box.value)
-	lobby.start_enet_server(port)
+	_game_session_manager.start_enet_server(port)
 	hide()
+
+func _on_enet_player_color_picker_created():
+	_on_player_color_picker_created(_enet_player_color_picker_button)
 
 # WebSocket
 
 func _on_websocket_join_pressed():
-	var url: String = $Start/WebSocket/Join/VBox/Options/Url.text
-	lobby.start_websocket_client(url)
+	var url: String = _websocket_address_line_edit.text
+	_game_session_manager.start_websocket_client(url)
 	hide()
 
 func _on_websocket_host_pressed():
-	var port: int = $Start/WebSocket/Host/VBox/Options/Port.value
-	lobby.start_websocket_server(port)
+	var port: int = int(_websocket_port_spin_box.value)
+	_game_session_manager.start_websocket_server(port)
 	hide()
+
+# EOS Lobbies
+
+func _load_lobby_list(_page: int = 1) -> void:
+	# Query the lobby list API
+	var lobby_list: Array[HLobby] = await RoboLobbyManager.query_lobbies_async()
+	
+	_lobby_item_list.clear()
+	_lobby_players_count_item_list.clear()
+
+	if lobby_list == null or lobby_list.is_empty():
+		return
+	
+	# Populate item lists
+	for cur_lobby: HLobby in lobby_list:
+		var lobby_name_attribute: Variant = cur_lobby.get_attribute("LOBBYNAME")
+		var lobby_name: String = lobby_name_attribute.value if (lobby_name_attribute != null and not lobby_name_attribute.is_empty()) else cur_lobby.lobby_id
+		var idx: int = _lobby_item_list.add_item(lobby_name)
+		_lobby_item_list.set_item_metadata(idx, cur_lobby)
+		_lobby_item_list.set_item_tooltip_enabled(idx, false)
+		
+		var lobby_players: String = str(cur_lobby.members.size(), "/", cur_lobby.max_members)
+		idx = _lobby_players_count_item_list.add_item(lobby_players, null, false)
+		_lobby_players_count_item_list.set_item_tooltip_enabled(idx, false)
+
+func _on_relay_refresh_pressed() -> void:
+	_load_lobby_list()
+	# Disable for 3 sec to avoid spamming refresh queries
+	_lobby_refresh_button.disabled = true
+	await get_tree().create_timer(3.0).timeout
+	_lobby_refresh_button.disabled = false
+
+func _on_relay_join_pressed() -> void:
+	# Determine the selected lobby
+	var selected_items: PackedInt32Array = _lobby_item_list.get_selected_items()
+	if selected_items.is_empty():
+		return
+	var selected_lobby: HLobby = _lobby_item_list.get_item_metadata(selected_items[0])
+	if selected_lobby == null or not selected_lobby.is_valid():
+		return
+	
+	# Try to connect
+	_lobby_search_menu.hide()
+	if await RoboLobbyManager.join_lobby_async(selected_lobby):
+		_init_waiting_room()
+	else:
+		_lobby_search_menu.show()
+
+func _on_relay_resolve_pressed() -> void:
+	# Get the player input
+	var join_code: String = _lobby_search_join_code_line_edit.text
+	if join_code.is_empty():
+		return
+	
+	# Try to resolve and connect
+	_lobby_search_menu.hide()
+	if await RoboLobbyManager.resolve_lobby_async(join_code):
+		_init_waiting_room()
+	else:
+		_lobby_search_menu.show()
+
+func _on_relay_host_pressed() -> void:
+	# Get parameters
+	var lobby_name: String = _lobby_host_name_line_edit.text
+	var max_players: int = int(_lobby_host_max_players_box.value)
+	var visibility_idx: int = _lobby_host_visibility_button.get_selected_id()
+	var voice_chat_mode: int = _lobby_host_voice_chat_button.get_selected_id()
+	
+	# Start a new lobby
+	_lobby_search_menu.hide()
+	if await RoboLobbyManager.create_lobby_async(lobby_name, max_players, visibility_idx, voice_chat_mode):
+		_init_waiting_room()
+	else:
+		_lobby_search_menu.show()
+
+func _init_waiting_room(auto_show: bool = true) -> void:
+	if RoboLobbyManager.local_lobby == null:
+		return
+	
+	_lobby_play_button.disabled = not RoboLobbyManager.local_lobby.is_owner()
+	
+	var lobby_name_attribute: Dictionary = RoboLobbyManager.local_lobby.get_attribute("LOBBYNAME")
+	var lobby_name: String = lobby_name_attribute.value if (lobby_name_attribute != null and not lobby_name_attribute.is_empty()) else RoboLobbyManager.local_lobby.lobby_id
+	_lobby_name_line_edit.text = lobby_name
+	_lobby_join_code_line_edit.text = RoboLobbyManager.local_lobby.lobby_id
+	_lobby_max_players_box.value = RoboLobbyManager.local_lobby.max_members
+	_lobby_visibility_button.select(RoboLobbyManager.local_lobby.permission_level)
+	var voice_chat_mode_attribute: Dictionary = RoboLobbyManager.local_lobby.get_attribute("VOICECHATMODE")
+	var voice_chat_mode: int = voice_chat_mode_attribute.value if (voice_chat_mode_attribute != null) else 0
+	var vc_idx: int = _lobby_voice_chat_button.get_item_index(voice_chat_mode)
+	_lobby_voice_chat_button.select(vc_idx)
+	
+	if _lobby_text_chat != null:
+		_lobby_text_chat.enable()
+	
+	_update_waiting_room_players()
+	var peer: EOSGMultiplayerPeer = multiplayer.multiplayer_peer
+	if peer != null:
+		peer.peer_connection_established.connect(_on_peer_connection_established)
+		peer.peer_connection_closed.connect(_on_peer_connection_closed)
+	var local_lobby: HLobby = RoboLobbyManager.local_lobby
+	if not local_lobby.lobby_updated.is_connected(_on_lobby_updated):
+		local_lobby.lobby_updated.connect(_on_lobby_updated)
+	if not local_lobby.kicked_from_lobby.is_connected(_on_kicked_from_lobby):
+		local_lobby.kicked_from_lobby.connect(_on_kicked_from_lobby)
+	if not local_lobby.lobby_owner_changed.is_connected(_on_lobby_owner_changed):
+		local_lobby.lobby_owner_changed.connect(_on_lobby_owner_changed)
+	
+	if auto_show:
+		_lobby_menu.show()
+		if _lobby_play_button.disabled:
+			_lobby_leave_button.grab_focus()
+		else:
+			_lobby_play_button.grab_focus()
+
+func _update_waiting_room_players() -> void:
+	_lobby_player_item_list.clear()
+	
+	if RoboLobbyManager.local_lobby == null or not RoboLobbyManager.local_lobby.is_valid():
+		return
+	
+	# Populate item list
+	for cur_player: HLobbyMember in RoboLobbyManager.local_lobby.members:
+		var username_attribute: Dictionary = cur_player.get_attribute("USERNAME")
+		var username: String = username_attribute.value if (username_attribute != null and not username_attribute.is_empty()) else "Player" + cur_player.product_user_id
+		if cur_player.is_owner():
+			username += " [Host]"
+		elif cur_player.is_self():
+			username += " [Self]"
+		var idx: int = _lobby_player_item_list.add_item(username)
+		_lobby_player_item_list.set_item_metadata(idx, cur_player)
+		_lobby_player_item_list.set_item_tooltip_enabled(idx, false)
+
+func _on_peer_connection_established(callback_data: Dictionary) -> void:
+	print_verbose("Connection established: ", callback_data)
+	_update_waiting_room_players()
+
+func _on_peer_connection_closed(callback_data: Dictionary) -> void:
+	print_verbose("Connection closed: ", callback_data)
+	_update_waiting_room_players()
+
+func _on_lobby_left() -> void:
+	_lobby_menu.hide()
+	if _lobby_text_chat != null:
+		_lobby_text_chat.clear()
+		_lobby_text_chat.disable()
+	_lobby_search_menu.show()
+	_lobby_refresh_button.grab_focus()
+
+func _on_lobby_updated() -> void:
+	_update_waiting_room_players()
+
+func _on_kicked_from_lobby() -> void:
+	_on_lobby_left()
+
+func _on_lobby_owner_changed() -> void:
+	_update_waiting_room_players()
+	_lobby_play_button.disabled = not RoboLobbyManager.local_lobby.is_owner()
+
+func _on_lobby_player_name_changed(new_name: String):
+	# Remember the position of the caret.
+	var caret_position: int = _lobby_player_name_line_edit.caret_column
+
+	# Filter the new name according to the regular expession.
+	var filtered: String = ""
+	for result: RegExMatch in _player_name_regex.search_all(new_name):
+		filtered += result.strings[0]
+
+	# If anything was filtered, restore the caret position accordingly.
+	if filtered != new_name:
+		_lobby_player_name_line_edit.text = filtered
+		_lobby_player_name_line_edit.caret_column = caret_position - (new_name.length() - filtered.length())
+
+	_on_player_name_changed(filtered)
+
+func _on_lobby_player_name_submitted(new_name: String):
+	if RoboLobbyManager.local_lobby == null or not RoboLobbyManager.local_lobby.is_valid():
+		return
+
+	if _game_session_manager == null or not _game_session_manager.validate_player_name(new_name):
+		# If the new_name is empty, then lets update anyway, the lobby might want to reset it to its
+		# default value.
+		if not new_name.is_empty():
+			return
+
+	await RoboLobbyManager.update_username_async(new_name)
+
+func _on_lobby_player_color_picker_created() -> void:
+	_on_player_color_picker_created(_lobby_player_color_picker_button)
+
+func _on_lobby_player_activated(index: int) -> void:
+	var cur_player: HLobbyMember = _lobby_player_item_list.get_item_metadata(index)
+	if cur_player == null:
+		push_warning("Trying to edit a lobby player that is not valid")
+		return
+
+	_current_dialog = AcceptDialog.new()
+	_current_dialog.title = _lobby_player_item_list.get_item_text(index)
+	_current_dialog.dialog_text = ""
+	_dialog_lobby_player_product_user_id = cur_player.product_user_id
+
+	_current_dialog.get_ok_button().hide()
+
+	var volume_container: HBoxContainer = HBoxContainer.new()
+	var volume_label: Label = Label.new()
+	volume_label.text = "Volume"
+	volume_container.add_child(volume_label)
+	_volume_slider = HSlider.new()
+	_volume_slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_volume_slider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_volume_slider.set_value_no_signal(_volume_slider.max_value) # TODO: Get the current volume
+	_volume_slider.drag_ended.connect(_on_lobby_player_volume_slider_drag_ended)
+	volume_container.add_child(_volume_slider)
+	_current_dialog.add_child(volume_container)
+
+	_mute_button = _current_dialog.add_button("Mute")
+	_mute_button.text = "Unmute" if cur_player.is_muted() else "Mute"
+	_mute_button.pressed.connect(_on_lobby_player_mute_pressed)
+
+	var kick_button: Button = null
+	if (RoboLobbyManager.local_lobby != null and
+		RoboLobbyManager.local_lobby.is_valid() and
+		RoboLobbyManager.local_lobby.is_owner()):
+		if not cur_player.is_self():
+			_hard_mute_button = _current_dialog.add_button("Hard-mute")
+			_hard_mute_button.text = "Un Hard-mute" if cur_player.is_hard_muted() else "Hard-mute"
+			_hard_mute_button.pressed.connect(_on_lobby_player_hard_mute_pressed)
+
+			kick_button = _current_dialog.add_button("Kick")
+			kick_button.pressed.connect(_on_lobby_player_kick_pressed)
+
+	add_child(_current_dialog)
+	
+	_mute_button.focus_neighbor_top = _volume_slider.get_path()
+	_volume_slider.focus_neighbor_bottom = _mute_button.get_path()
+	if _hard_mute_button != null:
+		_mute_button.focus_neighbor_left = _hard_mute_button.get_path()
+		_hard_mute_button.focus_neighbor_right = _mute_button.get_path()
+		if kick_button != null:
+			_hard_mute_button.focus_neighbor_left = kick_button.get_path()
+			kick_button.focus_neighbor_right = _hard_mute_button.get_path()
+	
+	_current_dialog.popup_centered(Vector2i(300, 100))
+	_current_dialog.unresizable = true
+	_current_dialog.show()
+	
+	_mute_button.grab_focus()
+
+func _on_lobby_player_volume_slider_drag_ended(value_changed: bool) -> void:
+	if not value_changed:
+		return
+
+	if RoboLobbyManager.local_lobby == null or not RoboLobbyManager.local_lobby.is_valid():
+		return
+
+	var player_to_change_volume: HLobbyMember = RoboLobbyManager.local_lobby.get_member_by_product_user_id(_dialog_lobby_player_product_user_id)
+	if player_to_change_volume == null:
+		return
+
+	var new_volume: float = _volume_slider.ratio
+	await RoboLobbyManager.set_volume_member_async(player_to_change_volume, new_volume)
+
+func _on_lobby_player_mute_pressed() -> void:
+	if RoboLobbyManager.local_lobby == null or not RoboLobbyManager.local_lobby.is_valid():
+		return
+
+	var player_to_toggle_mute: HLobbyMember = RoboLobbyManager.local_lobby.get_member_by_product_user_id(_dialog_lobby_player_product_user_id)
+	if player_to_toggle_mute == null:
+		return
+
+	_mute_button.disabled = true
+	if await player_to_toggle_mute.toggle_mute_member_async():
+		if _mute_button == null:
+			return
+		_mute_button.text = "Unmute" if player_to_toggle_mute.is_muted() else "Mute"
+
+	_mute_button.disabled = false
+
+func _on_lobby_player_hard_mute_pressed() -> void:
+	if RoboLobbyManager.local_lobby == null or not RoboLobbyManager.local_lobby.is_valid():
+		return
+
+	var player_to_toggle_hard_mute: HLobbyMember = RoboLobbyManager.local_lobby.get_member_by_product_user_id(_dialog_lobby_player_product_user_id)
+	if player_to_toggle_hard_mute == null:
+		return
+
+	_hard_mute_button.disabled = true
+	if await player_to_toggle_hard_mute.toggle_hard_mute_member_async():
+		if _hard_mute_button == null:
+			return
+		_hard_mute_button.text = "Un Hard-mute" if player_to_toggle_hard_mute.is_hard_muted() else "Hard-mute"
+
+	_hard_mute_button.disabled = false
+
+func _on_lobby_player_kick_pressed() -> void:
+	remove_child(_current_dialog)
+	_current_dialog.queue_free()
+
+	if RoboLobbyManager.local_lobby == null or not RoboLobbyManager.local_lobby.is_valid():
+		return
+
+	var player_to_kick: HLobbyMember = RoboLobbyManager.local_lobby.get_member_by_product_user_id(_dialog_lobby_player_product_user_id)
+	if player_to_kick == null:
+		return
+
+	player_to_kick.kick_member_async()
+
+func _on_lobby_leave_pressed() -> void:
+	_current_dialog = ConfirmationDialog.new()
+	_current_dialog.title = "Leave Lobby"
+	_current_dialog.dialog_text = "You are about to leave the lobby, are you sure?"
+
+	_current_dialog.canceled.connect(_on_lobby_leave_canceled)
+	_current_dialog.confirmed.connect(_on_lobby_leave_confirmed)
+
+	add_child(_current_dialog)
+	_current_dialog.popup_centered()
+	_current_dialog.unresizable = true
+	_current_dialog.show()
+
+func _on_lobby_leave_canceled() -> void:
+	remove_child(_current_dialog)
+	_current_dialog.queue_free()
+
+func _on_lobby_leave_confirmed() -> void:
+	remove_child(_current_dialog)
+	_current_dialog.queue_free()
+
+	if await RoboLobbyManager.leave_async():
+		_on_lobby_left()
+
+func _on_lobby_play_pressed() -> void:
+	_game_session_manager.start_game()
+
+func _on_game_started(_level_idx: int) -> void:
+	match (_game_session_manager.connection_mode):
+		GameSessionManager.ConnectionMode.ENET:
+			_enet_menu.hide()
+		GameSessionManager.ConnectionMode.WEBSOCKET:
+			_websocket_menu.hide()
+		GameSessionManager.ConnectionMode.RELAY:
+			_lobby_search_menu.hide()
+			_lobby_menu.hide()
+			# Making sure the lobby username is up-to-date, even if the player didn't submit it
+			if RoboLobbyManager.local_username != _lobby_player_name_line_edit.text:
+				_on_lobby_player_name_submitted(_lobby_player_name_line_edit.text)
+	show_loading_screen(_game_session_manager.level_load_progress)
+
+func _on_game_ended(local_only: bool) -> void:
+	if local_only:
+		_lobby_game_status.show()
+		_lobby_play_button.disabled = false
+	else:
+		_lobby_game_status.hide()
+		_lobby_play_button.disabled = RoboLobbyManager.local_lobby == null or not RoboLobbyManager.local_lobby.is_owner()
+	hide_loading_screen(true)
+	show()
+
+func _on_level_loaded(_level_idx: int) -> void:
+	set_process(false)
+	_loading_progress.value = 0.99
+
+func _on_level_load_failed(_p_level_idx: int) -> void:
+	hide_loading_screen(true)
+
+func _on_local_player_ready() -> void:
+	hide_loading_screen(false)
+	hide()
+	MouseHandler.release_mouse_mode(self)
+	get_tree().root.content_scale_mode = default_content_scale_mode
+	is_in_menu = false
+
+func _on_late_join_game_in_progress() -> void:
+	_lobby_game_status.show()
+	_lobby_play_button.disabled = false
+
+func show_loading_screen(progress: float = 0.0) -> void:
+	MouseHandler.request_mouse_mode(_loading_menu, Input.MOUSE_MODE_HIDDEN, MouseHandler.Priority.LOADING_SCREEN)
+	_loading_progress.value = progress
+	_loading_menu.show()
+	set_process(true)
+
+func hide_loading_screen(restore_menu: bool) -> void:
+	MouseHandler.release_mouse_mode(_loading_menu)
+	set_process(false)
+	_loading_menu.hide()
+	if restore_menu:
+		match (_game_session_manager.connection_mode):
+			GameSessionManager.ConnectionMode.ENET:
+				_enet_menu.show()
+				_enet_address_line_edit.grab_focus()
+			GameSessionManager.ConnectionMode.WEBSOCKET:
+				_websocket_menu.show()
+				_websocket_address_line_edit.grab_focus()
+			GameSessionManager.ConnectionMode.RELAY:
+				if RoboLobbyManager.local_lobby != null and RoboLobbyManager.local_lobby.is_valid():
+					_lobby_menu.show()
+					if _lobby_play_button.disabled:
+						_lobby_leave_button.grab_focus()
+					else:
+						_lobby_play_button.grab_focus()
+				else:
+					_lobby_search_menu.show()
+					_lobby_refresh_button.grab_focus()
 
 # Player Customisation
 
 func _on_player_name_changed(new_name: String):
-	lobby.local_player_name = new_name
+	_game_session_manager.local_player_name = new_name
 
 func _on_player_color_changed(new_color: Color):
-	lobby.local_player_color = new_color
+	_game_session_manager.local_player_color = new_color
 
-func _on_player_color_picker_created():
-	_enet_player_color_picker_button.get_popup().about_to_popup.connect(_on_player_color_picker_opened)
+func _on_player_color_picker_created(color_picker_button: ColorPickerButton):
+	color_picker_button.get_popup().about_to_popup.connect(_on_player_color_picker_opened)
 	_on_player_color_picker_opened()
-	_enet_player_color_picker_button.picker_created.disconnect(_on_player_color_picker_created)
 
 func _on_player_color_picker_opened():
-	hide()
+	_ui_root_control.hide()
 
 func _on_player_color_picker_closed():
-	show()
+	_ui_root_control.show()

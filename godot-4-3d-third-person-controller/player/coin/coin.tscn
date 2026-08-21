@@ -7,7 +7,7 @@
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_yhx4a"]
 properties/0/path = NodePath(".:position")
 properties/0/spawn = true
-properties/0/replication_mode = 1
+properties/0/replication_mode = 0
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_5al5l"]
 radius = 0.731329
@@ -24,8 +24,9 @@ axis_lock_angular_z = true
 lock_rotation = true
 script = ExtResource("1_netfc")
 
-[node name="ClientSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1478524279]
+[node name="ClientSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=642926380]
 replication_config = SubResource("SceneReplicationConfig_yhx4a")
+public_visibility = false
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=430493035]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.439197, 0)

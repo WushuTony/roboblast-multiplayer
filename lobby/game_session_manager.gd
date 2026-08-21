@@ -1,0 +1,465 @@
+extends Node3D
+class_name GameSessionManager
+
+## Emitted for the local player when a level is loaded.
+signal level_loaded(p_level_idx: int)
+## Emitted for the local player when a level failed to load.
+signal level_load_failed(p_level_idx: int)
+## Emitted for the local player when their character is spawned and ready.
+signal local_player_ready
+## Emitted for the local player when they join a lobby late and the game is already in progress.
+signal late_join_game_in_progress
+
+## Which connection mode should be used
+@export var connection_mode: ConnectionMode = ConnectionMode.RELAY
+## Maximum number of players that can play together in the same game world[br]
+## [b]Note[/b]: To take into account if the lobby limit is lower, use [method get_max_players] instead
+@export_range(2, 64) var max_players: int = 4
+@export_file("*.tscn", "*.scn") var level_spawn_list: Array[String] = []
+@export var level_spawn_path: NodePath = "Level"
+## The path of the config file holding the player settings
+@export_global_file("*.cfg") var player_settings_config_file_path: String = "user://configs/player_settings.cfg"
+## If [code]true[/code] and a player joins a lobby after the host already started the game, it will
+## start the game automatically for them.[br]
+## Otherwise, let the player start the game later when they are ready.
+@export var late_join_autostart_game: bool = false
+
+enum ConnectionMode
+{
+	## Connect via an IP address and port, but only works if all devices are on the same
+	## network (see port forwarding / UPnP) and can create security risks
+	ENET,
+	## Connect via a URL and port, but if a packet drops, it can cause lag spikes as it
+	## relies on TCP, is hard to scale, and mobile or unstable networks drop connections easily
+	WEBSOCKET,
+	## Connect via a lobby, a standard in the industry but if the relay service goes down or
+	## experiences an outage, players lose connection even if their local internet is fine
+	RELAY
+}
+
+@onready var _player_spawner: PlayerSpawner = %PlayerSpawner
+
+const DEFAULT_PORT: int = 47218
+
+var headless_mode: bool = (DisplayServer.get_name() == "headless")
+
+var level: Level = null
+var level_idx: int = -1
+var level_load_idx: int = -1
+var level_load_progress: float = 0.0
+var autostart_new_level: bool = true
+var has_game_started: bool = false
+
+const PLAYER_CUSTOMISATION_SECTION: String = "Player.Customisation"
+
+var player_name_regex: RegEx = null
+
+var local_player_name: String = "":
+	set(new_name):
+		if validate_player_name(new_name):
+			local_player_name = new_name
+var local_player_color: Color = Color.TRANSPARENT:
+	set(new_color):
+		if validate_player_color(new_color):
+			local_player_color = new_color
+
+# Lifecycle
+
+func _init() -> void:
+	player_name_regex = RegEx.create_from_string("^(?=.{3,18}$)([a-zA-Z0-9][ _-]?)+[a-zA-Z0-9]$")
+	load_player_customisation()
+
+func _ready() -> void:
+	set_process(false)
+	
+	level_loaded.connect(_on_level_loaded)
+	level_load_failed.connect(_on_level_load_failed)
+	RoboLobbyManager.game_started.connect(_on_game_started)
+	RoboLobbyManager.game_ended.connect(_on_game_ended)
+	
+	# In singleplayer, start the game immediately
+	if RoboLobbyManager.is_singleplayer:
+		RoboLobbyManager.game_started.emit.call_deferred(0)
+		return
+	
+	# Listen to multiplayer signals
+	# The following emit on both clients and servers
+	multiplayer.peer_connected.connect(_on_peer_connected)
+	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
+	# The rest only emit for clients
+	multiplayer.connected_to_server.connect(_on_connected_to_server)
+	multiplayer.connection_failed.connect(_on_connection_failed)
+	multiplayer.server_disconnected.connect(_on_server_disconnected)
+	
+	# Automatically start listening for connections if headless
+	if (headless_mode):
+		match (connection_mode):
+			ConnectionMode.ENET:
+				start_enet_server()
+			ConnectionMode.WEBSOCKET:
+				start_websocket_server()
+			ConnectionMode.RELAY:
+				RoboLobbyManager.create_lobby_async("Headless", max_players)
+
+func _process(_delta: float) -> void:
+	if (level_load_idx < 0 || level_load_idx >= level_spawn_list.size()):
+		push_error("Level index %d is out of bounds" % level_load_idx)
+		level_load_failed.emit(level_load_idx)
+		return
+	
+	var scene_path: String = level_spawn_list[level_load_idx]
+	var progress: Array[float] = []
+	var status: ResourceLoader.ThreadLoadStatus = ResourceLoader.load_threaded_get_status(scene_path, progress)
+	
+	match status:
+		ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
+			push_error("The level %s at index %d is invalid or has not been loaded" % [level_load_idx, scene_path])
+			level_load_failed.emit(level_load_idx)
+		ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+			level_load_progress = progress[0]
+		ResourceLoader.THREAD_LOAD_LOADED:
+			_on_level_scene_loaded(scene_path)
+		ResourceLoader.THREAD_LOAD_FAILED:
+			push_error("Failed to load level %d: %s" % [level_load_idx, scene_path])
+			level_load_failed.emit(level_load_idx)
+
+# Network
+
+func _start_server_common() -> void:
+	# Only start the game if not in headless mode
+	# Otherwise, wait for someone to join first
+	if (!headless_mode):
+		RoboLobbyManager.game_started.emit.call_deferred(0)
+
+func _start_client_common() -> void:
+	RoboLobbyManager.game_started.emit.call_deferred(0)
+
+func start_enet_server(port: int = DEFAULT_PORT) -> void:
+	var peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
+	peer.create_server(port, max_players)
+	peer.get_host().compress(ENetConnection.COMPRESS_RANGE_CODER)
+	multiplayer.multiplayer_peer = peer
+	_start_server_common()
+
+func start_enet_client(address: String, port: int = DEFAULT_PORT) -> void:
+	var peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
+	peer.create_client(address, port)
+	peer.get_host().compress(ENetConnection.COMPRESS_RANGE_CODER)
+	multiplayer.multiplayer_peer = peer
+	_start_client_common()
+
+func start_websocket_server(port: int = DEFAULT_PORT) -> void:
+	var peer: WebSocketMultiplayerPeer = WebSocketMultiplayerPeer.new()
+	peer.create_server(port)
+	multiplayer.multiplayer_peer = peer
+	_start_server_common()
+
+func start_websocket_client(url: String) -> void:
+	var peer: WebSocketMultiplayerPeer = WebSocketMultiplayerPeer.new()
+	peer.create_client(url)
+	multiplayer.multiplayer_peer = peer
+	_start_client_common()
+
+# Network Events
+
+func _on_peer_connected(peer_id: int) -> void:
+	if not has_game_started:
+		return
+	
+	# If the level is already loaded, we can spawn the player
+	if level != null and late_join_autostart_game:
+		spawn_player(peer_id)
+	
+	# If a late joiner arrived after the game was started, let them know
+	if is_multiplayer_authority():
+		var new_level_idx: int = level_load_idx if level_load_idx >= 0 else level_idx
+		late_join_game_started.rpc_id(peer_id, new_level_idx)
+
+func _on_peer_disconnected(peer_id: int) -> void:
+	if not has_game_started:
+		return
+	
+	remove_player(peer_id)
+	
+	# End the game if this is the last player, or if the local client / server disconnected
+	if get_player_count() == 0\
+		or peer_id == multiplayer.get_unique_id()\
+		or peer_id == 1:
+		RoboLobbyManager.game_ended.emit.call_deferred(false)
+
+func _on_connected_to_server() -> void:
+	pass
+
+func _on_connection_failed() -> void:
+	pass
+
+func _on_server_disconnected() -> void:
+	# If we have a lobby, let the lobby handle the multiplayer_peer
+	if (connection_mode == ConnectionMode.RELAY): return
+	
+	multiplayer.multiplayer_peer.close()
+	multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
+
+# Game Management
+
+func start_game(new_level_idx: int = 0) -> void:
+	if RoboLobbyManager.local_lobby != null and RoboLobbyManager.local_lobby.is_owner():
+		RoboLobbyManager.start_game(new_level_idx)
+	elif is_multiplayer_authority():
+		notify_game_started.rpc(new_level_idx)
+	else:
+		RoboLobbyManager.game_started.emit(new_level_idx)
+		# If the local player wants to start the game, make sure the server knows to spawn them.
+		player_game_started.rpc_id(1)
+
+func end_game() -> void:
+	if is_multiplayer_authority():
+		notify_game_ended.rpc(false)
+	else:
+		var player: Player = get_player(multiplayer.get_unique_id())
+		if player != null:
+			player.freeze()
+		player_game_ended.rpc_id(1)
+
+@rpc("authority", "call_remote", "reliable")
+func late_join_game_started(cur_level_idx: int) -> void:
+	autostart_new_level = late_join_autostart_game
+	if autostart_new_level:
+		RoboLobbyManager.game_started.emit(cur_level_idx)
+	else:
+		load_level_async(cur_level_idx)
+		late_join_game_in_progress.emit()
+
+@rpc("authority", "call_local", "reliable")
+func notify_game_started(new_level_idx: int) -> void:
+	RoboLobbyManager.game_started.emit(new_level_idx)
+
+@rpc("authority", "call_local", "reliable")
+func notify_game_ended(local_only: bool) -> void:
+	RoboLobbyManager.game_ended.emit(local_only)
+
+@rpc("any_peer", "call_local", "reliable")
+func player_game_started() -> void:
+	if not multiplayer.is_server():
+		return
+	
+	var peer_id: int = multiplayer.get_remote_sender_id() if (multiplayer.get_remote_sender_id() != 0) else multiplayer.get_unique_id()
+	spawn_player(peer_id)
+	
+	_player_spawner.server_enable_synchronizers_visibility(peer_id)
+
+@rpc("any_peer", "call_local", "reliable")
+func player_game_ended() -> void:
+	if not multiplayer.is_server():
+		return
+	
+	var peer_id: int = multiplayer.get_remote_sender_id() if (multiplayer.get_remote_sender_id() != 0) else multiplayer.get_unique_id()
+	remove_player(peer_id)
+	
+	_player_spawner.server_disable_synchronizers_visibility(peer_id)
+	
+	if level != null:
+		level.server_disable_synchronizers_visibility(peer_id)
+	
+	notify_game_ended.rpc_id(peer_id, true)
+
+func _on_game_started(new_level_idx: int = 0) -> void:
+	save_player_customisation()
+	autostart_new_level = true
+	load_level_async(new_level_idx)
+	has_game_started = true
+
+func _on_game_ended(local_only: bool) -> void:
+	unload_level()
+	if local_only:
+		remove_player(multiplayer.get_unique_id())
+	else:
+		if not headless_mode:
+			remove_player(1)
+		for peer_id in multiplayer.get_peers():
+			remove_player(peer_id)
+	has_game_started = false
+
+# Level Management
+
+func load_level_async(new_level_idx: int) -> void:
+	if level_idx == new_level_idx:
+		return
+	
+	# Get the level scene path
+	if (new_level_idx < 0 || new_level_idx >= level_spawn_list.size()):
+		push_error("Level index %d is out of bounds" % new_level_idx)
+		return
+	var scene_path: String = level_spawn_list[new_level_idx]
+	
+	# If the level is being loaded, we don't need to request another async load.
+	if level_load_idx == new_level_idx:
+		# If we want to autostart and the level was already loaded in memory, start immediately.
+		if autostart_new_level and is_equal_approx(level_load_progress, 1.0):
+			var scene: PackedScene = ResourceLoader.load_threaded_get(scene_path)
+			_load_level_scene(scene)
+		return
+	
+	# Request to async load the level scene
+	level_load_idx = new_level_idx
+	level_load_progress = 0.0
+	const type_hint: String = ""
+	const use_sub_threads: bool = false
+	const cache_mode: ResourceLoader.CacheMode = ResourceLoader.CACHE_MODE_IGNORE
+	ResourceLoader.load_threaded_request(scene_path, type_hint, use_sub_threads, cache_mode)
+	set_process(true)
+
+## Callback when the level scene is loaded in memory
+func _on_level_scene_loaded(scene_path: String) -> void:
+	level_load_progress = 1.0
+	set_process(false)
+	
+	if autostart_new_level:
+		var scene: PackedScene = ResourceLoader.load_threaded_get(scene_path)
+		_load_level_scene(scene)
+
+func _load_level_scene(scene: PackedScene) -> void:
+	# Get level node container
+	var level_node: Node = _get_level_node_container()
+	if level_node == null:
+		push_error("No level node container found")
+		level_load_failed.emit(level_load_idx)
+		return
+	
+	# Free previous level
+	if level != null:
+		level.queue_free()
+		if level.is_queued_for_deletion():
+			await get_tree().process_frame
+	
+	# Load new level
+	level = scene.instantiate()
+	level_idx = level_load_idx
+	level_load_idx = -1
+	level_node.add_child(level, true)
+	
+	level_loaded.emit(level_idx)
+
+func _on_level_loaded(_p_level_idx: int) -> void:
+	if not is_multiplayer_authority():
+		return
+	
+	# Only spawn a player for the host if not in headless mode
+	if not headless_mode and multiplayer.is_server():
+		spawn_player(multiplayer.get_unique_id())
+	for peer_id in multiplayer.get_peers():
+		spawn_player(peer_id)
+
+func _on_level_load_failed(_p_level_idx: int) -> void:
+	level_load_idx = -1
+	level_load_progress = 0.0
+	set_process(false)
+
+func unload_level() -> void:
+	if level != null:
+		level.queue_free()
+	level = null
+	level_idx = -1
+
+func next_level_async() -> void:
+	if is_final_level():
+		return
+	load_level_async(level_idx + 1)
+
+func is_final_level() -> bool:
+	return (level_idx == level_spawn_list.size() - 1)
+
+func _get_level_node_container() -> Node:
+	return get_node(level_spawn_path)
+
+# Player Management
+
+func get_max_players() -> int:
+	if RoboLobbyManager.local_lobby != null:
+		return min(max_players, RoboLobbyManager.local_lobby.max_members)
+	return max_players
+
+func get_player(peer_id: int) -> Player:
+	return _player_spawner.get_player(peer_id)
+
+func get_players() -> Array[Player]:
+	return _player_spawner.get_players()
+
+func get_player_count() -> int:
+	return _player_spawner.get_player_count()
+
+func spawn_player(peer_id: int) -> void:
+	if _player_spawner == null or not _player_spawner.is_multiplayer_authority():
+		return
+	
+	if get_player(peer_id) != null:
+		push_warning("Player %d is already spawned, ignoring spawn_player" % peer_id)
+		return
+	
+	if level == null:
+		push_error("Failed to spawn Player %d, the level is not loaded" % peer_id)
+		return
+	
+	var player_index: int = _player_spawner.get_player_count()
+	var spawn_location: Vector3 = level.get_spawn_location(player_index)
+	var spawn_rotation: Vector3 = level.get_spawn_rotation(player_index)
+	var spawn_data: Variant = {
+		"index": 0,
+		"position": spawn_location,
+		"rotation": spawn_rotation,
+		"peer_id": peer_id,
+	}
+	_player_spawner.spawn(spawn_data)
+
+func remove_player(peer_id: int) -> void:
+	if _player_spawner == null or not _player_spawner.is_multiplayer_authority():
+		return
+	
+	# Find player node
+	var player: Player = get_player(peer_id)
+	if player == null:
+		return
+	
+	# Free player
+	player.queue_free()
+
+# Player Customisation
+
+func save_player_customisation() -> void:
+	# Making sure the base directory exists before saving
+	var base_dir_path: String = player_settings_config_file_path.get_base_dir()
+	if not DirAccess.dir_exists_absolute(base_dir_path):
+		var dir_err: Error = DirAccess.make_dir_absolute(base_dir_path)
+		if dir_err != OK:
+			push_error("Failed to create the player customisation save folder at location \"%s\" with error %s" % [base_dir_path, error_string(dir_err)])
+			return
+
+	var config: ConfigFile = ConfigFile.new()
+
+	config.set_value(PLAYER_CUSTOMISATION_SECTION, "Name", local_player_name)
+	config.set_value(PLAYER_CUSTOMISATION_SECTION, "Color", local_player_color)
+
+	var err: Error = config.save(player_settings_config_file_path)
+	if err != OK:
+		push_error("Failed to save the player customisation at location \"%s\" with error %s" % [player_settings_config_file_path, error_string(err)])
+
+func load_player_customisation() -> void:
+	var config: ConfigFile = ConfigFile.new()
+
+	var err: Error = config.load(player_settings_config_file_path)
+	if err != OK:
+		push_warning("Failed to load the player customisation at location \"%s\" with error %s" % [player_settings_config_file_path, error_string(err)])
+		return
+
+	if config.has_section(PLAYER_CUSTOMISATION_SECTION):
+		local_player_name = config.get_value(PLAYER_CUSTOMISATION_SECTION, "Name")
+		local_player_color = config.get_value(PLAYER_CUSTOMISATION_SECTION, "Color")
+		if connection_mode == ConnectionMode.RELAY:
+			RoboLobbyManager.local_username = local_player_name
+
+func validate_player_name(new_name: String) -> bool:
+	var result: RegExMatch = player_name_regex.search(new_name)
+	return result != null and result.get_string() == new_name
+
+func validate_player_color(new_color: Color) -> bool:
+	return is_equal_approx(new_color.a, 1.0)

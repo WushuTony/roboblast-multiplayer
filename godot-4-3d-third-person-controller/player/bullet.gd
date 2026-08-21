@@ -21,8 +21,7 @@ func _ready() -> void:
 	_area.body_entered.connect(_on_body_entered)
 	look_at(global_position + velocity)
 	_alive_limit = distance_limit / velocity.length()
-	_projectile_sound.pitch_scale = randfn(1.0, 0.1)
-	_projectile_sound.play()
+	Level.play_sound(_projectile_sound, global_position, randfn(1.0, 0.1))
 
 
 func _process(delta: float) -> void:
@@ -33,14 +32,16 @@ func _process(delta: float) -> void:
 	
 	_bullet_visuals.scale = Vector3.ONE * scale_decay.sample(_time_alive/_alive_limit)
 	
-	if _time_alive > _alive_limit:
+	if _time_alive > _alive_limit or\
+		not is_instance_valid(shooter) or\
+		(shooter.has_method("is_alive") and\
+		not shooter.is_alive()):
 		_destroy_bullet()
 
 
 func _on_body_entered(body: Node3D) -> void:
 	if body == shooter:
 		return
-	# TODO: Check that the shooter is still alive
 	if body.is_multiplayer_authority() and body.is_in_group("damageables"):
 		var can_damage: bool = true
 		if not friendly_fire and shooter != null:
@@ -48,15 +49,18 @@ func _on_body_entered(body: Node3D) -> void:
 				can_damage = !shooter.is_in_group("players")
 			elif body.is_in_group("enemies"):
 				can_damage = !shooter.is_in_group("enemies")
-		if can_damage:
-			var impact_point := global_position - body.global_position
-			body.damage(impact_point, velocity)
+		var impact_point := global_position - body.global_position
+		var damage_data: Variant = {
+			"impact_point": impact_point,
+			"force": velocity,
+			"can_damage": can_damage
+		}
+		body.damage(damage_data)
 	_destroy_bullet()
 
 
 func _destroy_bullet():
 	_bullet_visuals.hide()
-	_projectile_sound.stop()
 	
 	set_process(false)
 	_collision_shape.set_deferred("disabled", true)

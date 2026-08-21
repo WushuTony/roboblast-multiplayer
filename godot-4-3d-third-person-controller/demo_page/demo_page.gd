@@ -3,15 +3,18 @@ class_name DemoPage
 
 enum INSTRUCTION_TYPES {KEYBOARD, JOYPAD}
 
+@onready var _game_session_manager: GameSessionManager = get_node("/root/GameSessionManager")
 @onready var demo_page_root: Control = %DemoPageRoot
 @onready var resume_button: Button = %ResumeButton
+@onready var lobby_button: Button = %LobbyButton
 @onready var exit_button: Button = %ExitButton
 @onready var keyboard_button: Button = %KeyboardButton
 @onready var joypad_button: Button = %JoypadButton
 @onready var grid_container_keyboard: GridContainer = %GridContainerKeyboard
 @onready var grid_container_joypad: GridContainer = %GridContainerJoypad
 
-var game_paused: bool = true:
+## If [code]true[/code] by default, the game starts paused until all players resumed the demo.
+var game_paused: bool = false:
 	set(value):
 		game_paused = value
 		if is_inside_tree():
@@ -24,28 +27,39 @@ func _enter_tree() -> void:
 	get_tree().paused = game_paused
 
 
+func _exit_tree() -> void:
+	MouseHandler.release_mouse_mode(self)
+
+
 func _ready() -> void:
 	if multiplayer.is_server():
 		multiplayer.peer_connected.connect(_on_peer_connected)
 		multiplayer.peer_disconnected.connect(_on_peer_disconnected)
 		if not headless_mode:
-			players_pausing_game.append(1)
+			players_pausing_game.append(multiplayer.get_unique_id())
+		players_pausing_game.append_array(multiplayer.get_peers())
 	
 	if headless_mode:
 		return
 	
-	resume_button.grab_focus.call_deferred()
-	
 	demo_page_root.gui_input.connect(_demo_page_root_gui_input)
 	resume_button.pressed.connect(_on_resume_button_pressed)
-	exit_button.pressed.connect(get_tree().quit)
+	lobby_button.pressed.connect(_on_lobby_button_pressed)
+	exit_button.pressed.connect(_on_exit_button_pressed)
 	keyboard_button.pressed.connect(change_instruction.bind(INSTRUCTION_TYPES.KEYBOARD))
 	joypad_button.pressed.connect(change_instruction.bind(INSTRUCTION_TYPES.JOYPAD))
+	
+	if RoboLobbyManager.local_lobby != null:
+		lobby_button.visible = true
 	
 	if Input.get_connected_joypads().size() > 0:
 		change_instruction(INSTRUCTION_TYPES.JOYPAD)
 	else:
 		change_instruction(INSTRUCTION_TYPES.KEYBOARD)
+	
+	if demo_page_root.is_visible_in_tree():
+		resume_button.grab_focus.call_deferred()
+		MouseHandler.request_mouse_mode(self, Input.MOUSE_MODE_VISIBLE, MouseHandler.Priority.PAUSE_MENU)
 
 
 func _on_peer_connected(peer_id: int) -> void:
@@ -67,6 +81,9 @@ func _on_peer_disconnected(peer_id: int) -> void:
 
 
 func _demo_page_root_gui_input(_event: InputEvent) -> void:
+	if not get_window().has_focus():
+		return
+	
 	if demo_page_root.is_visible():
 		demo_page_root.accept_event()
 
@@ -75,12 +92,26 @@ func _input(event: InputEvent) -> void:
 	if not get_window().has_focus():
 		return
 	
-	if event.is_action_pressed("pause") and not event.is_echo():
-		demo_page_root.accept_event()
-		toggle_demo_page()
+	if not event.is_echo():
+		if event.is_action_pressed("ui_cancel"):
+			if demo_page_root.is_visible():
+				demo_page_root.accept_event()
+				toggle_demo_page()
+				return
+		if event.is_action_pressed("pause"):
+			demo_page_root.accept_event()
+			toggle_demo_page()
+			return
+	
+	if demo_page_root.is_visible():
+		if event is InputEventJoypadMotion:
+			demo_page_root.accept_event()
 
 
 func _shortcut_input(event: InputEvent) -> void:
+	if not get_window().has_focus():
+		return
+	
 	if demo_page_root.is_visible():
 		if event is not InputEventMouse:
 			demo_page_root.accept_event()
@@ -115,6 +146,18 @@ func _on_resume_button_pressed() -> void:
 		resume_demo_for_player.rpc_id(1)
 	else:
 		hide_demo_page()
+
+
+func _on_lobby_button_pressed() -> void:
+	if _game_session_manager != null:
+		_game_session_manager.end_game()
+
+
+func _on_exit_button_pressed() -> void:
+	if get_tree().auto_accept_quit:
+		get_tree().quit()
+	else:
+		get_tree().root.propagate_notification(NOTIFICATION_WM_CLOSE_REQUEST)
 
 
 @rpc("any_peer", "call_local", "reliable")
@@ -155,7 +198,7 @@ func show_demo_page() -> void:
 	var tween := create_tween()
 	tween.tween_property(demo_page_root, "modulate", Color.WHITE, 0.3)
 	tween.tween_callback(resume_button.grab_focus)
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	MouseHandler.request_mouse_mode(self, Input.MOUSE_MODE_VISIBLE, MouseHandler.Priority.PAUSE_MENU)
 
 
 func hide_demo_page() -> void:
@@ -164,4 +207,4 @@ func hide_demo_page() -> void:
 	var tween := create_tween()
 	tween.tween_property(demo_page_root, "modulate", Color.TRANSPARENT, 0.3)
 	tween.tween_callback(demo_page_root.hide)
-	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	MouseHandler.release_mouse_mode(self)

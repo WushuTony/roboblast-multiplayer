@@ -2,63 +2,106 @@ class_name CameraController extends Node3D
 
 enum CAMERA_PIVOT { OVER_SHOULDER, THIRD_PERSON }
 
-@export var invert_mouse_y := false
-@export_range(0.0, 1.0) var mouse_sensitivity := 0.25
-@export_range(0.0, 8.0) var joystick_sensitivity := 2.0
-@export var tilt_upper_limit := deg_to_rad(-60.0)
-@export var tilt_lower_limit := deg_to_rad(60.0)
+@export var invert_y_axis: bool = true
+@export_range(0.0, 1.0) var mouse_sensitivity: float = 0.004
+@export_range(0.0, 8.0) var joystick_sensitivity: float = 2.0
+@export var tilt_upper_limit: float = deg_to_rad(-60.0)
+@export var tilt_lower_limit: float = deg_to_rad(60.0)
+@export var aim_target_player_color: Color = Color(0.0, 0.725, 1.0)
+@export var aim_target_enemy_color: Color = Color(1.0, 0.0, 0.0)
 
 @onready var camera: Camera3D = $PlayerCamera
 @onready var _over_shoulder_pivot: Node3D = $CameraOverShoulderPivot
 @onready var _camera_spring_arm: SpringArm3D = $CameraSpringArm
 @onready var _third_person_pivot: Node3D = $CameraSpringArm/CameraThirdPersonPivot
 @onready var _camera_raycast: RayCast3D = $PlayerCamera/CameraRayCast
+@onready var _ui_aim_reticle: TextureRect = %AimReticle
 
-var _aim_target: Vector3
-var _aim_collider: Node
-var _pivot: Node3D
+var _aim_target: Vector3 = Vector3.ZERO
+var _aim_collider: Node = null
+var _pivot: Node3D = null
 var _current_pivot_type: CAMERA_PIVOT
-var _rotation_input: float
-var _tilt_input: float
-var _mouse_input := false
-var _offset: Vector3
-var _anchor: CharacterBody3D
-var _euler_rotation: Vector3
+var _rotation_input: float = 0.0
+var _tilt_input: float = 0.0
+var _raw_rotation_input: float = 0.0
+var _raw_tilt_input: float = 0.0
+var _offset: Vector3 = Vector3.ZERO
+var _anchor: Player = null
+var _euler_rotation: Vector3 = Vector3.ZERO
+var _using_mouse: bool = true
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	_mouse_input = event is InputEventMouseMotion and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED
-	if _mouse_input:
+	if not get_window().has_focus():
+		return
+	
+	if event is InputEventMouse:
+		_using_mouse = true
+	elif event is InputEventJoypadMotion or event is InputEventJoypadButton:
+		_using_mouse = false
+	
+	var mouse_input: bool = event is InputEventMouseMotion and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED
+	if mouse_input:
 		_rotation_input = -event.relative.x * mouse_sensitivity
 		_tilt_input = -event.relative.y * mouse_sensitivity
+	
+	if event.is_action("camera_left") or event.is_action("camera_right"):
+		_raw_rotation_input = Input.get_axis("camera_right", "camera_left")
+	elif event.is_action("camera_up") or event.is_action("camera_down"):
+		_raw_tilt_input = Input.get_axis("camera_down", "camera_up")
 
 
 func _process(delta: float) -> void:
 	if not _anchor:
 		return
 
-	_rotation_input += Input.get_action_raw_strength("camera_left") - Input.get_action_raw_strength("camera_right")
-	_tilt_input += Input.get_action_raw_strength("camera_up") - Input.get_action_raw_strength("camera_down")
+	_rotation_input += _raw_rotation_input
+	_tilt_input += _raw_tilt_input
 
-	if invert_mouse_y:
+	if invert_y_axis:
 		_tilt_input *= -1
 
-	if _camera_raycast.is_colliding():
-		_aim_target = _camera_raycast.get_collision_point()
+	_aim_collider = null
+	if _anchor.is_aiming and _camera_raycast.is_colliding():
 		_aim_collider = _camera_raycast.get_collider()
+		if not _aim_collider.is_in_group("targeteables"):
+			_aim_collider = null
+
+	if _aim_collider != null:
+		_aim_target = _camera_raycast.get_collision_point()
 	else:
 		_aim_target = _camera_raycast.global_transform * _camera_raycast.target_position
-		_aim_collider = null
 
-	# Set camera controller to current ground level for the character
+	if _ui_aim_reticle != null:
+		var draw_aim_circle: bool = _aim_collider != null and _anchor._equipped_weapon == Player.WEAPON_TYPE.DEFAULT
+		if draw_aim_circle:
+			if _aim_collider.is_in_group("players"):
+				_ui_aim_reticle.material.set("shader_parameter/circle_color_main", aim_target_player_color)
+			elif _aim_collider.is_in_group("enemies"):
+				_ui_aim_reticle.material.set("shader_parameter/circle_color_main", aim_target_enemy_color)
+			else:
+				draw_aim_circle = false
+		_ui_aim_reticle.material.set("shader_parameter/circle_visible", draw_aim_circle)
+		var draw_aim_cross: bool = _anchor._equipped_weapon == Player.WEAPON_TYPE.DEFAULT
+		_ui_aim_reticle.material.set("shader_parameter/cross_visible", draw_aim_cross)
+		_ui_aim_reticle.visible = _anchor.is_aiming
+
 	var target_position := _anchor.global_position + _offset
-	target_position.y = lerp(global_position.y, _anchor._ground_height, 0.1)
+	if not _anchor.is_aiming:
+		# Set camera controller to current ground level for the character
+		target_position.y = lerp(global_position.y, _anchor._ground_height, 0.1)
 	global_position = target_position
 
 	# Rotates camera using euler rotation
-	_euler_rotation.x += _tilt_input * delta
+	if _using_mouse:
+		# Mouse input events (InputEventMouseMotion) are hardware-driven and already frame-rate
+		# independent, so we should not multiply by delta
+		_euler_rotation.x += _tilt_input
+		_euler_rotation.y += _rotation_input
+	else:
+		_euler_rotation.x += _tilt_input * joystick_sensitivity * delta
+		_euler_rotation.y += _rotation_input * joystick_sensitivity * delta
 	_euler_rotation.x = clamp(_euler_rotation.x, tilt_lower_limit, tilt_upper_limit)
-	_euler_rotation.y += _rotation_input * delta
 
 	transform.basis = Basis.from_euler(_euler_rotation)
 
@@ -67,9 +110,14 @@ func _process(delta: float) -> void:
 
 	_rotation_input = 0.0
 	_tilt_input = 0.0
+	# Joypad input events (InputEventJoypadMotion) are only sent when there is motion on the joystick,
+	# so we should not reset the raw inputs for joypads
+	if _using_mouse:
+		_raw_rotation_input = 0.0
+		_raw_tilt_input = 0.0
 
 
-func setup(anchor: CharacterBody3D) -> void:
+func setup(anchor: Player) -> void:
 	_anchor = anchor
 	global_transform = _anchor.global_transform
 	_offset = global_transform.origin - anchor.global_transform.origin
@@ -93,7 +141,9 @@ func set_pivot(pivot_type: CAMERA_PIVOT) -> void:
 	_current_pivot_type = pivot_type
 
 
-func get_aim_target() -> Vector3:
+func get_aim_target(distance_limit: float = -1.0) -> Vector3:
+	if distance_limit > 0.0 and not is_instance_valid(_aim_collider):
+		return _camera_raycast.global_transform * _camera_raycast.target_position.limit_length(distance_limit)
 	return _aim_target
 
 
@@ -102,3 +152,20 @@ func get_aim_collider() -> Node:
 		return _aim_collider
 	else:
 		return null
+
+
+func set_euler_rotation_y(new_rot: float) -> void:
+	_euler_rotation.y = new_rot
+
+
+func update_aim_reticle_on_shoot(duration: float = 0.5) -> void:
+	if _ui_aim_reticle == null:
+		return
+
+	var tween: Tween = create_tween()
+	const gap_expansion_per_shot: float = 0.075
+	const max_gap_size: float = 0.125
+	const min_gap_size: float = 0.05
+	var cur_gap_size: float = _ui_aim_reticle.material.get("shader_parameter/cross_gap_size")
+	var from_val: float = min(cur_gap_size + gap_expansion_per_shot, max_gap_size)
+	tween.tween_property(_ui_aim_reticle.material, "shader_parameter/cross_gap_size", min_gap_size, duration).from(from_val)

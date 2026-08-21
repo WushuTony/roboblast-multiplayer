@@ -4,11 +4,14 @@ class_name GrenadeLauncher
 @export var min_throw_distance: float = 7.0
 @export var max_throw_distance: float = 16.0
 @export var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
+## If grenades can damage other players/enemies.
+@export var friendly_fire: bool = false
+## If grenades can damage the player/enemy that spawned it.
+@export var damage_self: bool = true
 
 var from_look_position: Vector3 = Vector3.ZERO
 var throw_direction: Vector3 = Vector3.ZERO
 
-@onready var _grenade_spawner: DynamicSpawner = %GrenadeSpawner
 @onready var _snap_mesh: Node3D = %SnapMesh
 @onready var _raycast: ShapeCast3D = %ShapeCast3D
 @onready var _launch_point: Marker3D = %LaunchPoint
@@ -16,24 +19,47 @@ var throw_direction: Vector3 = Vector3.ZERO
 
 var _throw_velocity: Vector3 = Vector3.ZERO
 var _time_to_land: float = 0.0
+var _throw_path_mesh: ImmediateMesh = null
 
 
-func _physics_process(_delta: float) -> void:
-	if visible:
-		_update_throw_velocity()
+func _ready() -> void:
+	_throw_path_mesh = ImmediateMesh.new()
+	var parent: CollisionObject3D = get_parent() as CollisionObject3D
+	if parent != null:
+		_raycast.add_exception_rid(parent.get_rid())
+	visibility_changed.connect(_on_visibility_changed)
+
+
+func _process(_delta: float) -> void:
+	if _update_throw_velocity():
 		_draw_throw_path()
 
 
-func throw_grenade() -> bool:
-	if not visible or not _grenade_spawner.is_multiplayer_authority():
-		return false
-
-	var grenade: Grenade = _grenade_spawner.throw(_launch_point.global_position, _throw_velocity)
-	return grenade != null
+func _on_visibility_changed() -> void:
+	set_process(visible)
 
 
-func _update_throw_velocity() -> void:
-	var camera := get_viewport().get_camera_3d()
+func throw_grenade() -> void:
+	if not visible:
+		return
+	_spawn_throw_grenade.rpc_id(1, _launch_point.global_position, _throw_velocity)
+
+
+@rpc("authority", "call_local", "reliable")
+func _spawn_throw_grenade(p_position: Vector3, p_velocity: Vector3) -> void:
+	var data: Variant = {
+		"position": p_position,
+		"velocity": p_velocity,
+	}
+	Level.spawn_grenade(self, data)
+
+
+## Update the velocity to throw grenades and calculate their trajectory[br]
+## Returns [code]true[/code] if the velocity changed since the last time it was called
+func _update_throw_velocity() -> bool:
+	var prev_throw_velocity: Vector3 = _throw_velocity
+
+	var camera: Camera3D = get_viewport().get_camera_3d()
 	var up_ratio: float = clamp(max(camera.rotation.x + 0.5, -0.4) * 2, 0.0, 1.0)
 
 	# var throw_direction := camera.quaternion * Vector3.FORWARD
@@ -49,11 +75,19 @@ func _update_throw_velocity() -> void:
 	var to_target := _raycast.target_position
 
 	if _raycast.get_collision_count() != 0:
-		var collider := _raycast.get_collider(0)
-		var has_target: bool = collider and collider.is_in_group("targeteables")
+		var collider: Object = _raycast.get_collider(0)
+		var has_target: bool = collider != null and collider.is_in_group("targeteables")
 		_snap_mesh.visible = has_target
 		if has_target:
-			to_target = collider.global_position - _launch_point.global_position
+			var collision_offset: Vector3 = Vector3.ZERO
+			# If the collision shape is offset compared to the collision object,
+			# we need to apply that same offset to target them.
+			if collider is CollisionObject3D:
+				var owner_id: int = collider.shape_find_owner(0)
+				var shape_owner: Object = collider.shape_owner_get_owner(owner_id)
+				if shape_owner is Node3D:
+					collision_offset = shape_owner.position
+			to_target = collider.global_position - _launch_point.global_position + collision_offset
 			_snap_mesh.global_position = _launch_point.global_position + to_target
 			_snap_mesh.look_at(_launch_point.global_position)
 	else:
@@ -77,49 +111,51 @@ func _update_throw_velocity() -> void:
 	var forward_velocity := (target_position_xz_plane - start_position_xz_plane) / _time_to_land
 	var velocity_up := sqrt(2.0 * gravity * motion_up)
 
-	# Caching the found initial_velocity vector so we can use it on the throw() function
+	# Caching the found initial_velocity vector so we can use it on the throw_grenade() function
 	_throw_velocity = Vector3.UP * velocity_up + forward_velocity
+
+	return not _throw_velocity.is_equal_approx(prev_throw_velocity)
 
 
 func _draw_throw_path() -> void:
-	const TIME_STEP := 0.05
-	const TRAIL_WIDTH := 0.25
+	const TIME_STEP: float = 0.05
+	const TRAIL_WIDTH: float = 0.25
 
-	var forward_direction = Vector3(_throw_velocity.x, 0.0, _throw_velocity.z).normalized()
-	var left_direction := Vector3.UP.cross(forward_direction)
-	var offset_left = left_direction * TRAIL_WIDTH / 2.0
-	var offset_right = -left_direction * TRAIL_WIDTH / 2.0
+	var forward_direction: Vector3 = Vector3(_throw_velocity.x, 0.0, _throw_velocity.z).normalized()
+	var left_direction: Vector3 = Vector3.UP.cross(forward_direction)
+	var offset_left: Vector3 = left_direction * TRAIL_WIDTH / 2.0
+	var offset_right: Vector3 = -left_direction * TRAIL_WIDTH / 2.0
 
-	var st := SurfaceTool.new()
-	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	_throw_path_mesh.clear_surfaces()
+	_throw_path_mesh.surface_begin(Mesh.PRIMITIVE_TRIANGLES)
 
-	var end_time := _time_to_land + 0.5
-	var point_previous = Vector3.ZERO
-	var time_current := 0.0
+	var end_time: float = _time_to_land + 0.5
+	var point_previous: Vector3 = Vector3.ZERO
+	var time_current: float = 0.0
 	# We'll create 2 triangles on each iteration, representing the quad of one
 	# section of the path
 	while time_current < end_time:
 		time_current += TIME_STEP
-		var point_current := _throw_velocity * time_current + Vector3.DOWN * gravity * 0.5 * time_current * time_current
+		var point_current: Vector3 = _throw_velocity * time_current + Vector3.DOWN * gravity * 0.5 * time_current * time_current
 
 		# Our point coordinates are at the center of the path, so we need to calculate vertices
-		var trail_point_left_end = point_current + offset_left
-		var trail_point_right_end = point_current + offset_right
-		var trail_point_left_start = point_previous + offset_left
-		var trail_point_right_start = point_previous + offset_right
+		var trail_point_left_end: Vector3 = point_current + offset_left
+		var trail_point_right_end: Vector3 = point_current + offset_right
+		var trail_point_left_start: Vector3 = point_previous + offset_left
+		var trail_point_right_start: Vector3 = point_previous + offset_right
 
 		# UV position goes from 0 to 1, so we normalize the current iteration
 		# to get the progress in the UV texture
-		var uv_progress_end = time_current / end_time
-		var uv_progress_start = uv_progress_end - (TIME_STEP / end_time)
+		var uv_progress_end: float = time_current / end_time
+		var uv_progress_start: float = uv_progress_end - (TIME_STEP / end_time)
 
 		# Left side on the UV texture is at the top of the texture
 		# (Vector2(0,1), or Vector2.DOWN). Right side on the UV texture is at
 		# the bottom.
-		var uv_value_right_start = (Vector2.RIGHT * uv_progress_start)
-		var uv_value_right_end = (Vector2.RIGHT * uv_progress_end)
-		var uv_value_left_start = Vector2.DOWN + uv_value_right_start
-		var uv_value_left_end = Vector2.DOWN + uv_value_right_end
+		var uv_value_right_start: Vector2 = (Vector2.RIGHT * uv_progress_start)
+		var uv_value_right_end: Vector2 = (Vector2.RIGHT * uv_progress_end)
+		var uv_value_left_start: Vector2 = Vector2.DOWN + uv_value_right_start
+		var uv_value_left_end: Vector2 = Vector2.DOWN + uv_value_right_end
 
 		point_previous = point_current
 
@@ -127,20 +163,20 @@ func _draw_throw_path() -> void:
 		# clockwise orientation to determine the face normal)
 
 		# Draw first triangle
-		st.set_uv(uv_value_right_end)
-		st.add_vertex(trail_point_right_end)
-		st.set_uv(uv_value_left_start)
-		st.add_vertex(trail_point_left_start)
-		st.set_uv(uv_value_left_end)
-		st.add_vertex(trail_point_left_end)
+		_throw_path_mesh.surface_set_uv(uv_value_right_end)
+		_throw_path_mesh.surface_add_vertex(trail_point_right_end)
+		_throw_path_mesh.surface_set_uv(uv_value_left_start)
+		_throw_path_mesh.surface_add_vertex(trail_point_left_start)
+		_throw_path_mesh.surface_set_uv(uv_value_left_end)
+		_throw_path_mesh.surface_add_vertex(trail_point_left_end)
 
 		# Draw second triangle
-		st.set_uv(uv_value_right_start)
-		st.add_vertex(trail_point_right_start)
-		st.set_uv(uv_value_left_start)
-		st.add_vertex(trail_point_left_start)
-		st.set_uv(uv_value_right_end)
-		st.add_vertex(trail_point_right_end)
+		_throw_path_mesh.surface_set_uv(uv_value_right_start)
+		_throw_path_mesh.surface_add_vertex(trail_point_right_start)
+		_throw_path_mesh.surface_set_uv(uv_value_left_start)
+		_throw_path_mesh.surface_add_vertex(trail_point_left_start)
+		_throw_path_mesh.surface_set_uv(uv_value_right_end)
+		_throw_path_mesh.surface_add_vertex(trail_point_right_end)
 
-	st.generate_normals()
-	_trail_mesh_instance.mesh = st.commit()
+	_throw_path_mesh.surface_end()
+	_trail_mesh_instance.mesh = _throw_path_mesh

@@ -1,13 +1,14 @@
 [gd_scene format=3 uid="uid://ciqrpd5675boy"]
 
 [ext_resource type="Script" uid="uid://gofa4kyvcacj" path="res://godot-4-3d-third-person-controller/player/player.gd" id="1_rvo1c"]
-[ext_resource type="Script" uid="uid://k16jhrw5hsil" path="res://godot-4-3d-third-person-controller/player/bullet_spawner.gd" id="2_gdx1b"]
 [ext_resource type="PackedScene" uid="uid://b2ew46dlu7u7x" path="res://godot-4-3d-third-person-controller/player/grenade_launcher.tscn" id="3_54qc4"]
 [ext_resource type="Script" uid="uid://dwd8k7raa2k87" path="res://godot-4-3d-third-person-controller/player/camera_controller.gd" id="3_qrkly"]
 [ext_resource type="Script" uid="uid://0nwful4fsrh8" path="res://godot-4-3d-third-person-controller/player/melee_attack_area.gd" id="3_v1vve"]
 [ext_resource type="PackedScene" uid="uid://c0mo8tek77du4" path="res://godot-4-3d-third-person-controller/player/character_skin.tscn" id="4_ign62"]
 [ext_resource type="Script" uid="uid://dtf17612eybdg" path="res://godot-4-3d-third-person-controller/player/coins_container.gd" id="7_8eehq"]
+[ext_resource type="Shader" uid="uid://dsdrqd1gg3s0q" path="res://godot-4-3d-third-person-controller/player/aim_reticle.gdshader" id="7_bwrjn"]
 [ext_resource type="PackedScene" uid="uid://cqw64w6kb0fyg" path="res://godot-4-3d-third-person-controller/player/coin/coin_visuals/coin_model.tscn" id="8_6qxxt"]
+[ext_resource type="PackedScene" uid="uid://pevb5ntcp8hc" path="res://godot-4-3d-third-person-controller/chat/chat.tscn" id="9_um1wy"]
 [ext_resource type="PackedScene" uid="uid://mb58xbunfaep" path="res://godot-4-3d-third-person-controller/icons/weapon_ui.tscn" id="9_upq7c"]
 [ext_resource type="AudioStream" uid="uid://bx0t7f2nuk2lr" path="res://godot-4-3d-third-person-controller/player/sounds/03_step_grass_03.wav" id="10_wx4h4"]
 [ext_resource type="AudioStream" uid="uid://cbcb2d63weegs" path="res://godot-4-3d-third-person-controller/player/sounds/45_landing_01.wav" id="11_3s4i7"]
@@ -102,7 +103,39 @@ _data = {
 radius = 0.721485
 height = 2.65424
 
-[node name="Player" type="CharacterBody3D" unique_id=126940387 groups=["damageables", "players"]]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_r35f8"]
+resource_local_to_scene = true
+shader = ExtResource("7_bwrjn")
+shader_parameter/circle_visible = false
+shader_parameter/circle_radius = 0.25
+shader_parameter/circle_thickness = 0.01
+shader_parameter/circle_gap_size = 0.05
+shader_parameter/circle_color_main = Color(0, 0.7254902, 1, 1)
+shader_parameter/circle_color_outline = Color(0, 0, 0, 1)
+shader_parameter/circle_outline_width = 0.006000000285
+shader_parameter/circle_outline_flat = true
+shader_parameter/circle_rotation_speed = -0.9999995725000002
+shader_parameter/circle_base_angle = 0.0
+shader_parameter/dot_visible = true
+shader_parameter/dot_radius = 0.015
+shader_parameter/dot_color = Color(1, 1, 1, 1)
+shader_parameter/dot_outline_width = 0.05
+shader_parameter/dot_outline_color = Color(0, 0, 0, 1)
+shader_parameter/dot_outline_flat = true
+shader_parameter/cross_visible = true
+shader_parameter/cross_bar_width = 0.10000000475
+shader_parameter/cross_thickness = 0.02
+shader_parameter/cross_gap_size = 0.05
+shader_parameter/cross_color_main = Color(1, 1, 1, 1)
+shader_parameter/cross_color_outline = Color(0, 0, 0, 1)
+shader_parameter/cross_outline_width = 0.005
+shader_parameter/cross_outline_flat = true
+shader_parameter/cross_rotation_speed = 0.0
+shader_parameter/cross_base_angle = 0.0
+
+[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_bwrjn"]
+
+[node name="Player" type="CharacterBody3D" unique_id=126940387 groups=["damageables", "players", "shooters", "targeteables"]]
 collision_layer = 8
 collision_mask = 27
 axis_lock_angular_x = true
@@ -110,23 +143,16 @@ axis_lock_angular_y = true
 axis_lock_angular_z = true
 platform_floor_layers = 4294967041
 script = ExtResource("1_rvo1c")
-acceleration = 6.0
 
 [node name="ClientSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=15820631]
 replication_config = SubResource("SceneReplicationConfig_5by3o")
 
-[node name="BulletSpawner" type="MultiplayerSpawner" parent="." unique_id=2005022818]
-_spawnable_scenes = PackedStringArray("uid://bguebyvtegnv8")
-spawn_path = NodePath(".")
-script = ExtResource("2_gdx1b")
-bullet_speed = 14.0
-container_name = "Bullets"
-prefix_owner_name = true
-
 [node name="Username" type="Label3D" parent="." unique_id=1055739572]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.8, 0)
 billboard = 1
-font_size = 42
+alpha_cut = 1
+font_size = 70
+outline_size = 22
 
 [node name="CharacterCollisionShape" type="CollisionShape3D" parent="." unique_id=2112685367]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
@@ -135,7 +161,6 @@ shape = SubResource("CapsuleShape3D_8x2xm")
 [node name="CameraController" type="Node3D" parent="." unique_id=456957049]
 top_level = true
 script = ExtResource("3_qrkly")
-invert_mouse_y = true
 tilt_upper_limit = 0.48
 tilt_lower_limit = -0.8
 
@@ -160,7 +185,7 @@ fov = 50.0
 [node name="CameraRayCast" type="RayCast3D" parent="CameraController/PlayerCamera" unique_id=1063302130]
 transform = Transform3D(1, 0, -7.10543e-15, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 target_position = Vector3(0, 0, -100)
-collision_mask = 17
+collision_mask = 25
 debug_shape_custom_color = Color(0, 0, 0, 0)
 
 [node name="GrenadeLauncher" parent="." unique_id=1056604266 instance=ExtResource("3_54qc4")]
@@ -211,21 +236,23 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="AimReticle" type="ColorRect" parent="HUD" unique_id=1261313606]
+[node name="AimReticle" type="TextureRect" parent="HUD" unique_id=1824217020]
 unique_name_in_owner = true
-layout_mode = 0
+material = SubResource("ShaderMaterial_r35f8")
+layout_mode = 1
+anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -3.5
-offset_top = -3.5
-offset_right = 3.5
-offset_bottom = 3.5
+offset_left = -100.0
+offset_top = -100.0
+offset_right = 100.0
+offset_bottom = 100.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0, 0, 0, 0.290196)
+texture = SubResource("PlaceholderTexture2D_bwrjn")
 
 [node name="CoinsContainer" type="HBoxContainer" parent="HUD" unique_id=1774114733]
 unique_name_in_owner = true
@@ -279,6 +306,24 @@ text = "0"
 wait_time = 3.0
 one_shot = true
 
+[node name="Chat" parent="HUD" unique_id=1531325999 instance=ExtResource("9_um1wy")]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 32.0
+offset_top = -326.0
+offset_right = 412.0
+offset_bottom = -124.0
+grow_vertical = 0
+grab_focus_on_press = true
+unfocus_on_pause = true
+unfocus_on_click = true
+
+[node name="Title" parent="HUD/Chat/VBox" parent_id_path=PackedInt32Array(1531325999, 1783223299) index="0" unique_id=1734396813]
+visible = false
+
 [node name="WeaponUI" parent="HUD" unique_id=192274453 instance=ExtResource("9_upq7c")]
 unique_name_in_owner = true
 layout_mode = 1
@@ -303,3 +348,4 @@ stream = ExtResource("11_3s4i7")
 volume_db = 1.0
 
 [editable path="HUD/CoinsContainer/SubViewportContainer/SubViewport/Coin"]
+[editable path="HUD/Chat"]

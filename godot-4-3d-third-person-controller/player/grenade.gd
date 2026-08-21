@@ -1,4 +1,4 @@
-extends CharacterBody3D
+extends RigidBody3D
 class_name Grenade
 
 const EXPLOSION_SCENE := preload("explosion_visuals/explosion_scene.tscn")
@@ -14,9 +14,14 @@ const EXPLOSION_SCENE := preload("explosion_visuals/explosion_scene.tscn")
 @export var bounce_on_other_damageables: bool = true
 ## Always explode after that delay (to prevent a grenade never triggering)
 @export var explode_after_delay: float = 2.5
+## Forward impulse after an explosion inflicts damage.
+@export var damage_impulse: float = 30.0
+## Override the upward force of the damage impulse.
+@export var upward_impulse: float = 5.0
 
 var shooter: Node = null
 var friendly_fire: bool = false
+var damage_self: bool = false
 
 # Custom gravity value that matches the trajectory predicted by the grenade launcher
 var gravity: float = 0.0
@@ -25,9 +30,11 @@ var _bounces: int = 0
 var _thrown_timer: float = 0.0
 var _velocity: Vector3 = Vector3.ZERO
 
+@onready var _collision_shape: CollisionShape3D = $CollisionShape3d
 @onready var _explosion_area: Area3D = $ExplosionArea
 @onready var _explosion_sound: AudioStreamPlayer3D = $ExplosionSound
 @onready var _explosion_start_timer: Timer = $ExplosionStartTimer
+@onready var _grenade_visuals: Node3D = $grenade
 
 
 func _ready() -> void:
@@ -84,7 +91,7 @@ func _explode() -> void:
 
 	var bodies: = _explosion_area.get_overlapping_bodies()
 	for body in bodies:
-		if body == shooter:
+		if not damage_self and body == shooter:
 			continue
 
 		if not body.is_in_group("damageables"):
@@ -97,39 +104,73 @@ func _explode() -> void:
 			elif body.is_in_group("enemies"):
 				can_damage = !shooter.is_in_group("enemies")
 
-		if can_damage:
-			# Add some variance to the impact point
-			var impact_point := (global_position - body.global_position).normalized()
-			impact_point = (impact_point + Vector3.DOWN).normalized() * 0.5
-			var force := -impact_point * 10.0
-			if body.is_multiplayer_authority():
-				body.damage(impact_point, force)
-			else:
-				_apply_damage.rpc_id(body.get_multiplayer_authority(), body.get_path(), impact_point, force)
+		var impact_point: Vector3 = _compute_impact_point(body.global_position)
+		var force: Vector3 = _compute_force(impact_point)
+
+		var damage_data: Variant = {
+			"impact_point": impact_point,
+			"force": force,
+			"can_damage": can_damage
+		}
+		if body.is_multiplayer_authority():
+			body.damage(damage_data)
+		else:
+			_apply_damage.rpc_id(body.get_multiplayer_authority(), body.get_path(), damage_data)
 
 	_play_explosion_effect.rpc()
 
 
+func _compute_impact_point(target_position: Vector3) -> Vector3:
+	# Add some variance to the impact point
+	var impact_point: Vector3 = (global_position - target_position).normalized()
+	impact_point = (impact_point + Vector3.DOWN).normalized() * 0.5
+	return impact_point
+
+
+func _compute_force(impact_point: Vector3) -> Vector3:
+	var force: Vector3 = -impact_point.normalized() * damage_impulse
+	force.y = upward_impulse
+	return force
+
+
+func _apply_impulses() -> void:
+	var bodies: = _explosion_area.get_overlapping_bodies()
+	for body in bodies:
+		if not damage_self and body == shooter:
+			continue
+
+		var is_damageable: bool = body.is_in_group("damageables")
+		# Damageables are handled by the multiplayer authority
+		if is_damageable:
+			continue
+
+		if body is RigidBody3D:
+			var impact_point: Vector3 = _compute_impact_point(body.global_position)
+			var force: Vector3 = _compute_force(impact_point)
+			body.apply_impulse(force, impact_point)
+
+
 @rpc("authority", "call_local", "reliable")
-func _apply_damage(path: String, impact_point: Vector3, force: Vector3) -> void:
+func _apply_damage(path: String, data: Variant) -> void:
 	var target: Node = get_node(path)
 	if target != null and target.is_multiplayer_authority():
-		target.damage(impact_point, force)
+		target.damage(data)
 
 
 @rpc("authority", "call_local", "reliable")
 func _play_explosion_effect() -> void:
-	set_physics_process(false)
+	# Apply impulses to non-replicated bodies (e.g. broken crates)
+	_apply_impulses()
 
-	_explosion_sound.pitch_scale = randfn(2.0, 0.1)
-	_explosion_sound.play()
+	_grenade_visuals.hide()
+	set_physics_process(false)
+	_collision_shape.set_deferred("disabled", true)
+
+	Level.play_sound(_explosion_sound, global_position, randfn(2.0, 0.1))
 
 	var explosion: Node3D = EXPLOSION_SCENE.instantiate()
+	explosion.transform.origin = position
 	get_parent().add_child(explosion)
-	explosion.global_position = global_position
-
-	hide()
-	await _explosion_sound.finished
 
 	if is_multiplayer_authority():
 		await get_tree().create_timer(0.5).timeout

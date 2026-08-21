@@ -5,12 +5,13 @@ signal weapon_switched(weapon_name: String)
 
 enum WEAPON_TYPE { DEFAULT, GRENADE }
 
+@export_group("Movement")
 ## Character maximum run speed on the ground.
 @export var move_speed := 8.0
 ## Forward impulse after a melee attack.
 @export var attack_impulse := 10.0
 ## Movement acceleration (how fast character achieve maximum speed)
-@export var acceleration := 4.0
+@export var acceleration := 6.0
 ## Jump impulse
 @export var jump_initial_impulse := 12.0
 ## Jump impulse when player keeps pressing jump
@@ -20,20 +21,36 @@ enum WEAPON_TYPE { DEFAULT, GRENADE }
 ## Minimum horizontal speed on the ground. This controls when the character's animation tree changes
 ## between the idle and running states.
 @export var stopping_speed := 1.0
-## Max throwback force after player takes a hit
-@export var max_throwback_force := 15.0
+
+@export_group("Taking Hits")
+## Max throwback force after player takes a hit from any source (e.g. melee, bullet, grenade)
+@export var max_throwback_force := 50.0
 ## Force to bounce off when landing on another player's head or on top of an enemy
 @export var bounce_off_force: Vector3 = Vector3(20.0, 10.0, 20.0)
 ## Add an offset to the spawn location of the coins the player loses
 @export var lost_coins_upward_offset: float = 1.0
-## Projectile cooldown
+
+@export_group("Projectiles")
+## Bullets cooldown
 @export var shoot_cooldown := 0.5
-## Grenade cooldown
+## Speed of shot bullets.
+@export var bullet_speed: float = 14.0
+## Distance limit after which shot bullets despawn.
+@export var distance_limit: float = 14.0
+## Grenade cooldown[br]
+## [b]Note:[/b] For more grenade settings, see [GrenadeLauncher]
 @export var grenade_cooldown := 0.5
-## If melee attacks can damage other players
+## Aims in the camera direction, otherwise it aims in the direction the character is facing.
+@export var aim_in_camera_direction: bool = false
+## If the player can aim and shoot midair, otherwise jumping or falling cancels out the aim.
+@export var can_shoot_midair: bool = true
+
+@export_group("")
+## If [code]true[/code], melee attacks and bullets can damage other players.[br]
+## [b]Note:[/b] For grenades, see [GrenadeLauncher]
 @export var friendly_fire: bool = false
 
-@onready var _bullet_spawner: BulletSpawner = $BulletSpawner
+@onready var _client_synchronizer: MultiplayerSynchronizer = $ClientSynchronizer
 @onready var _rotation_root: Node3D = $CharacterRotationRoot
 @onready var _camera_controller: CameraController = $CameraController
 @onready var _camera: Camera3D = $CameraController/PlayerCamera
@@ -44,23 +61,24 @@ enum WEAPON_TYPE { DEFAULT, GRENADE }
 @onready var _character_skin: CharacterSkin = $CharacterRotationRoot/CharacterSkin
 @onready var _username: Label3D = $Username
 @onready var _ui_HUD: Control = %HUD
-@onready var _ui_aim_reticle: ColorRect = %AimReticle
 @onready var _ui_coins_container: HBoxContainer = %CoinsContainer
+@onready var _ui_text_chat: RoboChat = %Chat
 @onready var _ui_weapon: WeaponUI = %WeaponUI
 @onready var _step_sound: AudioStreamPlayer3D = $StepSound
 @onready var _landing_sound: AudioStreamPlayer3D = $LandingSound
+@onready var _game_session_manager: GameSessionManager = get_node("/root/GameSessionManager")
 
 @onready var _start_position: Vector3 = global_transform.origin
-@onready var _shoot_cooldown_tick := shoot_cooldown
-@onready var _grenade_cooldown_tick := grenade_cooldown
 
 var _equipped_weapon: WEAPON_TYPE = WEAPON_TYPE.DEFAULT
 var _move_direction: Vector3 = Vector3.ZERO
-var _last_strong_direction: Vector3 = Vector3.FORWARD
+var _last_strong_direction: Vector3 = Vector3.ZERO
 var _gravity: float = -30.0
 var _ground_height: float = 0.0
 var _coins: int = 0
 var _is_on_floor_buffer: bool = false
+var _shoot_timer: float = 0.0
+var _grenade_timer: float = 0.0
 
 var peer_id: int = 1 # The peer that controls this player
 var local: bool = true # If this instance is controlled by the local peer
@@ -84,24 +102,31 @@ var is_just_attacking: bool = false
 var is_jump_held: bool = false
 var is_just_jumping: bool = false
 var is_aim_held: bool = false
+var is_just_aiming: bool = false
+var is_aiming: bool = false
 var is_swapping_weapons: bool = false
 
 var is_using_jumping_pad: bool = false
 var is_bouncing: bool = false
+
+var is_frozen: bool = false
 
 func _enter_tree() -> void:
 	# Set node authority
 	peer_id = int(name)
 	local = (peer_id == multiplayer.get_unique_id())
 	set_physics_process(local)
+	_update_authority()
 
 func _exit_tree() -> void:
 	if local:
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		MouseHandler.release_mouse_mode(self)
 
 func _ready() -> void:
-	if local and !get_tree().paused:
-		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	if local:
+		MouseHandler.request_mouse_mode(self, Input.MOUSE_MODE_CAPTURED, MouseHandler.Priority.GAMEPLAY)
+		# Init this value so it doesn't override the spawn rotation
+		_last_strong_direction = (_rotation_root.global_transform.basis * Vector3.BACK).normalized()
 	_camera_controller.setup(self)
 
 	if _ui_HUD != null:
@@ -113,6 +138,13 @@ func _ready() -> void:
 
 	_melee_attack_area.attacker = self
 	_melee_attack_area.friendly_fire = friendly_fire
+
+	# If the level isn't loaded yet, freeze the player until it is
+	if local and\
+		_game_session_manager != null and\
+		_game_session_manager.level == null:
+		freeze()
+		_game_session_manager.level_loaded.connect(_on_level_loaded)
 
 	# When copying this character to a new project, the project may lack required input actions.
 	# In that case, we register input actions for the user at runtime.
@@ -132,20 +164,21 @@ func generate_random_hsv_color(color_seed: int) -> Color:
 		rng.randf_range(0.9, 1.0), # BRIGHTNESS
  	)
 
-func set_multiplayer_data():
+func _update_authority():
 	# Give authority to this client
 	const recursive: bool = false
 	set_multiplayer_authority(peer_id, recursive)
-	if !recursive:
-		$ClientSynchronizer.set_multiplayer_authority(peer_id, false)
-		_bullet_spawner.set_multiplayer_authority(peer_id, false)
-		_grenade_aim_controller._grenade_spawner.set_multiplayer_authority(peer_id, false)
-	
-	if local:
-		var lobby: Lobby = get_node("/root/Lobby")
-		if lobby != null:
-			display_name = lobby.local_player_name
-			custom_color = lobby.local_player_color
+	if not recursive:
+		if not is_node_ready():
+			_client_synchronizer = $ClientSynchronizer
+			_grenade_aim_controller = $GrenadeLauncher
+		_client_synchronizer.set_multiplayer_authority(peer_id, false)
+		_grenade_aim_controller.set_multiplayer_authority(peer_id, false)
+
+func set_multiplayer_data():
+	if local and _game_session_manager != null:
+		display_name = _game_session_manager.local_player_name
+		custom_color = _game_session_manager.local_player_color
 	
 	# Give the player model the color of this client
 	var player_color: Color = custom_color if (is_equal_approx(custom_color.a, 1.0)) else generate_random_hsv_color(peer_id)
@@ -161,8 +194,35 @@ func set_multiplayer_data():
 	if (local):
 		# Activate the camera if local
 		_camera.make_current()
+		
+		# Enable the text chat if we're the local player coming from a multiplayer lobby
+		if _ui_text_chat != null and\
+			not RoboLobbyManager.is_singleplayer and\
+			_game_session_manager != null and\
+			_game_session_manager.connection_mode == GameSessionManager.ConnectionMode.RELAY:
+			_ui_text_chat.enable()
+		
+		if not is_frozen and _game_session_manager != null:
+			_game_session_manager.local_player_ready.emit()
+
+func _on_level_loaded(_level_idx: int) -> void:
+	unfreeze()
+	_game_session_manager.level_loaded.disconnect(_on_level_loaded)
+	_game_session_manager.local_player_ready.emit()
+
+func freeze() -> void:
+	is_frozen = true
+	velocity = Vector3.ZERO
+	set_physics_process(false)
+
+func unfreeze() -> void:
+	is_frozen = false
+	set_physics_process(local)
 
 func _unhandled_input(event: InputEvent) -> void:
+	if not get_window().has_focus():
+		return
+	
 	if (event.is_action("move_left")
 		or event.is_action("move_right")
 		or event.is_action("move_up")
@@ -176,6 +236,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		is_just_attacking = event.is_action_pressed("attack")
 	elif event.is_action("aim"):
 		is_aim_held = event.is_action_pressed("aim", true)
+		is_just_aiming = event.is_action_pressed("aim")
 	elif event.is_action("swap_weapons"):
 		is_swapping_weapons = event.is_action_pressed("swap_weapons")
 
@@ -201,7 +262,7 @@ func _physics_process(delta: float) -> void:
 	# Get movement state from input
 	var is_attacking: bool = is_attack_held and not _attack_animation_player.is_playing()
 	is_just_jumping = is_just_jumping and is_on_floor()
-	var is_aiming = is_aim_held and is_on_floor()
+	is_aiming = is_aim_held and (can_shoot_midair or is_on_floor())
 	var is_air_boosting = is_jump_held and not is_on_floor() and velocity.y > 0.0
 	var is_just_on_floor: bool = is_on_floor() and not _is_on_floor_buffer
 	is_using_jumping_pad = is_using_jumping_pad and velocity.y > 0.0
@@ -214,6 +275,8 @@ func _physics_process(delta: float) -> void:
 	if _move_direction.length() > 0.2:
 		_last_strong_direction = _move_direction.normalized()
 	if is_aiming:
+		if is_just_aiming and not aim_in_camera_direction:
+			_camera_controller.set_euler_rotation_y(_rotation_root.global_rotation.y)
 		_last_strong_direction = (_camera_controller.global_transform.basis * Vector3.BACK).normalized()
 
 	_orient_character_to_direction(_last_strong_direction, delta)
@@ -226,35 +289,33 @@ func _physics_process(delta: float) -> void:
 		velocity = Vector3.ZERO
 	velocity.y = y_velocity
 
-	# Set aiming camera and UI
+	# Set aiming camera and grenade launcher
 	if is_aiming:
 		_camera_controller.set_pivot(_camera_controller.CAMERA_PIVOT.OVER_SHOULDER)
 		_grenade_aim_controller.throw_direction = _camera_controller.camera.quaternion * Vector3.FORWARD
 		_grenade_aim_controller.from_look_position = _camera_controller.camera.global_position
-		_ui_aim_reticle.visible = true
 	else:
 		_camera_controller.set_pivot(_camera_controller.CAMERA_PIVOT.THIRD_PERSON)
 		_grenade_aim_controller.throw_direction = _last_strong_direction
 		_grenade_aim_controller.from_look_position = global_position
-		_ui_aim_reticle.visible = false
 
 	# Update attack state and position
 
-	_shoot_cooldown_tick += delta
-	_grenade_cooldown_tick += delta
+	_shoot_timer = max(_shoot_timer - delta, 0.0)
+	_grenade_timer = max(_grenade_timer - delta, 0.0)
 
 	if is_attacking:
 		match _equipped_weapon:
 			WEAPON_TYPE.DEFAULT:
-				if is_aiming and is_on_floor():
-					if _shoot_cooldown_tick > shoot_cooldown:
-						_shoot_cooldown_tick = 0.0
+				if is_aiming and (can_shoot_midair or is_on_floor()):
+					if _shoot_timer <= 0.0:
+						_shoot_timer = shoot_cooldown
 						shoot()
 				elif is_just_attacking:
 					attack.rpc()
 			WEAPON_TYPE.GRENADE:
-				if _grenade_cooldown_tick > grenade_cooldown:
-					_grenade_cooldown_tick = 0.0
+				if _grenade_timer <= 0.0:
+					_grenade_timer = grenade_cooldown
 					_grenade_aim_controller.throw_grenade()
 
 	velocity.y += _gravity * delta
@@ -295,14 +356,16 @@ func _physics_process(delta: float) -> void:
 			collision.get_normal().dot(up_direction) >= 0.5):
 			var collider: Object = collision.get_collider()
 			var bounce_direction: Vector3 = Vector3.ZERO
-			if collider.is_in_group("players"):
-				# Bounce forward
-				bounce_direction = (_last_strong_direction + up_direction).normalized()
-			elif collider.is_in_group("enemies"):
-				# Bounce away
-				bounce_direction = (up_direction - _last_strong_direction).normalized()
-				# and lose coins
-				lose_coins()
+			if not collider.has_method("is_alive") or\
+				collider.is_alive():
+				if collider.is_in_group("players"):
+					# Bounce forward
+					bounce_direction = (_last_strong_direction + up_direction).normalized()
+				elif collider.is_in_group("enemies"):
+					# Bounce away
+					bounce_direction = (up_direction - _last_strong_direction).normalized()
+					# and lose coins
+					lose_coins()
 
 			if bounce_direction != Vector3.ZERO:
 				is_bouncing = true
@@ -322,6 +385,7 @@ func _physics_process(delta: float) -> void:
 	# Reset inputs that shouldn't be processed multiple times
 	is_just_attacking = false
 	is_just_jumping = false
+	is_just_aiming = false
 	is_swapping_weapons = false
 
 
@@ -329,15 +393,28 @@ func _physics_process(delta: float) -> void:
 func attack() -> void:
 	_attack_animation_player.play("Attack")
 	_character_skin.punch()
+	# We separate out the y velocity to not override the gravity
+	var y_velocity: float = velocity.y
 	velocity = _rotation_root.transform.basis * Vector3.BACK * attack_impulse
+	velocity.y = y_velocity
 
 
 func shoot() -> void:
 	if not local:
 		return
-	var origin := global_position + Vector3.UP
-	var aim_target := _camera_controller.get_aim_target()
-	var _bullet: Bullet = _bullet_spawner.shoot(origin, aim_target)
+	var origin: Vector3 = global_position + Vector3.UP
+	var aim_target: Vector3 = _camera_controller.get_aim_target(distance_limit)
+	_camera_controller.update_aim_reticle_on_shoot()
+	_spawn_bullet.rpc_id(1, origin, aim_target)
+
+
+@rpc("authority", "call_local", "reliable")
+func _spawn_bullet(origin: Vector3, aim_target: Vector3) -> void:
+	var data: Variant = {
+		"position": origin,
+		"target_position": aim_target,
+	}
+	Level.spawn_bullet(self, data)
 
 
 @rpc("authority", "call_local", "reliable")
@@ -400,13 +477,21 @@ func play_foot_step_sound() -> void:
 	_step_sound.play()
 
 
-func damage(_impact_point: Vector3, force: Vector3) -> void:
+func is_alive() -> bool:
+	# Currently, the player doesn't have a death state
+	return true
+
+
+func damage(data: Variant) -> void:
 	if not is_multiplayer_authority():
 		return
 	# Always throws character up
+	var force: Vector3 = data.get("force", Vector3.ZERO)
 	force.y = abs(force.y)
 	velocity = force.limit_length(max_throwback_force)
-	lose_coins()
+	var can_damage: bool = data.get("can_damage", true)
+	if can_damage:
+		lose_coins()
 
 
 func _orient_character_to_direction(direction: Vector3, delta: float) -> void:
